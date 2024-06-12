@@ -1,0 +1,10 @@
+# .sqlboiler.toml
+[psql]
+  dbname  = "postgres"
+  host    = "localhost"
+  port    = 6684
+  user    = "postgres"
+  pass    = "postgres"
+  sslmode = "disable"
+  blacklist = ["schema_migrations"]
+  add-enum-types = true
