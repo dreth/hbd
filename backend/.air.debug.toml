@@ -5,21 +5,21 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "/tmp/main"
-  cmd = "go build -o /tmp/main ."
-  delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+  cmd = "go build -gcflags='all=-N -l' -o /tmp/main ."
+  delay = 1
+  exclude_dir = []
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
   follow_symlink = false
-  full_bin = ""
+  full_bin = "dlv exec --log --headless --listen :2345 --api-version=2 /tmp/main --"
   include_dir = []
   include_ext = ["go", "sql"]
   include_file = []
   kill_delay = "0s"
   log = "build-errors.log"
   poll = false
-  poll_interval = 0
+  poll_interval = 1
   post_cmd = []
   pre_cmd = []
   rerun = false
@@ -28,7 +28,7 @@ tmp_dir = "tmp"
   stop_on_error = false
 
 [color]
-  app = ""
+  app = "blue"
   build = "yellow"
   main = "magenta"
   runner = "green"
