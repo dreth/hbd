@@ -12,7 +12,7 @@ tmp_dir = "tmp"
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
   follow_symlink = false
-  full_bin = "dlv exec --log --headless --listen :2345 --api-version=2 /tmp/main --"
+  full_bin = "export $(grep -v '^#' .env | xargs); dlv exec --log --headless --listen :2345 --api-version=2 /tmp/main --"
   include_dir = []
   include_ext = ["go", "sql"]
   include_file = []

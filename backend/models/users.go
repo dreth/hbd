@@ -25,7 +25,8 @@ import (
 // User is an object representing the database table.
 type User struct {
 	ID                string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Password          string      `boil:"password" json:"password" toml:"password" yaml:"password"`
+	Email             string      `boil:"email" json:"email" toml:"email" yaml:"email"`
+	EncryptionKey     string      `boil:"encryption_key" json:"encryption_key" toml:"encryption_key" yaml:"encryption_key"`
 	BirthdayListID    null.String `boil:"birthday_list_id" json:"birthday_list_id,omitempty" toml:"birthday_list_id" yaml:"birthday_list_id,omitempty"`
 	ReminderTime      time.Time   `boil:"reminder_time" json:"reminder_time" toml:"reminder_time" yaml:"reminder_time"`
 	TelegramBotAPIKey string      `boil:"telegram_bot_api_key" json:"telegram_bot_api_key" toml:"telegram_bot_api_key" yaml:"telegram_bot_api_key"`
@@ -39,7 +40,8 @@ type User struct {
 
 var UserColumns = struct {
 	ID                string
-	Password          string
+	Email             string
+	EncryptionKey     string
 	BirthdayListID    string
 	ReminderTime      string
 	TelegramBotAPIKey string
@@ -48,7 +50,8 @@ var UserColumns = struct {
 	UpdatedAt         string
 }{
 	ID:                "id",
-	Password:          "password",
+	Email:             "email",
+	EncryptionKey:     "encryption_key",
 	BirthdayListID:    "birthday_list_id",
 	ReminderTime:      "reminder_time",
 	TelegramBotAPIKey: "telegram_bot_api_key",
@@ -59,7 +62,8 @@ var UserColumns = struct {
 
 var UserTableColumns = struct {
 	ID                string
-	Password          string
+	Email             string
+	EncryptionKey     string
 	BirthdayListID    string
 	ReminderTime      string
 	TelegramBotAPIKey string
@@ -68,7 +72,8 @@ var UserTableColumns = struct {
 	UpdatedAt         string
 }{
 	ID:                "users.id",
-	Password:          "users.password",
+	Email:             "users.email",
+	EncryptionKey:     "users.encryption_key",
 	BirthdayListID:    "users.birthday_list_id",
 	ReminderTime:      "users.reminder_time",
 	TelegramBotAPIKey: "users.telegram_bot_api_key",
@@ -81,7 +86,8 @@ var UserTableColumns = struct {
 
 var UserWhere = struct {
 	ID                whereHelperstring
-	Password          whereHelperstring
+	Email             whereHelperstring
+	EncryptionKey     whereHelperstring
 	BirthdayListID    whereHelpernull_String
 	ReminderTime      whereHelpertime_Time
 	TelegramBotAPIKey whereHelperstring
@@ -90,7 +96,8 @@ var UserWhere = struct {
 	UpdatedAt         whereHelpernull_Time
 }{
 	ID:                whereHelperstring{field: "\"users\".\"id\""},
-	Password:          whereHelperstring{field: "\"users\".\"password\""},
+	Email:             whereHelperstring{field: "\"users\".\"email\""},
+	EncryptionKey:     whereHelperstring{field: "\"users\".\"encryption_key\""},
 	BirthdayListID:    whereHelpernull_String{field: "\"users\".\"birthday_list_id\""},
 	ReminderTime:      whereHelpertime_Time{field: "\"users\".\"reminder_time\""},
 	TelegramBotAPIKey: whereHelperstring{field: "\"users\".\"telegram_bot_api_key\""},
@@ -127,8 +134,8 @@ func (r *userR) GetBirthdays() BirthdaySlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "password", "birthday_list_id", "reminder_time", "telegram_bot_api_key", "telegram_user_id", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"password", "reminder_time", "telegram_bot_api_key", "telegram_user_id"}
+	userAllColumns            = []string{"id", "email", "encryption_key", "birthday_list_id", "reminder_time", "telegram_bot_api_key", "telegram_user_id", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"email", "encryption_key", "reminder_time", "telegram_bot_api_key", "telegram_user_id"}
 	userColumnsWithDefault    = []string{"id", "birthday_list_id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}

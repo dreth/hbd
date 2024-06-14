@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "/tmp/main"
+  bin = ";export $(grep -v '^#' .env | xargs); /tmp/main"
   cmd = "go build -o /tmp/main ."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
@@ -44,3 +44,4 @@ tmp_dir = "tmp"
 [screen]
   clear_on_rebuild = false
   keep_scroll = true
+
