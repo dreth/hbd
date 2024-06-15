@@ -24,12 +24,12 @@ import (
 
 // Birthday is an object representing the database table.
 type Birthday struct {
-	ID          string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID      null.String `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
-	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	DateOfBirth time.Time   `boil:"date_of_birth" json:"date_of_birth" toml:"date_of_birth" yaml:"date_of_birth"`
-	CreatedAt   null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt   null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	ID          int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID      int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Name        string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	DateOfBirth time.Time `boil:"date_of_birth" json:"date_of_birth" toml:"date_of_birth" yaml:"date_of_birth"`
+	CreatedAt   null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt   null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 
 	R *birthdayR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L birthdayL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -69,6 +69,29 @@ var BirthdayTableColumns = struct {
 
 // Generated where
 
+type whereHelperint struct{ field string }
+
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperint) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 type whereHelperstring struct{ field string }
 
 func (w whereHelperstring) EQ(x string) qm.QueryMod     { return qmhelper.Where(w.field, qmhelper.EQ, x) }
@@ -95,56 +118,6 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	}
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
-
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" LIKE ?", x)
-}
-func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT LIKE ?", x)
-}
-func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" ILIKE ?", x)
-}
-func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
-	return qm.Where(w.field+" NOT ILIKE ?", x)
-}
-func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 type whereHelpertime_Time struct{ field string }
 
@@ -192,15 +165,15 @@ func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsN
 func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var BirthdayWhere = struct {
-	ID          whereHelperstring
-	UserID      whereHelpernull_String
+	ID          whereHelperint
+	UserID      whereHelperint
 	Name        whereHelperstring
 	DateOfBirth whereHelpertime_Time
 	CreatedAt   whereHelpernull_Time
 	UpdatedAt   whereHelpernull_Time
 }{
-	ID:          whereHelperstring{field: "\"birthdays\".\"id\""},
-	UserID:      whereHelpernull_String{field: "\"birthdays\".\"user_id\""},
+	ID:          whereHelperint{field: "\"birthdays\".\"id\""},
+	UserID:      whereHelperint{field: "\"birthdays\".\"user_id\""},
 	Name:        whereHelperstring{field: "\"birthdays\".\"name\""},
 	DateOfBirth: whereHelpertime_Time{field: "\"birthdays\".\"date_of_birth\""},
 	CreatedAt:   whereHelpernull_Time{field: "\"birthdays\".\"created_at\""},
@@ -236,8 +209,8 @@ type birthdayL struct{}
 
 var (
 	birthdayAllColumns            = []string{"id", "user_id", "name", "date_of_birth", "created_at", "updated_at"}
-	birthdayColumnsWithoutDefault = []string{"name", "date_of_birth"}
-	birthdayColumnsWithDefault    = []string{"id", "user_id", "created_at", "updated_at"}
+	birthdayColumnsWithoutDefault = []string{"user_id", "name", "date_of_birth"}
+	birthdayColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	birthdayPrimaryKeyColumns     = []string{"id"}
 	birthdayGeneratedColumns      = []string{}
 )
@@ -591,9 +564,7 @@ func (birthdayL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 		if object.R == nil {
 			object.R = &birthdayR{}
 		}
-		if !queries.IsNil(object.UserID) {
-			args[object.UserID] = struct{}{}
-		}
+		args[object.UserID] = struct{}{}
 
 	} else {
 		for _, obj := range slice {
@@ -601,9 +572,7 @@ func (birthdayL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 				obj.R = &birthdayR{}
 			}
 
-			if !queries.IsNil(obj.UserID) {
-				args[obj.UserID] = struct{}{}
-			}
+			args[obj.UserID] = struct{}{}
 
 		}
 	}
@@ -668,7 +637,7 @@ func (birthdayL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular 
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if queries.Equal(local.UserID, foreign.ID) {
+			if local.UserID == foreign.ID {
 				local.R.User = foreign
 				if foreign.R == nil {
 					foreign.R = &userR{}
@@ -709,7 +678,7 @@ func (o *Birthday) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	queries.Assign(&o.UserID, related.ID)
+	o.UserID = related.ID
 	if o.R == nil {
 		o.R = &birthdayR{
 			User: related,
@@ -729,39 +698,6 @@ func (o *Birthday) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 	return nil
 }
 
-// RemoveUser relationship.
-// Sets o.R.User to nil.
-// Removes o from all passed in related items' relationships struct.
-func (o *Birthday) RemoveUser(ctx context.Context, exec boil.ContextExecutor, related *User) error {
-	var err error
-
-	queries.SetScanner(&o.UserID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.User = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.Birthdays {
-		if queries.Equal(o.UserID, ri.UserID) {
-			continue
-		}
-
-		ln := len(related.R.Birthdays)
-		if ln > 1 && i < ln-1 {
-			related.R.Birthdays[i] = related.R.Birthdays[ln-1]
-		}
-		related.R.Birthdays = related.R.Birthdays[:ln-1]
-		break
-	}
-	return nil
-}
-
 // Birthdays retrieves all the records using an executor.
 func Birthdays(mods ...qm.QueryMod) birthdayQuery {
 	mods = append(mods, qm.From("\"birthdays\""))
@@ -775,7 +711,7 @@ func Birthdays(mods ...qm.QueryMod) birthdayQuery {
 
 // FindBirthday retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindBirthday(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Birthday, error) {
+func FindBirthday(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*Birthday, error) {
 	birthdayObj := &Birthday{}
 
 	sel := "*"
@@ -1304,7 +1240,7 @@ func (o *BirthdaySlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 }
 
 // BirthdayExists checks if the Birthday row exists.
-func BirthdayExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func BirthdayExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"birthdays\" where \"id\"=$1 limit 1)"
 

@@ -34,3 +34,9 @@ Point to the `.sqlboiler.toml` file
 ```bash
 sqlboiler psql --config .sqlboiler.toml
 ```
+
+## All together
+
+```bash
+migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down && migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up && sqlboiler psql --config .sqlboiler.toml && air
+```

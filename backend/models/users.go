@@ -24,86 +24,152 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID                string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Email             string      `boil:"email" json:"email" toml:"email" yaml:"email"`
-	EncryptionKey     string      `boil:"encryption_key" json:"encryption_key" toml:"encryption_key" yaml:"encryption_key"`
-	BirthdayListID    null.String `boil:"birthday_list_id" json:"birthday_list_id,omitempty" toml:"birthday_list_id" yaml:"birthday_list_id,omitempty"`
-	ReminderTime      time.Time   `boil:"reminder_time" json:"reminder_time" toml:"reminder_time" yaml:"reminder_time"`
-	TelegramBotAPIKey string      `boil:"telegram_bot_api_key" json:"telegram_bot_api_key" toml:"telegram_bot_api_key" yaml:"telegram_bot_api_key"`
-	TelegramUserID    string      `boil:"telegram_user_id" json:"telegram_user_id" toml:"telegram_user_id" yaml:"telegram_user_id"`
-	CreatedAt         null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt         null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	ID                    int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	EmailHash             string    `boil:"email_hash" json:"email_hash" toml:"email_hash" yaml:"email_hash"`
+	EncryptionKey         string    `boil:"encryption_key" json:"encryption_key" toml:"encryption_key" yaml:"encryption_key"`
+	EncryptionKeyHash     string    `boil:"encryption_key_hash" json:"encryption_key_hash" toml:"encryption_key_hash" yaml:"encryption_key_hash"`
+	BirthdayListID        null.Int  `boil:"birthday_list_id" json:"birthday_list_id,omitempty" toml:"birthday_list_id" yaml:"birthday_list_id,omitempty"`
+	ReminderTime          time.Time `boil:"reminder_time" json:"reminder_time" toml:"reminder_time" yaml:"reminder_time"`
+	Timezone              string    `boil:"timezone" json:"timezone" toml:"timezone" yaml:"timezone"`
+	TelegramBotAPIKey     string    `boil:"telegram_bot_api_key" json:"telegram_bot_api_key" toml:"telegram_bot_api_key" yaml:"telegram_bot_api_key"`
+	TelegramBotAPIKeyHash string    `boil:"telegram_bot_api_key_hash" json:"telegram_bot_api_key_hash" toml:"telegram_bot_api_key_hash" yaml:"telegram_bot_api_key_hash"`
+	TelegramUserID        string    `boil:"telegram_user_id" json:"telegram_user_id" toml:"telegram_user_id" yaml:"telegram_user_id"`
+	TelegramUserIDHash    string    `boil:"telegram_user_id_hash" json:"telegram_user_id_hash" toml:"telegram_user_id_hash" yaml:"telegram_user_id_hash"`
+	CreatedAt             null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt             null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var UserColumns = struct {
-	ID                string
-	Email             string
-	EncryptionKey     string
-	BirthdayListID    string
-	ReminderTime      string
-	TelegramBotAPIKey string
-	TelegramUserID    string
-	CreatedAt         string
-	UpdatedAt         string
+	ID                    string
+	EmailHash             string
+	EncryptionKey         string
+	EncryptionKeyHash     string
+	BirthdayListID        string
+	ReminderTime          string
+	Timezone              string
+	TelegramBotAPIKey     string
+	TelegramBotAPIKeyHash string
+	TelegramUserID        string
+	TelegramUserIDHash    string
+	CreatedAt             string
+	UpdatedAt             string
 }{
-	ID:                "id",
-	Email:             "email",
-	EncryptionKey:     "encryption_key",
-	BirthdayListID:    "birthday_list_id",
-	ReminderTime:      "reminder_time",
-	TelegramBotAPIKey: "telegram_bot_api_key",
-	TelegramUserID:    "telegram_user_id",
-	CreatedAt:         "created_at",
-	UpdatedAt:         "updated_at",
+	ID:                    "id",
+	EmailHash:             "email_hash",
+	EncryptionKey:         "encryption_key",
+	EncryptionKeyHash:     "encryption_key_hash",
+	BirthdayListID:        "birthday_list_id",
+	ReminderTime:          "reminder_time",
+	Timezone:              "timezone",
+	TelegramBotAPIKey:     "telegram_bot_api_key",
+	TelegramBotAPIKeyHash: "telegram_bot_api_key_hash",
+	TelegramUserID:        "telegram_user_id",
+	TelegramUserIDHash:    "telegram_user_id_hash",
+	CreatedAt:             "created_at",
+	UpdatedAt:             "updated_at",
 }
 
 var UserTableColumns = struct {
-	ID                string
-	Email             string
-	EncryptionKey     string
-	BirthdayListID    string
-	ReminderTime      string
-	TelegramBotAPIKey string
-	TelegramUserID    string
-	CreatedAt         string
-	UpdatedAt         string
+	ID                    string
+	EmailHash             string
+	EncryptionKey         string
+	EncryptionKeyHash     string
+	BirthdayListID        string
+	ReminderTime          string
+	Timezone              string
+	TelegramBotAPIKey     string
+	TelegramBotAPIKeyHash string
+	TelegramUserID        string
+	TelegramUserIDHash    string
+	CreatedAt             string
+	UpdatedAt             string
 }{
-	ID:                "users.id",
-	Email:             "users.email",
-	EncryptionKey:     "users.encryption_key",
-	BirthdayListID:    "users.birthday_list_id",
-	ReminderTime:      "users.reminder_time",
-	TelegramBotAPIKey: "users.telegram_bot_api_key",
-	TelegramUserID:    "users.telegram_user_id",
-	CreatedAt:         "users.created_at",
-	UpdatedAt:         "users.updated_at",
+	ID:                    "users.id",
+	EmailHash:             "users.email_hash",
+	EncryptionKey:         "users.encryption_key",
+	EncryptionKeyHash:     "users.encryption_key_hash",
+	BirthdayListID:        "users.birthday_list_id",
+	ReminderTime:          "users.reminder_time",
+	Timezone:              "users.timezone",
+	TelegramBotAPIKey:     "users.telegram_bot_api_key",
+	TelegramBotAPIKeyHash: "users.telegram_bot_api_key_hash",
+	TelegramUserID:        "users.telegram_user_id",
+	TelegramUserIDHash:    "users.telegram_user_id_hash",
+	CreatedAt:             "users.created_at",
+	UpdatedAt:             "users.updated_at",
 }
 
 // Generated where
 
+type whereHelpernull_Int struct{ field string }
+
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var UserWhere = struct {
-	ID                whereHelperstring
-	Email             whereHelperstring
-	EncryptionKey     whereHelperstring
-	BirthdayListID    whereHelpernull_String
-	ReminderTime      whereHelpertime_Time
-	TelegramBotAPIKey whereHelperstring
-	TelegramUserID    whereHelperstring
-	CreatedAt         whereHelpernull_Time
-	UpdatedAt         whereHelpernull_Time
+	ID                    whereHelperint
+	EmailHash             whereHelperstring
+	EncryptionKey         whereHelperstring
+	EncryptionKeyHash     whereHelperstring
+	BirthdayListID        whereHelpernull_Int
+	ReminderTime          whereHelpertime_Time
+	Timezone              whereHelperstring
+	TelegramBotAPIKey     whereHelperstring
+	TelegramBotAPIKeyHash whereHelperstring
+	TelegramUserID        whereHelperstring
+	TelegramUserIDHash    whereHelperstring
+	CreatedAt             whereHelpernull_Time
+	UpdatedAt             whereHelpernull_Time
 }{
-	ID:                whereHelperstring{field: "\"users\".\"id\""},
-	Email:             whereHelperstring{field: "\"users\".\"email\""},
-	EncryptionKey:     whereHelperstring{field: "\"users\".\"encryption_key\""},
-	BirthdayListID:    whereHelpernull_String{field: "\"users\".\"birthday_list_id\""},
-	ReminderTime:      whereHelpertime_Time{field: "\"users\".\"reminder_time\""},
-	TelegramBotAPIKey: whereHelperstring{field: "\"users\".\"telegram_bot_api_key\""},
-	TelegramUserID:    whereHelperstring{field: "\"users\".\"telegram_user_id\""},
-	CreatedAt:         whereHelpernull_Time{field: "\"users\".\"created_at\""},
-	UpdatedAt:         whereHelpernull_Time{field: "\"users\".\"updated_at\""},
+	ID:                    whereHelperint{field: "\"users\".\"id\""},
+	EmailHash:             whereHelperstring{field: "\"users\".\"email_hash\""},
+	EncryptionKey:         whereHelperstring{field: "\"users\".\"encryption_key\""},
+	EncryptionKeyHash:     whereHelperstring{field: "\"users\".\"encryption_key_hash\""},
+	BirthdayListID:        whereHelpernull_Int{field: "\"users\".\"birthday_list_id\""},
+	ReminderTime:          whereHelpertime_Time{field: "\"users\".\"reminder_time\""},
+	Timezone:              whereHelperstring{field: "\"users\".\"timezone\""},
+	TelegramBotAPIKey:     whereHelperstring{field: "\"users\".\"telegram_bot_api_key\""},
+	TelegramBotAPIKeyHash: whereHelperstring{field: "\"users\".\"telegram_bot_api_key_hash\""},
+	TelegramUserID:        whereHelperstring{field: "\"users\".\"telegram_user_id\""},
+	TelegramUserIDHash:    whereHelperstring{field: "\"users\".\"telegram_user_id_hash\""},
+	CreatedAt:             whereHelpernull_Time{field: "\"users\".\"created_at\""},
+	UpdatedAt:             whereHelpernull_Time{field: "\"users\".\"updated_at\""},
 }
 
 // UserRels is where relationship names are stored.
@@ -134,8 +200,8 @@ func (r *userR) GetBirthdays() BirthdaySlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email", "encryption_key", "birthday_list_id", "reminder_time", "telegram_bot_api_key", "telegram_user_id", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"email", "encryption_key", "reminder_time", "telegram_bot_api_key", "telegram_user_id"}
+	userAllColumns            = []string{"id", "email_hash", "encryption_key", "encryption_key_hash", "birthday_list_id", "reminder_time", "timezone", "telegram_bot_api_key", "telegram_bot_api_key_hash", "telegram_user_id", "telegram_user_id_hash", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"email_hash", "encryption_key", "encryption_key_hash", "reminder_time", "timezone", "telegram_bot_api_key", "telegram_bot_api_key_hash", "telegram_user_id", "telegram_user_id_hash"}
 	userColumnsWithDefault    = []string{"id", "birthday_list_id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
@@ -559,7 +625,7 @@ func (userL) LoadBirthdays(ctx context.Context, e boil.ContextExecutor, singular
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.UserID) {
+			if local.ID == foreign.UserID {
 				local.R.Birthdays = append(local.R.Birthdays, foreign)
 				if foreign.R == nil {
 					foreign.R = &birthdayR{}
@@ -581,7 +647,7 @@ func (o *User) AddBirthdays(ctx context.Context, exec boil.ContextExecutor, inse
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
@@ -602,7 +668,7 @@ func (o *User) AddBirthdays(ctx context.Context, exec boil.ContextExecutor, inse
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.UserID, o.ID)
+			rel.UserID = o.ID
 		}
 	}
 
@@ -626,80 +692,6 @@ func (o *User) AddBirthdays(ctx context.Context, exec boil.ContextExecutor, inse
 	return nil
 }
 
-// SetBirthdays removes all previously related items of the
-// user replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.User's Birthdays accordingly.
-// Replaces o.R.Birthdays with related.
-// Sets related.R.User's Birthdays accordingly.
-func (o *User) SetBirthdays(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Birthday) error {
-	query := "update \"birthdays\" set \"user_id\" = null where \"user_id\" = $1"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.Birthdays {
-			queries.SetScanner(&rel.UserID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.User = nil
-		}
-		o.R.Birthdays = nil
-	}
-
-	return o.AddBirthdays(ctx, exec, insert, related...)
-}
-
-// RemoveBirthdays relationships from objects passed in.
-// Removes related items from R.Birthdays (uses pointer comparison, removal does not keep order)
-// Sets related.R.User.
-func (o *User) RemoveBirthdays(ctx context.Context, exec boil.ContextExecutor, related ...*Birthday) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.UserID, nil)
-		if rel.R != nil {
-			rel.R.User = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("user_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Birthdays {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Birthdays)
-			if ln > 1 && i < ln-1 {
-				o.R.Birthdays[i] = o.R.Birthdays[ln-1]
-			}
-			o.R.Birthdays = o.R.Birthdays[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
 // Users retrieves all the records using an executor.
 func Users(mods ...qm.QueryMod) userQuery {
 	mods = append(mods, qm.From("\"users\""))
@@ -713,7 +705,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*User, error) {
+func FindUser(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -1242,7 +1234,7 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func UserExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"users\" where \"id\"=$1 limit 1)"
 

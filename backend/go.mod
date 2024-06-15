@@ -6,6 +6,7 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.10.9
 	github.com/spf13/viper v1.12.0
@@ -14,6 +15,7 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
 	github.com/volatiletech/strmangle v0.0.6
 	golang.org/x/crypto v0.24.0
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 )
 
 require (

@@ -2,6 +2,7 @@ package encryption
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 
@@ -56,4 +57,11 @@ func Decrypt(encryptionKey string, ciphertextHex string) (string, error) {
 	}
 
 	return string(plaintext), nil
+}
+
+// hashing using SHA-256
+func HashStringWithSHA256(str string) string {
+	hash := sha256.New()
+	hash.Write([]byte(str))
+	return hex.EncodeToString(hash.Sum(nil))
 }
