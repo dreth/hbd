@@ -687,7 +687,7 @@ func testBirthdaysSelect(t *testing.T) {
 }
 
 var (
-	birthdayDBTypes = map[string]string{`ID`: `integer`, `UserID`: `integer`, `Name`: `text`, `DateOfBirth`: `date`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`}
+	birthdayDBTypes = map[string]string{`ID`: `integer`, `UserID`: `integer`, `Name`: `text`, `Date`: `date`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`}
 	_               = bytes.MinRead
 )
 

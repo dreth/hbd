@@ -28,7 +28,6 @@ type User struct {
 	EmailHash             string    `boil:"email_hash" json:"email_hash" toml:"email_hash" yaml:"email_hash"`
 	EncryptionKey         string    `boil:"encryption_key" json:"encryption_key" toml:"encryption_key" yaml:"encryption_key"`
 	EncryptionKeyHash     string    `boil:"encryption_key_hash" json:"encryption_key_hash" toml:"encryption_key_hash" yaml:"encryption_key_hash"`
-	BirthdayListID        null.Int  `boil:"birthday_list_id" json:"birthday_list_id,omitempty" toml:"birthday_list_id" yaml:"birthday_list_id,omitempty"`
 	ReminderTime          time.Time `boil:"reminder_time" json:"reminder_time" toml:"reminder_time" yaml:"reminder_time"`
 	Timezone              string    `boil:"timezone" json:"timezone" toml:"timezone" yaml:"timezone"`
 	TelegramBotAPIKey     string    `boil:"telegram_bot_api_key" json:"telegram_bot_api_key" toml:"telegram_bot_api_key" yaml:"telegram_bot_api_key"`
@@ -47,7 +46,6 @@ var UserColumns = struct {
 	EmailHash             string
 	EncryptionKey         string
 	EncryptionKeyHash     string
-	BirthdayListID        string
 	ReminderTime          string
 	Timezone              string
 	TelegramBotAPIKey     string
@@ -61,7 +59,6 @@ var UserColumns = struct {
 	EmailHash:             "email_hash",
 	EncryptionKey:         "encryption_key",
 	EncryptionKeyHash:     "encryption_key_hash",
-	BirthdayListID:        "birthday_list_id",
 	ReminderTime:          "reminder_time",
 	Timezone:              "timezone",
 	TelegramBotAPIKey:     "telegram_bot_api_key",
@@ -77,7 +74,6 @@ var UserTableColumns = struct {
 	EmailHash             string
 	EncryptionKey         string
 	EncryptionKeyHash     string
-	BirthdayListID        string
 	ReminderTime          string
 	Timezone              string
 	TelegramBotAPIKey     string
@@ -91,7 +87,6 @@ var UserTableColumns = struct {
 	EmailHash:             "users.email_hash",
 	EncryptionKey:         "users.encryption_key",
 	EncryptionKeyHash:     "users.encryption_key_hash",
-	BirthdayListID:        "users.birthday_list_id",
 	ReminderTime:          "users.reminder_time",
 	Timezone:              "users.timezone",
 	TelegramBotAPIKey:     "users.telegram_bot_api_key",
@@ -104,50 +99,11 @@ var UserTableColumns = struct {
 
 // Generated where
 
-type whereHelpernull_Int struct{ field string }
-
-func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-
 var UserWhere = struct {
 	ID                    whereHelperint
 	EmailHash             whereHelperstring
 	EncryptionKey         whereHelperstring
 	EncryptionKeyHash     whereHelperstring
-	BirthdayListID        whereHelpernull_Int
 	ReminderTime          whereHelpertime_Time
 	Timezone              whereHelperstring
 	TelegramBotAPIKey     whereHelperstring
@@ -161,7 +117,6 @@ var UserWhere = struct {
 	EmailHash:             whereHelperstring{field: "\"users\".\"email_hash\""},
 	EncryptionKey:         whereHelperstring{field: "\"users\".\"encryption_key\""},
 	EncryptionKeyHash:     whereHelperstring{field: "\"users\".\"encryption_key_hash\""},
-	BirthdayListID:        whereHelpernull_Int{field: "\"users\".\"birthday_list_id\""},
 	ReminderTime:          whereHelpertime_Time{field: "\"users\".\"reminder_time\""},
 	Timezone:              whereHelperstring{field: "\"users\".\"timezone\""},
 	TelegramBotAPIKey:     whereHelperstring{field: "\"users\".\"telegram_bot_api_key\""},
@@ -200,9 +155,9 @@ func (r *userR) GetBirthdays() BirthdaySlice {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "email_hash", "encryption_key", "encryption_key_hash", "birthday_list_id", "reminder_time", "timezone", "telegram_bot_api_key", "telegram_bot_api_key_hash", "telegram_user_id", "telegram_user_id_hash", "created_at", "updated_at"}
+	userAllColumns            = []string{"id", "email_hash", "encryption_key", "encryption_key_hash", "reminder_time", "timezone", "telegram_bot_api_key", "telegram_bot_api_key_hash", "telegram_user_id", "telegram_user_id_hash", "created_at", "updated_at"}
 	userColumnsWithoutDefault = []string{"email_hash", "encryption_key", "encryption_key_hash", "reminder_time", "timezone", "telegram_bot_api_key", "telegram_bot_api_key_hash", "telegram_user_id", "telegram_user_id_hash"}
-	userColumnsWithDefault    = []string{"id", "birthday_list_id", "created_at", "updated_at"}
+	userColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
 )

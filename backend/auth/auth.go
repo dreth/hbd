@@ -7,6 +7,7 @@ import (
 	"hbd/env"
 	"hbd/helper"
 	"hbd/models"
+	"hbd/structs"
 	"net/http"
 	"time"
 
@@ -24,16 +25,8 @@ func GetEncryptionKey(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-	type RegisterRequest struct {
-		EncryptionKey     string `json:"encryption_key" binding:"required"`
-		Email             string `json:"email" binding:"required"`
-		ReminderTime      string `json:"reminder_time" binding:"required"`
-		Timezone          string `json:"timezone" binding:"required"`
-		TelegramBotAPIKey string `json:"telegram_bot_api_key" binding:"required"`
-		TelegramUserID    string `json:"telegram_user_id" binding:"required"`
-	}
 
-	var req RegisterRequest
+	var req structs.RegisterRequest
 	err := c.ShouldBindJSON(&req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
@@ -128,10 +121,8 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	type LoginRequest struct {
-		EncryptionKey string `json:"encryption_key" binding:"required"`
-	}
-	var req LoginRequest
+
+	var req structs.LoginRequest
 	err := c.ShouldBindJSON(&req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
@@ -197,22 +188,14 @@ func DeleteUser(c *gin.Context) {
 }
 
 func ModifyUser(c *gin.Context) {
-	type ModifyUserRequest struct {
-		EncryptionKey     string `json:"encryption_key" binding:"required"`
-		Email             string `json:"email"`
-		ReminderTime      string `json:"reminder_time" binding:"required"`
-		Timezone          string `json:"timezone" binding:"required"`
-		TelegramBotAPIKey string `json:"telegram_bot_api_key" binding:"required"`
-		TelegramUserID    string `json:"telegram_user_id" binding:"required"`
-	}
-	var req ModifyUserRequest
+
+	var req structs.ModifyUserRequest
 	err := c.ShouldBindJSON(&req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
 	}
 
 	// Fetch the user with the given encryption key
-	println(encryption.HashStringWithSHA256(req.EncryptionKey))
 	user, err := models.Users(models.UserWhere.EncryptionKeyHash.EQ(encryption.HashStringWithSHA256(req.EncryptionKey))).One(c, env.DB)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
 		return
@@ -238,6 +221,12 @@ func ModifyUser(c *gin.Context) {
 	telegramUserIDHash := encryption.HashStringWithSHA256(req.TelegramUserID)
 	encryptedUserID, err := encryption.Encrypt(env.MK, req.TelegramUserID)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt Telegram user ID", false) {
+		return
+	}
+
+	// get the birthdays by user id
+	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID)).All(c, env.DB)
+	if helper.HE(c, err, http.StatusInternalServerError, "Failed to fetch birthdays", false) {
 		return
 	}
 

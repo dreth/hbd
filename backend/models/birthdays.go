@@ -24,47 +24,47 @@ import (
 
 // Birthday is an object representing the database table.
 type Birthday struct {
-	ID          int       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID      int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
-	Name        string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	DateOfBirth time.Time `boil:"date_of_birth" json:"date_of_birth" toml:"date_of_birth" yaml:"date_of_birth"`
-	CreatedAt   null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt   null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	UserID    int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Date      time.Time `boil:"date" json:"date" toml:"date" yaml:"date"`
+	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 
 	R *birthdayR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L birthdayL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var BirthdayColumns = struct {
-	ID          string
-	UserID      string
-	Name        string
-	DateOfBirth string
-	CreatedAt   string
-	UpdatedAt   string
+	ID        string
+	UserID    string
+	Name      string
+	Date      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:          "id",
-	UserID:      "user_id",
-	Name:        "name",
-	DateOfBirth: "date_of_birth",
-	CreatedAt:   "created_at",
-	UpdatedAt:   "updated_at",
+	ID:        "id",
+	UserID:    "user_id",
+	Name:      "name",
+	Date:      "date",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
 }
 
 var BirthdayTableColumns = struct {
-	ID          string
-	UserID      string
-	Name        string
-	DateOfBirth string
-	CreatedAt   string
-	UpdatedAt   string
+	ID        string
+	UserID    string
+	Name      string
+	Date      string
+	CreatedAt string
+	UpdatedAt string
 }{
-	ID:          "birthdays.id",
-	UserID:      "birthdays.user_id",
-	Name:        "birthdays.name",
-	DateOfBirth: "birthdays.date_of_birth",
-	CreatedAt:   "birthdays.created_at",
-	UpdatedAt:   "birthdays.updated_at",
+	ID:        "birthdays.id",
+	UserID:    "birthdays.user_id",
+	Name:      "birthdays.name",
+	Date:      "birthdays.date",
+	CreatedAt: "birthdays.created_at",
+	UpdatedAt: "birthdays.updated_at",
 }
 
 // Generated where
@@ -165,19 +165,19 @@ func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsN
 func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var BirthdayWhere = struct {
-	ID          whereHelperint
-	UserID      whereHelperint
-	Name        whereHelperstring
-	DateOfBirth whereHelpertime_Time
-	CreatedAt   whereHelpernull_Time
-	UpdatedAt   whereHelpernull_Time
+	ID        whereHelperint
+	UserID    whereHelperint
+	Name      whereHelperstring
+	Date      whereHelpertime_Time
+	CreatedAt whereHelpernull_Time
+	UpdatedAt whereHelpernull_Time
 }{
-	ID:          whereHelperint{field: "\"birthdays\".\"id\""},
-	UserID:      whereHelperint{field: "\"birthdays\".\"user_id\""},
-	Name:        whereHelperstring{field: "\"birthdays\".\"name\""},
-	DateOfBirth: whereHelpertime_Time{field: "\"birthdays\".\"date_of_birth\""},
-	CreatedAt:   whereHelpernull_Time{field: "\"birthdays\".\"created_at\""},
-	UpdatedAt:   whereHelpernull_Time{field: "\"birthdays\".\"updated_at\""},
+	ID:        whereHelperint{field: "\"birthdays\".\"id\""},
+	UserID:    whereHelperint{field: "\"birthdays\".\"user_id\""},
+	Name:      whereHelperstring{field: "\"birthdays\".\"name\""},
+	Date:      whereHelpertime_Time{field: "\"birthdays\".\"date\""},
+	CreatedAt: whereHelpernull_Time{field: "\"birthdays\".\"created_at\""},
+	UpdatedAt: whereHelpernull_Time{field: "\"birthdays\".\"updated_at\""},
 }
 
 // BirthdayRels is where relationship names are stored.
@@ -208,8 +208,8 @@ func (r *birthdayR) GetUser() *User {
 type birthdayL struct{}
 
 var (
-	birthdayAllColumns            = []string{"id", "user_id", "name", "date_of_birth", "created_at", "updated_at"}
-	birthdayColumnsWithoutDefault = []string{"user_id", "name", "date_of_birth"}
+	birthdayAllColumns            = []string{"id", "user_id", "name", "date", "created_at", "updated_at"}
+	birthdayColumnsWithoutDefault = []string{"user_id", "name", "date"}
 	birthdayColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	birthdayPrimaryKeyColumns     = []string{"id"}
 	birthdayGeneratedColumns      = []string{}

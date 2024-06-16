@@ -3,7 +3,6 @@ CREATE TABLE users (
     email_hash TEXT NOT NULL UNIQUE,
     encryption_key TEXT NOT NULL UNIQUE,
     encryption_key_hash TEXT NOT NULL UNIQUE,
-    birthday_list_id INTEGER,
     reminder_time TIME WITH TIME ZONE NOT NULL,
     timezone TEXT NOT NULL,
     telegram_bot_api_key TEXT NOT NULL,
