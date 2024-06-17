@@ -26,7 +26,7 @@ func main() {
 	router.POST("/register", auth.Register)
 	router.POST("/login", auth.Login)
 	router.DELETE("/delete-user", auth.DeleteUser)
-	router.PATCH("/modify-user", auth.ModifyUser)
+	router.PUT("/modify-user", auth.ModifyUser)
 	router.GET("/generate-encryption-key", auth.GetEncryptionKey)
 	router.GET("/birthdays", birthdays.CallReminderChecker)
 
