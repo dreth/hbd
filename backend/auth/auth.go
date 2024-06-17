@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func GetEncryptionKey(c *gin.Context) {
@@ -145,13 +146,23 @@ func Login(c *gin.Context) {
 	}
 
 	// show reminder time in the user's designated timezone
-	reminderTime := user.ReminderTime.In(time.FixedZone(user.Timezone, 0))
+	reminderTime := user.ReminderTime.In(time.FixedZone(user.Timezone, 0)).Format("15:04")
 
 	// send the entire birthday list
 	// find the birthdays by user id
-	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID)).All(c, env.DB)
+	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID), qm.Select("name", "date")).All(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to fetch birthdays", false) {
 		return
+	}
+
+	// Create a new slice to hold the filtered birthday data
+	var filteredBirthdays []map[string]interface{}
+
+	for _, birthday := range birthdays {
+		filteredBirthdays = append(filteredBirthdays, map[string]interface{}{
+			"name": birthday.Name,
+			"date": birthday.Date.Format("2006-01-02"),
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -159,7 +170,7 @@ func Login(c *gin.Context) {
 		"telegram_user_id":     decryptedUserID,
 		"reminder_time":        reminderTime,
 		"timezone":             user.Timezone,
-		"birthdays":            birthdays,
+		"birthdays":            filteredBirthdays,
 	})
 }
 
@@ -242,6 +253,40 @@ func ModifyUser(c *gin.Context) {
 	user.TelegramBotAPIKeyHash = telegramBotAPIKeyHash
 	user.TelegramUserID = hex.EncodeToString(encryptedUserID)
 	user.TelegramUserIDHash = telegramUserIDHash
+
+	// add the birthdays received to the DB
+	for _, birthday := range req.Birthdays {
+		// check if the birthday already exists
+		exists, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID), models.BirthdayWhere.Name.EQ(birthday.Name)).Exists(c, env.DB)
+		if helper.HE(c, err, http.StatusInternalServerError, "Failed to check existing birthday", false) {
+			return
+		}
+		if exists {
+			c.JSON(http.StatusConflict, gin.H{"error": "Birthday already exists"})
+			return
+		}
+
+		// parse the date
+		date, err := time.Parse("2006-01-02", birthday.Date)
+		if helper.HE(c, err, http.StatusBadRequest, "Invalid date format", false) {
+			return
+		}
+
+		// add the birthday to the DB
+		b := models.Birthday{
+			UserID: user.ID,
+			Name:   birthday.Name,
+			Date:   date,
+		}
+
+		err = b.Insert(c, env.DB, boil.Infer())
+		if helper.HE(c, err, http.StatusInternalServerError, "Failed to add birthday", false) {
+			return
+		}
+
+		// append the birthday to the list
+		birthdays = append(birthdays, &b)
+	}
 
 	_, err = user.Update(c, env.DB, boil.Infer())
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to update user", false) {

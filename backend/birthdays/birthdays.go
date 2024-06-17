@@ -18,7 +18,7 @@ func CallReminderChecker(c *gin.Context) {
 
 // checkReminders runs periodically to check for user reminders.
 func CheckReminders() {
-	println("Checking reminders")
+	fmt.Sprintf("Checking reminders. Timestamp: %s", time.Now().UTC())
 	// now := time.Now().UTC()
 	// query := `
 	//     SELECT id, telegram_bot_api_key, telegram_user_id FROM users
@@ -57,8 +57,8 @@ func CheckReminders() {
 // sendBirthdayReminder sends birthday reminders to the user via Telegram.
 func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	query := `
-        SELECT name, date_of_birth FROM birthdays 
-        WHERE user_id = $1 AND EXTRACT(MONTH FROM date_of_birth) = $2 AND EXTRACT(DAY FROM date_of_birth) = $3
+        SELECT name, date FROM birthdays 
+        WHERE user_id = $1 AND EXTRACT(MONTH FROM date) = $2 AND EXTRACT(DAY FROM date) = $3
     `
 
 	now := time.Now().UTC()
@@ -72,14 +72,14 @@ func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	var birthdays []string
 	for rows.Next() {
 		var name string
-		var dateOfBirth time.Time
-		if err := rows.Scan(&name, &dateOfBirth); err != nil {
+		var date time.Time
+		if err := rows.Scan(&name, &date); err != nil {
 			log.Println("Error scanning birthday:", err)
 			continue
 		}
 
-		age := now.Year() - dateOfBirth.Year()
-		if now.Month() < dateOfBirth.Month() || (now.Month() == dateOfBirth.Month() && now.Day() < dateOfBirth.Day()) {
+		age := now.Year() - date.Year()
+		if now.Month() < date.Month() || (now.Month() == date.Month() && now.Day() < date.Day()) {
 			age--
 		}
 
