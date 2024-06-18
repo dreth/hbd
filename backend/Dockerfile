@@ -1,24 +1,36 @@
+# Use the same Go version for consistency
 FROM golang:1.22.4-alpine AS builder
 
-# Move to working directory (/build).
+# Install git - required for fetching go dependencies.
+RUN apk add --no-cache git
+
 WORKDIR /build
 
-# Copy and download dependency using go mod.
+# Copy go mod and sum files
 COPY go.mod go.sum ./
+
+# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
-# Copy the code into the container.
+# Copy the source code into the container
 COPY . .
 
-# Set necessary environment variables needed for our image and build the API server.
+# Set necessary environmet for building the Go application
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+
+# Build the Go app
 RUN go build -ldflags="-s -w" -o main .
 
+# Build migrate tool
+RUN go get -tags 'postgres' -u github.com/golang-migrate/migrate/v4/cmd/migrate/
+
+# Start a new stage from scratch
 FROM scratch
 
-# Copy binary and config files from /build to root folder of scratch container.
+# Copy the Pre-built binary file from the previous stage
 COPY --from=builder /build/main .
+COPY --from=builder /go/bin/migrate /usr/local/bin/migrate
 COPY ./migrations /migrations
 
-# Command to run when starting the container.
-ENTRYPOINT ["migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path /migrations up", "/main"]
+# Command to run
+ENTRYPOINT ["/usr/local/bin/migrate", "-database", "postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable", "-path", "/migrations", "up", "/main"]
