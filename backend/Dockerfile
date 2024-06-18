@@ -18,6 +18,7 @@ FROM scratch
 
 # Copy binary and config files from /build to root folder of scratch container.
 COPY --from=builder /build/main .
+COPY ./migrations /migrations
 
 # Command to run when starting the container.
-ENTRYPOINT ["migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up", "/main"]
+ENTRYPOINT ["migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path /migrations up", "/main"]
