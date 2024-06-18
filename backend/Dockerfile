@@ -20,4 +20,4 @@ FROM scratch
 COPY --from=builder /build/main .
 
 # Command to run when starting the container.
-ENTRYPOINT ["/main"]
+ENTRYPOINT ["migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up", "/main"]
