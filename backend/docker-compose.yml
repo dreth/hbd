@@ -10,6 +10,21 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "6684:5432"
+  
+  hbd-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hbd-backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres?sslmode=disable
+      - MASTER_KEY="35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5"
 
 networks:
   default:
