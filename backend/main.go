@@ -7,6 +7,7 @@ import (
 
 	"hbd/auth"
 	"hbd/birthdays"
+	"hbd/db"
 	"hbd/env"
 	"hbd/middlewares"
 )
@@ -17,6 +18,7 @@ func main() {
 	c.Start()
 
 	boil.SetDB(env.DB)
+	db.RunMigrations(env.DB)
 
 	router := gin.Default()
 
