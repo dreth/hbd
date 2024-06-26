@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"hbd/encryption"
 	"hbd/env"
 	"hbd/helper"
+	"hbd/structs"
 
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -16,10 +18,22 @@ import (
 
 // CallReminderChecker is a route handler to check for user reminders through a POST request.
 func CallReminderChecker(c *gin.Context) {
-	rows, err := queryWithoutTime()
-	if helper.HE(c, err, 500, "Error querying users", false) {
+	var req structs.LoginRequest
+	err := c.ShouldBindJSON(&req)
+	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
 	}
+
+	// Hash the email and encryption key
+	emailHash := encryption.HashStringWithSHA256(req.Email)
+	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
+
+	// Run the query with the hashed email and encryption key
+	rows, err := queryWithoutTime(emailHash, encryptionKeyHash)
+	if helper.HE(c, err, http.StatusInternalServerError, "Error querying users", false) {
+		return
+	}
+
 	remindBirthdays(rows)
 }
 
@@ -57,7 +71,6 @@ func remindBirthdays(rows *sql.Rows) {
 	}
 }
 
-
 // Query with time
 func queryWithTime(time time.Time) (*sql.Rows, error) {
 	log.Printf("Checking reminders. Timestamp: %s", time)
@@ -76,10 +89,14 @@ func queryWithTime(time time.Time) (*sql.Rows, error) {
 }
 
 // Query without time
-func queryWithoutTime() (*sql.Rows, error) {
+func queryWithoutTime(email_hash, encryption_key_hash string) (*sql.Rows, error) {
 	log.Printf("Checking reminders. Timestamp: %s", time.Now().UTC())
-	query := "SELECT id, telegram_bot_api_key, telegram_user_id FROM users"
-	rows, err := env.DB.Query(query)
+	query := `
+		SELECT id, telegram_bot_api_key, telegram_user_id 
+		FROM users 
+		WHERE email_hash = $1 AND encryption_key_hash = $2
+	`
+	rows, err := env.DB.Query(query, email_hash, encryption_key_hash)
 	if err != nil {
 		log.Println("Error querying users:", err)
 		return nil, err

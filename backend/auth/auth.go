@@ -122,16 +122,22 @@ func Register(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-
 	var req structs.LoginRequest
 	err := c.ShouldBindJSON(&req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
 	}
 
-	// Fetch the user with the given encryption key
-	user, err := models.Users(models.UserWhere.EncryptionKeyHash.EQ(encryption.HashStringWithSHA256(req.EncryptionKey))).One(c, env.DB)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
+	// Hash the email and encryption key
+	emailHash := encryption.HashStringWithSHA256(req.Email)
+	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
+
+	// Fetch the user with the given encryption key and email hash
+	user, err := models.Users(
+		models.UserWhere.EmailHash.EQ(emailHash),
+		models.UserWhere.EncryptionKeyHash.EQ(encryptionKeyHash),
+	).One(c, env.DB)
+	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
 		return
 	}
 
@@ -145,11 +151,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// show reminder time in the user's designated timezone
+	// Show reminder time in the user's designated timezone
 	reminderTime := user.ReminderTime.In(time.FixedZone(user.Timezone, 0)).Format("15:04")
 
-	// send the entire birthday list
-	// find the birthdays by user id
+	// Find the birthdays by user id
 	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID), qm.Select("name", "date")).All(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to fetch birthdays", false) {
 		return
@@ -175,16 +180,22 @@ func Login(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-
 	var req structs.LoginRequest
 	err := c.ShouldBindJSON(&req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
 	}
 
-	// Fetch the user with the given encryption key
-	user, err := models.Users(models.UserWhere.EncryptionKeyHash.EQ(encryption.HashStringWithSHA256(req.EncryptionKey))).One(c, env.DB)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
+	// Hash the email and encryption key
+	emailHash := encryption.HashStringWithSHA256(req.Email)
+	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
+
+	// Fetch the user with the given encryption key and email hash
+	user, err := models.Users(
+		models.UserWhere.EmailHash.EQ(emailHash),
+		models.UserWhere.EncryptionKeyHash.EQ(encryptionKeyHash),
+	).One(c, env.DB)
+	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
 		return
 	}
 
