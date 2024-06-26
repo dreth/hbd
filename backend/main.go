@@ -34,7 +34,7 @@ func main() {
 	router.DELETE("/delete-user", auth.DeleteUser)
 	router.PUT("/modify-user", auth.ModifyUser)
 	router.GET("/generate-encryption-key", auth.GetEncryptionKey)
-	router.GET("/birthdays", birthdays.CallReminderChecker)
+	router.POST("/check-birthdays", birthdays.CallReminderChecker)
 
 	// Run the server
 	router.Run(":8417")

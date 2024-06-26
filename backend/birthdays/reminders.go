@@ -1,38 +1,41 @@
 package birthdays
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
 
 	"hbd/encryption"
 	"hbd/env"
+	"hbd/helper"
 
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+// CallReminderChecker is a route handler to check for user reminders through a POST request.
 func CallReminderChecker(c *gin.Context) {
-	CheckReminders()
+	rows, err := queryWithoutTime()
+	if helper.HE(c, err, 500, "Error querying users", false) {
+		return
+	}
+	remindBirthdays(rows)
 }
 
-// checkReminders runs periodically to check for user reminders.
+// CheckReminders runs periodically to check for user reminders.
 func CheckReminders() {
-	fmt.Sprintf("Checking reminders. Timestamp: %s", time.Now().UTC())
-	// now := time.Now().UTC()
-	// query := `
-	//     SELECT id, telegram_bot_api_key, telegram_user_id FROM users
-	//     WHERE reminder_time = $1
-	// `
-
-	// rows, err := env.DB.Query(query, now.Format("15:04"))
-	rows, err := env.DB.Query("select id, telegram_bot_api_key, telegram_user_id from users")
+	now := time.Now().UTC()
+	rows, err := queryWithTime(now)
 	if err != nil {
 		log.Println("Error querying users:", err)
 		return
 	}
-	defer rows.Close()
+	remindBirthdays(rows)
+}
 
+// remindBirthdays
+func remindBirthdays(rows *sql.Rows) {
 	var userId int
 	var encryptedBotAPIKey, encryptedUserID string
 	for rows.Next() {
@@ -52,6 +55,38 @@ func CheckReminders() {
 		}
 		sendBirthdayReminder(userId, botAPIKey, userID)
 	}
+}
+
+
+// Query with time
+func queryWithTime(time time.Time) (*sql.Rows, error) {
+	log.Printf("Checking reminders. Timestamp: %s", time)
+	query := `
+	    SELECT id, telegram_bot_api_key, telegram_user_id FROM users
+	    WHERE reminder_time = $1
+	`
+	rows, err := env.DB.Query(query, time.Format("15:04"))
+	if err != nil {
+		log.Println("Error querying users:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	return rows, nil
+}
+
+// Query without time
+func queryWithoutTime() (*sql.Rows, error) {
+	log.Printf("Checking reminders. Timestamp: %s", time.Now().UTC())
+	query := "SELECT id, telegram_bot_api_key, telegram_user_id FROM users"
+	rows, err := env.DB.Query(query)
+	if err != nil {
+		log.Println("Error querying users:", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	return rows, nil
 }
 
 // sendBirthdayReminder sends birthday reminders to the user via Telegram.
@@ -78,24 +113,23 @@ func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 			continue
 		}
 
-		age := now.Year() - date.Year()
-		if now.Month() < date.Month() || (now.Month() == date.Month() && now.Day() < date.Day()) {
-			age--
+		// Calculate age only if the year is not 0000
+		var ageStr string
+		if date.Year() != 0 && date.Year() != now.Year() {
+			age := now.Year() - date.Year()
+			if now.Month() < date.Month() || (now.Month() == date.Month() && now.Day() < date.Day()) {
+				age--
+			}
+			ageStr = fmt.Sprintf(" - Turns %d", age)
 		}
 
-		birthdays = append(birthdays, fmt.Sprintf("> %s - Turns %d", name, age))
+		birthdays = append(birthdays, fmt.Sprintf("> %s%s", name, ageStr))
 	}
 
 	if len(birthdays) > 0 {
-		reminder := fmt.Sprintf("🎂 Birthdays for today: %s\n%s", now.Format("2006-01-02"), formatBirthdays(birthdays))
-		log.Println(reminder)
+		reminder := fmt.Sprintf("🎂 Birthdays for today: %s\n\n%s", now.Format("2006-01-02"), helper.JoinStrings(birthdays, "\n"))
 		sendTelegramMessage(botAPIKey, telegramUserID, reminder)
 	}
-}
-
-// formatBirthdays formats the birthday list into a single string.
-func formatBirthdays(birthdays []string) string {
-	return fmt.Sprintf("%s", birthdays)
 }
 
 // sendTelegramMessage sends a message via the Telegram bot API.

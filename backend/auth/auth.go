@@ -188,8 +188,6 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 
-	
-
 	_, err = user.Delete(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false) {
 		return
@@ -242,11 +240,13 @@ func ModifyUser(c *gin.Context) {
 	}
 
 	// hash the user's email (to be updated)
-	emailHash := encryption.HashStringWithSHA256(req.Email)
+	if req.Email != "" {
+		emailHash := encryption.HashStringWithSHA256(req.Email)
+		user.EmailHash = emailHash
+	}
 
 	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).UTC()
 
-	user.EmailHash = emailHash
 	user.ReminderTime = reminderTime
 	user.Timezone = req.Timezone
 	user.TelegramBotAPIKey = hex.EncodeToString(encryptedBotAPIKey)
@@ -261,35 +261,49 @@ func ModifyUser(c *gin.Context) {
 		if helper.HE(c, err, http.StatusInternalServerError, "Failed to check existing birthday", false) {
 			return
 		}
-		if exists {
-			c.JSON(http.StatusConflict, gin.H{"error": "Birthday already exists"})
-			return
-		}
+		if !exists {
 
-		// parse the date
-		date, err := time.Parse("2006-01-02", birthday.Date)
-		if helper.HE(c, err, http.StatusBadRequest, "Invalid date format", false) {
-			return
-		}
+			// parse the date
+			date, err := time.Parse("2006-01-02", birthday.Date)
+			if helper.HE(c, err, http.StatusBadRequest, "Invalid date format", false) {
+				return
+			}
 
-		// add the birthday to the DB
-		b := models.Birthday{
-			UserID: user.ID,
-			Name:   birthday.Name,
-			Date:   date,
-		}
+			// add the birthday to the DB
+			b := models.Birthday{
+				UserID: user.ID,
+				Name:   birthday.Name,
+				Date:   date,
+			}
 
-		err = b.Insert(c, env.DB, boil.Infer())
-		if helper.HE(c, err, http.StatusInternalServerError, "Failed to add birthday", false) {
-			return
-		}
+			err = b.Insert(c, env.DB, boil.Infer())
+			if helper.HE(c, err, http.StatusInternalServerError, "Failed to add birthday", false) {
+				return
+			}
 
-		// append the birthday to the list
-		birthdays = append(birthdays, &b)
+			// append the birthday to the list
+			birthdays = append(birthdays, &b)
+		}
 	}
 
-	_, err = user.Update(c, env.DB, boil.Infer())
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to update user", false) {
+	// Start a new transaction
+	tx, err := env.DB.Begin()
+	if err != nil {
+		helper.HE(c, err, http.StatusInternalServerError, "Failed to begin transaction", false)
+		return
+	}
+
+	// Perform the update within the transaction
+	_, err = user.Update(c, tx, boil.Infer())
+	if err != nil {
+		tx.Rollback() // Rollback the transaction on error
+		helper.HE(c, err, http.StatusInternalServerError, "Failed to update user", false)
+		return
+	}
+
+	// Commit the transaction
+	if err = tx.Commit(); err != nil {
+		helper.HE(c, err, http.StatusInternalServerError, "Failed to commit transaction", false)
 		return
 	}
 
