@@ -175,10 +175,8 @@ func Login(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	type DeleteUserRequest struct {
-		EncryptionKey string `json:"encryption_key" binding:"required"`
-	}
-	var req DeleteUserRequest
+
+	var req structs.LoginRequest
 	err := c.ShouldBindJSON(&req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
@@ -189,6 +187,8 @@ func DeleteUser(c *gin.Context) {
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
 		return
 	}
+
+	
 
 	_, err = user.Delete(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false) {
