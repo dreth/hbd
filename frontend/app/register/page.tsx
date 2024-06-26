@@ -8,8 +8,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
-
+import { OctagonAlert } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -21,6 +30,7 @@ export default function Register() {
   const [telegramApiKey, setTelegramApiKey] = useState("");
   const [telegramUser, setTelegramUser] = useState("");
   const [copySuccess, setCopySuccess] = useState("");
+  const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
 
   useEffect(() => {
     // Detect and set the user's timezone
@@ -44,6 +54,13 @@ export default function Register() {
     // Add form submission logic here
   };
 
+  // Get the list of supported time zones
+  const timeZones = Intl.supportedValuesOf("timeZone");
+
+  const handleTimezoneCheckboxChange = () => {
+    setIsTimezoneDisabled(!isTimezoneDisabled);
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center p-2 lg:p-8">
       <h1 className="text-lg md:text-2xl lg:text-4xl font-bold text-center my-8">
@@ -51,7 +68,7 @@ export default function Register() {
       </h1>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-secondary p-8 rounded-lg shadow-md space-y-6"
+        className="w-full max-w-lg bg-secondary p-8 rounded-lg shadow-md space-y-6"
       >
         <div>
           <label
@@ -96,7 +113,7 @@ export default function Register() {
           {copySuccess && (
             <p className="text-sm text-green-600 mt-1">{copySuccess}</p>
           )}
-        </div>{" "}
+        </div>
         <div>
           <label
             htmlFor="reminder-time"
@@ -113,22 +130,42 @@ export default function Register() {
             className="mt-1 block w-full bg-primary-foreground"
           />
         </div>
-        <div>
+        <div className="space-y-2">
           <label
-            htmlFor="time-zone"
+            htmlFor="reminder-time"
             className="block text-sm font-medium text-primary"
           >
             Time Zone
           </label>
-          <Input
-            id="time-zone"
-            type="text"
-            placeholder="Time Zone"
-            value={timeZone}
-            onChange={(e) => setTimeZone(e.target.value)}
-            className="mt-1 block w-full bg-primary-foreground"
-          />
-        </div>{" "}
+          <div className="flex items-center space-x-2">
+            <Select onValueChange={setTimeZone} disabled={isTimezoneDisabled}>
+              <SelectTrigger className="bg-primary-foreground">
+                <SelectValue placeholder={timeZone} />
+              </SelectTrigger>
+              <SelectContent>
+                {timeZones.map((zone) => (
+                  <SelectItem key={zone} value={zone}>
+                    {zone}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Checkbox to enable/disable input */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="toggleTimeZoneInput"
+                checked={!isTimezoneDisabled}
+                onCheckedChange={handleTimezoneCheckboxChange}
+              />
+              <label
+                htmlFor="toggleTimeZoneInput"
+                className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Want to change time zone?
+              </label>
+            </div>
+          </div>
+        </div>
         <div>
           <label
             htmlFor="telegram-api-key"
@@ -184,9 +221,13 @@ export default function Register() {
           </button>
         </div>
       </form>
-      <p className="text-sm text-gray-600 mt-4">
-        Email Privacy Disclaimer: IT IS HASHED BRO WE DONT CARE ABOUT IT
-      </p>
+      <Alert className="max-w-lg mt-3 bg-primary-foreground">
+        <OctagonAlert className="h-4 w-4" />
+        <AlertTitle>Email Privacy Disclaimer: </AlertTitle>
+        <AlertDescription>
+          IT IS HASHED BRO WE DONT CARE ABOUT IT
+        </AlertDescription>
+      </Alert>
     </main>
   );
 }

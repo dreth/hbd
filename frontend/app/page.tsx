@@ -24,7 +24,7 @@ export default function Home() {
           </span>
         </Link>
         <Link href="/register">
-          <span className="px-6 py-3 bg-secondary text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300">
+          <span className="px-6 py-3 bg-teal-700 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300">
             Register
           </span>
         </Link>
