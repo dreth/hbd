@@ -96,12 +96,12 @@ export default function Dashboard() {
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
       <h1 className="text-4xl font-bold text-center my-8">Dashboard</h1>
-      <div className="flex justify-center gap-8 w-full p-2 lg:p-10">
-        <div className="w-full md:w-2/3 bg-secondary p-8 rounded-lg shadow-md space-y-6">
+      <div className="flex flex-col lg:flex-row justify-center gap-8 w-full p-2 lg:p-10">
+        <div className="w-full lg:w-2/3 bg-secondary p-8 rounded-lg shadow-md space-y-6">
           <h2 className="text-2xl font-semibold">User Information</h2>
           <div>
             {/* Email input field */}
-            <div className="flex justify-between items-center gap-3">
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
               <strong>Email:</strong>
               <Input
                 type="email"
@@ -119,14 +119,15 @@ export default function Dashboard() {
                 />
                 <label
                   htmlFor="toggleEmailInput"
-                  className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm font-medium lg:whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Want to change email?
                 </label>
               </div>
             </div>
           </div>
-          <div className="flex justify-between space-x-4">
+            {/* Encryption Key field */}
+          <div className="flex flex-col lg:flex-row justify-between space-x-4">
             <div>
               <strong>Encryption Key:</strong>{" "}
               {isEncryptionKeyVisible ? (
@@ -139,13 +140,13 @@ export default function Dashboard() {
             </div>
             <button
               onClick={() => setIsEncryptionKeyVisible(!isEncryptionKeyVisible)}
-              className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
+              className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md w-full md:w-fit hover:bg-blue-700 transition duration-300"
             >
               {isEncryptionKeyVisible ? "Hide" : "Show"}
             </button>
           </div>
-          <div className="flex justify-between items-center gap-3">
-            <strong className="whitespace-nowrap">Reminder Time:</strong>
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+            <strong className="lg:whitespace-nowrap">Reminder Time:</strong>
             <Input
               type="time"
               placeholder="new reminder time?"
@@ -164,14 +165,14 @@ export default function Dashboard() {
               />
               <label
                 htmlFor="toggleTimezoneInput"
-                className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium lg:whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Want to change reminder time?
               </label>
             </div>
           </div>
-          <div className="flex justify-between items-center gap-3">
-            <strong className="whitespace-nowrap">Time Zone:</strong>
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+            <strong className="lg:whitespace-nowrap">Time Zone:</strong>
             <Select onValueChange={setTimeZone} disabled={isTimezoneDisabled}>
               <SelectTrigger className="bg-primary-foreground">
                 <SelectValue placeholder={timeZone} />
@@ -193,7 +194,7 @@ export default function Dashboard() {
               />
               <label
                 htmlFor="toggleTimeZoneInput"
-                className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium lg:whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Want to change time zone?
               </label>
@@ -201,8 +202,8 @@ export default function Dashboard() {
           </div>{" "}
           <div>
             {/* Telegram API Key field */}
-            <div className="flex justify-between items-center gap-3">
-              <strong className="whitespace-nowrap">
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+              <strong className="lg:whitespace-nowrap">
                 Telegram Bot API Key:
               </strong>
               <Input
@@ -233,7 +234,7 @@ export default function Dashboard() {
                 />
                 <label
                   htmlFor="toggleTelegramApiKeyInput"
-                  className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm font-medium lg:whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Want to change Telegram API key?
                 </label>
@@ -242,8 +243,8 @@ export default function Dashboard() {
           </div>
           <div>
             {/* Telegram User field */}
-            <div className="flex justify-between items-center gap-3">
-              <strong className="whitespace-nowrap">Telegram User:</strong>
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+              <strong className="lg:whitespace-nowrap">Telegram User:</strong>
               <Input
                 type="text"
                 placeholder="new telegram user?"
@@ -260,7 +261,7 @@ export default function Dashboard() {
                 />
                 <label
                   htmlFor="toggleTelegramUserInput"
-                  className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm font-medium lg:whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Want to change Telegram user?
                 </label>
@@ -268,11 +269,11 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="w-full md:w-1/3 bg-secondary p-8 rounded-lg shadow-md space-y-6">
+        <div className="w-full lg:w-1/3 bg-secondary p-8 rounded-lg shadow-md space-y-6">
           <h2 className="text-2xl font-semibold">Add Birthday</h2>
           <form onSubmit={handleAddBirthday} className="space-y-4">
-            <div className="flex space-x-4">
-              <div className="w-1/2">
+            <div className="flex flex-col lg:flex-row space-x-0 lg:space-x-4 space-y-2 lg:space-y-0">
+              <div className="w-full lg:w-1/2">
                 <label
                   htmlFor="name"
                   className="block text-sm font-medium text-primary"
@@ -288,7 +289,7 @@ export default function Dashboard() {
                   className="mt-1 block w-full bg-primary-foreground"
                 />
               </div>
-              <div className="w-1/2">
+              <div className="w-full lg:w-1/2">
                 <label
                   htmlFor="date"
                   className="block text-sm font-medium text-primary"
@@ -317,9 +318,9 @@ export default function Dashboard() {
             {birthdays.map((birthday, index) => (
               <li
                 key={index}
-                className="flex justify-between bg-primary-foreground p-4 rounded-md shadow-md"
+                className="flex flex-col lg:flex-row justify-between bg-primary-foreground p-4 rounded-md shadow-md"
               >
-                <div className="flex justify-between items-center w-full mr-2">
+                <div className="flex flex-col lg:flex-row justify-between items-center w-full mr-2">
                   <span>{birthday.name}</span>
                   <span>{birthday.date}</span>
                 </div>
