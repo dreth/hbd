@@ -16,7 +16,17 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-// CallReminderChecker is a route handler to check for user reminders through a POST request.
+// @Summary Check user reminders
+// @Description This endpoint checks for user reminders through a POST request.
+// @Accept  json
+// @Produce  json
+// @Param   user  body     structs.LoginRequest  true  "Check reminders"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid request"
+// @Failure 500 {object} structs.Error "Error querying users"
+// @Router /check-birthdays [post]
+// @Tags reminders
+// @x-order 6
 func CallReminderChecker(c *gin.Context) {
 	var req structs.LoginRequest
 	err := c.ShouldBindJSON(&req)
@@ -35,6 +45,8 @@ func CallReminderChecker(c *gin.Context) {
 	}
 
 	remindBirthdays(rows)
+
+	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
 // CheckReminders runs periodically to check for user reminders.

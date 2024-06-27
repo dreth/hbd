@@ -1,0 +1,285 @@
+definitions:
+  structs.Birthday:
+    properties:
+      date:
+        type: string
+      name:
+        type: string
+    type: object
+  structs.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  structs.LoginRequest:
+    properties:
+      email:
+        type: string
+      encryption_key:
+        type: string
+    required:
+    - email
+    - encryption_key
+    type: object
+  structs.LoginSuccess:
+    properties:
+      birthdays:
+        items:
+          $ref: '#/definitions/structs.Birthday'
+        type: array
+      reminder_time:
+        type: string
+      telegram_bot_api_key:
+        type: string
+      telegram_user_id:
+        type: string
+      timezone:
+        type: string
+    type: object
+  structs.ModifyUserRequest:
+    properties:
+      birthdays:
+        items:
+          $ref: '#/definitions/structs.Birthday'
+        type: array
+      email:
+        type: string
+      encryption_key:
+        type: string
+      reminder_time:
+        type: string
+      telegram_bot_api_key:
+        type: string
+      telegram_user_id:
+        type: string
+      timezone:
+        type: string
+    required:
+    - encryption_key
+    - reminder_time
+    - telegram_bot_api_key
+    - telegram_user_id
+    - timezone
+    type: object
+  structs.RegisterRequest:
+    properties:
+      email:
+        type: string
+      encryption_key:
+        type: string
+      reminder_time:
+        type: string
+      telegram_bot_api_key:
+        type: string
+      telegram_user_id:
+        type: string
+      timezone:
+        type: string
+    required:
+    - email
+    - encryption_key
+    - reminder_time
+    - telegram_bot_api_key
+    - telegram_user_id
+    - timezone
+    type: object
+  structs.Success:
+    properties:
+      success:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /check-birthdays:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint checks for user reminders through a POST request.
+      parameters:
+      - description: Check reminders
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/structs.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Error querying users
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Check user reminders
+      tags:
+      - reminders
+      x-order: 6
+  /delete-user:
+    delete:
+      consumes:
+      - application/json
+      description: This endpoint deletes a user based on their email and encryption
+        key.
+      parameters:
+      - description: Delete user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/structs.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "401":
+          description: Invalid encryption key or email
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to delete user
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Delete a user
+      tags:
+      - auth
+      x-order: 5
+  /generate-encryption-key:
+    get:
+      description: This endpoint generates a new encryption key for the user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: encryption_key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to generate encryption key
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Generate a new encryption key
+      tags:
+      - auth
+      x-order: 1
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint logs in a user by validating their email and encryption
+        key.
+      parameters:
+      - description: Login user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/structs.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.LoginSuccess'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "401":
+          description: Invalid encryption key or email
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Login a user
+      tags:
+      - auth
+      x-order: 3
+  /modify-user:
+    put:
+      consumes:
+      - application/json
+      description: This endpoint modifies a user's details such as Telegram bot API
+        key, reminder time, and more.
+      parameters:
+      - description: Modify user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/structs.ModifyUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "401":
+          description: Invalid encryption key
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to update user
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Modify a user's details
+      tags:
+      - auth
+      x-order: 4
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: This endpoint registers a new user with their email, Telegram bot
+        API key, and other details.
+      parameters:
+      - description: Register user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/structs.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "409":
+          description: Email or Telegram bot API key already registered
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to create user
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Register a new user
+      tags:
+      - auth
+      x-order: 2
+swagger: "2.0"

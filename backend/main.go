@@ -10,6 +10,11 @@ import (
 	"hbd/db"
 	"hbd/env"
 	"hbd/middlewares"
+
+	docs "hbd/docs"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -27,13 +32,24 @@ func main() {
 
 	// Apply middleware
 	router.Use(middlewares.RateLimitMiddleware())
+	router.Use(middlewares.SwaggerHostMiddleware())
 
-	// Routes
+	// Swagger documentation
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Title = "HBD API"
+	docs.SwaggerInfo.Description = "HBD endpoints for the HBD application frontend"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Auth routes
 	router.POST("/register", auth.Register)
 	router.POST("/login", auth.Login)
 	router.DELETE("/delete-user", auth.DeleteUser)
 	router.PUT("/modify-user", auth.ModifyUser)
 	router.GET("/generate-encryption-key", auth.GetEncryptionKey)
+
+	// Birthday routes
 	router.POST("/check-birthdays", birthdays.CallReminderChecker)
 
 	// Run the server

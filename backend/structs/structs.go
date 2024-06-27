@@ -1,5 +1,6 @@
 package structs
 
+// REQUESTS
 type RegisterRequest struct {
 	EncryptionKey     string `json:"encryption_key" binding:"required"`
 	Email             string `json:"email" binding:"required"`
@@ -27,4 +28,25 @@ type ModifyUserRequest struct {
 type Birthday struct {
 	Name string `json:"name"`
 	Date string `json:"date"`
+}
+
+// RESPONSES
+type Error struct {
+	Error string `json:"error"`
+}
+
+type Success struct {
+	Success bool `json:"success"`
+}
+
+type LoginSuccess struct {
+	TelegramBotAPIKey string     `json:"telegram_bot_api_key"`
+	TelegramUserID    string     `json:"telegram_user_id"`
+	ReminderTime      string     `json:"reminder_time"`
+	Timezone          string     `json:"timezone"`
+	Birthdays         []Birthday `json:"birthdays"`
+}
+
+type EncryptionKey struct {
+	EncryptionKey string `json:"encryption_key"`
 }

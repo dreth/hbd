@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     container_name: hbd-backend
     volumes:
-      - ./backend:/app
+      - .:/app
     ports:
       - "8417:8417"
     depends_on:

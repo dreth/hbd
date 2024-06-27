@@ -16,15 +16,35 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+// @Summary Generate a new encryption key
+// @Description This endpoint generates a new encryption key for the user.
+// @Produce  json
+// @Success 200 {object} map[string]string "encryption_key"
+// @Failure 500 {object} structs.Error "Failed to generate encryption key"
+// @Router /generate-encryption-key [get]
+// @Tags auth
+// @x-order 1
 func GetEncryptionKey(c *gin.Context) {
 	key := make([]byte, 32)
 	_, err := rand.Read(key)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate encryption key", false) {
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"encryption_key": hex.EncodeToString(key)})
+	c.JSON(http.StatusOK, structs.EncryptionKey{EncryptionKey: hex.EncodeToString(key)})
 }
 
+// @Summary Register a new user
+// @Description This endpoint registers a new user with their email, Telegram bot API key, and other details.
+// @Accept  json
+// @Produce  json
+// @Param   user  body     structs.RegisterRequest  true  "Register user"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid request"
+// @Failure 409 {object} structs.Error "Email or Telegram bot API key already registered"
+// @Failure 500 {object} structs.Error "Failed to create user"
+// @Router /register [post]
+// @Tags auth
+// @x-order 2
 func Register(c *gin.Context) {
 
 	var req structs.RegisterRequest
@@ -118,9 +138,20 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true})
+	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
+// @Summary Login a user
+// @Description This endpoint logs in a user by validating their email and encryption key.
+// @Accept  json
+// @Produce  json
+// @Param   user  body     structs.LoginRequest  true  "Login user"
+// @Success 200 {object} structs.LoginSuccess
+// @Failure 400 {object} structs.Error "Invalid request"
+// @Failure 401 {object} structs.Error "Invalid encryption key or email"
+// @Router /login [post]
+// @Tags auth
+// @x-order 3
 func Login(c *gin.Context) {
 	var req structs.LoginRequest
 	err := c.ShouldBindJSON(&req)
@@ -161,52 +192,36 @@ func Login(c *gin.Context) {
 	}
 
 	// Create a new slice to hold the filtered birthday data
-	var filteredBirthdays []map[string]interface{}
+	var filteredBirthdays []structs.Birthday
 
 	for _, birthday := range birthdays {
-		filteredBirthdays = append(filteredBirthdays, map[string]interface{}{
-			"name": birthday.Name,
-			"date": birthday.Date.Format("2006-01-02"),
+		filteredBirthdays = append(filteredBirthdays, structs.Birthday{
+			Name: birthday.Name,
+			Date: birthday.Date.Format("2006-01-02"),
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"telegram_bot_api_key": decryptedBotAPIKey,
-		"telegram_user_id":     decryptedUserID,
-		"reminder_time":        reminderTime,
-		"timezone":             user.Timezone,
-		"birthdays":            filteredBirthdays,
+	c.JSON(http.StatusOK, structs.LoginSuccess{
+		TelegramBotAPIKey: decryptedBotAPIKey,
+		TelegramUserID:    decryptedUserID,
+		ReminderTime:      reminderTime,
+		Timezone:          user.Timezone,
+		Birthdays:         filteredBirthdays,
 	})
 }
 
-func DeleteUser(c *gin.Context) {
-	var req structs.LoginRequest
-	err := c.ShouldBindJSON(&req)
-	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
-		return
-	}
-
-	// Hash the email and encryption key
-	emailHash := encryption.HashStringWithSHA256(req.Email)
-	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
-
-	// Fetch the user with the given encryption key and email hash
-	user, err := models.Users(
-		models.UserWhere.EmailHash.EQ(emailHash),
-		models.UserWhere.EncryptionKeyHash.EQ(encryptionKeyHash),
-	).One(c, env.DB)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
-		return
-	}
-
-	_, err = user.Delete(c, env.DB)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false) {
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"success": true})
-}
-
+// @Summary Modify a user's details
+// @Description This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more.
+// @Accept  json
+// @Produce  json
+// @Param   user  body     structs.ModifyUserRequest  true  "Modify user"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid request"
+// @Failure 401 {object} structs.Error "Invalid encryption key"
+// @Failure 500 {object} structs.Error "Failed to update user"
+// @Router /modify-user [put]
+// @Tags auth
+// @x-order 4
 func ModifyUser(c *gin.Context) {
 
 	var req structs.ModifyUserRequest
@@ -250,14 +265,20 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	// hash the user's email (to be updated)
+	// Validate and hash the user's email (to be updated)
 	if req.Email != "" {
+		if !helper.IsValidEmail(req.Email) {
+			c.JSON(http.StatusBadRequest, structs.Error{Error: "Invalid email format"})
+			return
+		}
 		emailHash := encryption.HashStringWithSHA256(req.Email)
 		user.EmailHash = emailHash
 	}
 
+	// Localize the reminder time
 	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).UTC()
 
+	// Update the user's details
 	user.ReminderTime = reminderTime
 	user.Timezone = req.Timezone
 	user.TelegramBotAPIKey = hex.EncodeToString(encryptedBotAPIKey)
@@ -318,5 +339,45 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true})
+	c.JSON(http.StatusOK, structs.Success{Success: true})
+}
+
+// @Summary Delete a user
+// @Description This endpoint deletes a user based on their email and encryption key.
+// @Accept  json
+// @Produce  json
+// @Param   user  body     structs.LoginRequest  true  "Delete user"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid request"
+// @Failure 401 {object} structs.Error "Invalid encryption key or email"
+// @Failure 500 {object} structs.Error "Failed to delete user"
+// @Router /delete-user [delete]
+// @Tags auth
+// @x-order 5
+func DeleteUser(c *gin.Context) {
+	var req structs.LoginRequest
+	err := c.ShouldBindJSON(&req)
+	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
+		return
+	}
+
+	// Hash the email and encryption key
+	emailHash := encryption.HashStringWithSHA256(req.Email)
+	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
+
+	// Fetch the user with the given encryption key and email hash
+	user, err := models.Users(
+		models.UserWhere.EmailHash.EQ(emailHash),
+		models.UserWhere.EncryptionKeyHash.EQ(encryptionKeyHash),
+	).One(c, env.DB)
+	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
+		return
+	}
+
+	_, err = user.Delete(c, env.DB)
+	if helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false) {
+		return
+	}
+
+	c.JSON(http.StatusOK, structs.Success{Success: true})
 }

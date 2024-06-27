@@ -10,8 +10,8 @@ import (
 var (
 	clientLimits = make(map[string]*rate.Limiter)
 	mu           sync.Mutex
-	rateLimit    = rate.Limit(1) // 1 request per second
-	burstLimit   = 5             // Allow bursts of up to 5 requests
+	rateLimit    = rate.Limit(2) // 2 requests per second
+	burstLimit   = 10            // Allow bursts of up to 10 requests
 )
 
 // getClientLimiter retrieves the rate limiter for a specific client IP
