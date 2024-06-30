@@ -154,7 +154,8 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).UTC()
+	// Ensure reminderTime is in UTC
+	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).In(time.UTC)
 
 	// Encrypt the user's key using the master key before storing it
 	encryptedKey, err := encryption.Encrypt(env.MK, req.EncryptionKey)
@@ -162,6 +163,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Create a new user object
 	user := models.User{
 		EmailHash:             emailHash,
 		EncryptionKey:         hex.EncodeToString(encryptedKey),
@@ -194,12 +196,14 @@ func Register(c *gin.Context) {
 // @Tags auth
 // @x-order 3
 func Login(c *gin.Context) {
+	// Authenticate the user
 	var req structs.LoginRequest
 	user, err := Authenticate(c, &req)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
 		return
 	}
 
+	// Decrypt the Telegram bot API key and user ID
 	decryptedBotAPIKey, err := encryption.Decrypt(env.MK, user.TelegramBotAPIKey)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
 		return
@@ -210,8 +214,22 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Show reminder time in the user's designated timezone
-	reminderTime := user.ReminderTime.In(time.FixedZone(user.Timezone, 0)).Format("15:04")
+	// Load timezone
+	location, err := time.LoadLocation(user.Timezone)
+	if helper.HE(c, err, http.StatusBadRequest, "Invalid timezone", false) {
+		return
+	}
+
+	// Combine the TIME with a date to handle timezone conversion
+	now := time.Now()
+	reminderTime := time.Date(
+		now.Year(), now.Month(), now.Day(),
+		user.ReminderTime.Hour(), user.ReminderTime.Minute(), user.ReminderTime.Second(), 0,
+		time.UTC,
+	)
+
+	// Convert the combined time to the user's timezone
+	reminderTimeLocal := reminderTime.In(location).Format("15:04")
 
 	// Find the birthdays by user id
 	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID), qm.Select("id", "name", "date")).All(c, env.DB)
@@ -222,6 +240,7 @@ func Login(c *gin.Context) {
 	// Create a new slice to hold the filtered birthday data
 	var filteredBirthdays []structs.BirthdayFull
 
+	// Iterate over the birthdays and append the filtered data to the new slice
 	for _, birthday := range birthdays {
 		filteredBirthdays = append(filteredBirthdays, structs.BirthdayFull{
 			ID:   birthday.ID,
@@ -230,10 +249,11 @@ func Login(c *gin.Context) {
 		})
 	}
 
+	// Return the user's details along with the filtered birthdays
 	c.JSON(http.StatusOK, structs.LoginSuccess{
 		TelegramBotAPIKey: decryptedBotAPIKey,
 		TelegramUserID:    decryptedUserID,
-		ReminderTime:      reminderTime,
+		ReminderTime:      reminderTimeLocal,
 		Timezone:          user.Timezone,
 		Birthdays:         filteredBirthdays,
 	})
@@ -252,22 +272,27 @@ func Login(c *gin.Context) {
 // @Tags auth
 // @x-order 4
 func ModifyUser(c *gin.Context) {
+	// Authenticate the user
 	var req structs.ModifyUserRequest
 	user, err := Authenticate(c, &req)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
 		return
 	}
+
+	// Load the new timezone
 	location, err := time.LoadLocation(req.NewTimezone)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid timezone", false) {
 		return
 	}
 
+	// Parse the new reminder time
 	now := time.Now()
 	reminderTime, err := time.ParseInLocation("15:04", req.NewReminderTime, location)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid reminder time format", false) {
 		return
 	}
 
+	// Encrypt the new Telegram bot API key and user ID
 	telegramBotAPIKeyHash := encryption.HashStringWithSHA256(req.NewTelegramBotAPIKey)
 	encryptedBotAPIKey, err := encryption.Encrypt(env.MK, req.NewTelegramBotAPIKey)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt Telegram bot API key", false) {
@@ -290,8 +315,8 @@ func ModifyUser(c *gin.Context) {
 		user.EmailHash = emailHash
 	}
 
-	// Localize the reminder time
-	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).UTC()
+	// Ensure reminderTime is in UTC
+	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).In(time.UTC)
 
 	// Update the user's details
 	user.ReminderTime = reminderTime
@@ -322,6 +347,7 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
+	// Return a success response
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
@@ -338,16 +364,19 @@ func ModifyUser(c *gin.Context) {
 // @Tags auth
 // @x-order 5
 func DeleteUser(c *gin.Context) {
+	// Authenticate the user
 	var req structs.LoginRequest
 	user, err := Authenticate(c, &req)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
 		return
 	}
 
+	// Start a new transaction
 	_, err = user.Delete(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false) {
 		return
 	}
 
+	// Return a success response
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }

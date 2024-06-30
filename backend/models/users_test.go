@@ -722,7 +722,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-	userDBTypes = map[string]string{`ID`: `integer`, `EmailHash`: `text`, `EncryptionKey`: `text`, `EncryptionKeyHash`: `text`, `ReminderTime`: `time with time zone`, `Timezone`: `text`, `TelegramBotAPIKey`: `text`, `TelegramBotAPIKeyHash`: `text`, `TelegramUserID`: `text`, `TelegramUserIDHash`: `text`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`}
+	userDBTypes = map[string]string{`ID`: `integer`, `EmailHash`: `text`, `EncryptionKey`: `text`, `EncryptionKeyHash`: `text`, `ReminderTime`: `time without time zone`, `Timezone`: `text`, `TelegramBotAPIKey`: `text`, `TelegramBotAPIKeyHash`: `text`, `TelegramUserID`: `text`, `TelegramUserIDHash`: `text`, `CreatedAt`: `timestamp with time zone`, `UpdatedAt`: `timestamp with time zone`}
 	_           = bytes.MinRead
 )
 

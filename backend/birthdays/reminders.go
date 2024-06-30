@@ -61,6 +61,39 @@ func queryWithTime(time time.Time) (*sql.Rows, error) {
 	}
 	defer rows.Close()
 
+	// Define a struct to hold the query result
+	type User struct {
+		ID                int
+		TelegramBotAPIKey string
+		TelegramUserID    string
+	}
+
+	// Iterate through the rows and scan the data
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.ID, &user.TelegramBotAPIKey, &user.TelegramUserID)
+		if err != nil {
+			log.Println("Error scanning row:", err)
+			continue
+		}
+		// Print or log the user struct to see the contents
+		fmt.Printf("User: %+v\n", user)
+	}
+
+	// Check for errors from iterating over rows
+	if err := rows.Err(); err != nil {
+		log.Println("Error iterating over rows:", err)
+		return nil, err
+	}
+
+	// If you still need to return rows for other uses
+	// re-execute the query because rows have already been iterated over
+	rows, err = env.DB.Query(query, time.Format("15:04"))
+	if err != nil {
+		log.Println("Error querying users again:", err)
+		return nil, err
+	}
+
 	return rows, nil
 }
 
