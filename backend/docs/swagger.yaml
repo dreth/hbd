@@ -1,9 +1,14 @@
 definitions:
-  structs.Birthday:
+  structs.BirthdayFull:
     properties:
       date:
+        example: "2021-01-01"
         type: string
+      id:
+        example: 1
+        type: integer
       name:
+        example: John Doe
         type: string
     type: object
   structs.Error:
@@ -14,8 +19,10 @@ definitions:
   structs.LoginRequest:
     properties:
       email:
+        example: example@hbd.wtf
         type: string
       encryption_key:
+        example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
         type: string
     required:
     - email
@@ -25,55 +32,65 @@ definitions:
     properties:
       birthdays:
         items:
-          $ref: '#/definitions/structs.Birthday'
+          $ref: '#/definitions/structs.BirthdayFull'
         type: array
       reminder_time:
+        example: "15:04"
         type: string
       telegram_bot_api_key:
+        example: 270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3
         type: string
       telegram_user_id:
+        example: "123456789"
         type: string
       timezone:
+        example: America/New_York
         type: string
     type: object
   structs.ModifyUserRequest:
     properties:
-      birthdays:
-        items:
-          $ref: '#/definitions/structs.Birthday'
-        type: array
-      email:
+      auth:
+        $ref: '#/definitions/structs.LoginRequest'
+      new_email:
+        example: example2@hbd.wtf
         type: string
-      encryption_key:
+      new_reminder_time:
+        example: "15:04"
         type: string
-      reminder_time:
+      new_telegram_bot_api_key:
+        example: 270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3
         type: string
-      telegram_bot_api_key:
+      new_telegram_user_id:
         type: string
-      telegram_user_id:
-        type: string
-      timezone:
+      new_timezone:
+        example: America/New_York
         type: string
     required:
-    - encryption_key
-    - reminder_time
-    - telegram_bot_api_key
-    - telegram_user_id
-    - timezone
+    - auth
+    - new_reminder_time
+    - new_telegram_bot_api_key
+    - new_telegram_user_id
+    - new_timezone
     type: object
   structs.RegisterRequest:
     properties:
       email:
+        example: example@hbd.wtf
         type: string
       encryption_key:
+        example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
         type: string
       reminder_time:
+        example: "15:04"
         type: string
       telegram_bot_api_key:
+        example: 270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3
         type: string
       telegram_user_id:
+        example: "123456789"
         type: string
       timezone:
+        example: America/New_York
         type: string
     required:
     - email

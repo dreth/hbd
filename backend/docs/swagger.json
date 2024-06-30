@@ -289,14 +289,20 @@
         }
     },
     "definitions": {
-        "structs.Birthday": {
+        "structs.BirthdayFull": {
             "type": "object",
             "properties": {
                 "date": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2021-01-01"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },
@@ -316,10 +322,12 @@
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "example@hbd.wtf"
                 },
                 "encryption_key": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1"
                 }
             }
         },
@@ -329,56 +337,58 @@
                 "birthdays": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/structs.Birthday"
+                        "$ref": "#/definitions/structs.BirthdayFull"
                     }
                 },
                 "reminder_time": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "15:04"
                 },
                 "telegram_bot_api_key": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3"
                 },
                 "telegram_user_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "123456789"
                 },
                 "timezone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "America/New_York"
                 }
             }
         },
         "structs.ModifyUserRequest": {
             "type": "object",
             "required": [
-                "encryption_key",
-                "reminder_time",
-                "telegram_bot_api_key",
-                "telegram_user_id",
-                "timezone"
+                "auth",
+                "new_reminder_time",
+                "new_telegram_bot_api_key",
+                "new_telegram_user_id",
+                "new_timezone"
             ],
             "properties": {
-                "birthdays": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/structs.Birthday"
-                    }
+                "auth": {
+                    "$ref": "#/definitions/structs.LoginRequest"
                 },
-                "email": {
+                "new_email": {
+                    "type": "string",
+                    "example": "example2@hbd.wtf"
+                },
+                "new_reminder_time": {
+                    "type": "string",
+                    "example": "15:04"
+                },
+                "new_telegram_bot_api_key": {
+                    "type": "string",
+                    "example": "270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3"
+                },
+                "new_telegram_user_id": {
                     "type": "string"
                 },
-                "encryption_key": {
-                    "type": "string"
-                },
-                "reminder_time": {
-                    "type": "string"
-                },
-                "telegram_bot_api_key": {
-                    "type": "string"
-                },
-                "telegram_user_id": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string"
+                "new_timezone": {
+                    "type": "string",
+                    "example": "America/New_York"
                 }
             }
         },
@@ -394,22 +404,28 @@
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "example@hbd.wtf"
                 },
                 "encryption_key": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1"
                 },
                 "reminder_time": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "15:04"
                 },
                 "telegram_bot_api_key": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3"
                 },
                 "telegram_user_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "123456789"
                 },
                 "timezone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "America/New_York"
                 }
             }
         },

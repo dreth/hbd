@@ -41,3 +41,9 @@ sqlboiler psql --config .sqlboiler.toml
 ```bash
 migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down && migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up && sqlboiler psql --config .sqlboiler.toml && air
 ```
+
+## Update swagger docs
+
+```bash
+swag init
+```

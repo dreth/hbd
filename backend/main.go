@@ -51,6 +51,9 @@ func main() {
 
 	// Birthday routes
 	router.POST("/check-birthdays", birthdays.CallReminderChecker)
+	router.POST("/birthday", birthdays.AddBirthday)
+	router.PUT("/birthday", birthdays.ModifyBirthday)
+	router.DELETE("/birthday", birthdays.DeleteBirthday)
 
 	// Run the server
 	router.Run(":8417")

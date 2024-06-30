@@ -4,50 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"hbd/encryption"
 	"hbd/env"
 	"hbd/helper"
-	"hbd/structs"
 
-	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
-
-// @Summary Check user reminders
-// @Description This endpoint checks for user reminders through a POST request.
-// @Accept  json
-// @Produce  json
-// @Param   user  body     structs.LoginRequest  true  "Check reminders"
-// @Success 200 {object} structs.Success
-// @Failure 400 {object} structs.Error "Invalid request"
-// @Failure 500 {object} structs.Error "Error querying users"
-// @Router /check-birthdays [post]
-// @Tags reminders
-// @x-order 6
-func CallReminderChecker(c *gin.Context) {
-	var req structs.LoginRequest
-	err := c.ShouldBindJSON(&req)
-	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
-		return
-	}
-
-	// Hash the email and encryption key
-	emailHash := encryption.HashStringWithSHA256(req.Email)
-	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
-
-	// Run the query with the hashed email and encryption key
-	rows, err := queryWithoutTime(emailHash, encryptionKeyHash)
-	if helper.HE(c, err, http.StatusInternalServerError, "Error querying users", false) {
-		return
-	}
-
-	remindBirthdays(rows)
-
-	c.JSON(http.StatusOK, structs.Success{Success: true})
-}
 
 // CheckReminders runs periodically to check for user reminders.
 func CheckReminders() {
@@ -91,24 +55,6 @@ func queryWithTime(time time.Time) (*sql.Rows, error) {
 	    WHERE reminder_time = $1
 	`
 	rows, err := env.DB.Query(query, time.Format("15:04"))
-	if err != nil {
-		log.Println("Error querying users:", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	return rows, nil
-}
-
-// Query without time
-func queryWithoutTime(email_hash, encryption_key_hash string) (*sql.Rows, error) {
-	log.Printf("Checking reminders. Timestamp: %s", time.Now().UTC())
-	query := `
-		SELECT id, telegram_bot_api_key, telegram_user_id 
-		FROM users 
-		WHERE email_hash = $1 AND encryption_key_hash = $2
-	`
-	rows, err := env.DB.Query(query, email_hash, encryption_key_hash)
 	if err != nil {
 		log.Println("Error querying users:", err)
 		return nil, err
