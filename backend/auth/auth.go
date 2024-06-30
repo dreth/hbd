@@ -76,7 +76,7 @@ func Authenticate(c *gin.Context, req interface{}) (*models.User, error) {
 // @Summary Generate a new encryption key
 // @Description This endpoint generates a new encryption key for the user.
 // @Produce  json
-// @Success 200 {object} map[string]string "encryption_key"
+// @Success 200 {object} structs.EncryptionKey
 // @Failure 500 {object} structs.Error "Failed to generate encryption key"
 // @Router /generate-encryption-key [get]
 // @Tags auth

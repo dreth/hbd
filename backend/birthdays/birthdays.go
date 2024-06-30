@@ -49,6 +49,18 @@ func CallReminderChecker(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
+// @Summary Add a new birthday
+// @Description This endpoint adds a new birthday for the authenticated user.
+// @Accept  json
+// @Produce  json
+// @Param   birthday  body     structs.BirthdayNameDateAdd  true  "Add birthday"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid encryption key or email"
+// @Failure 400 {object} structs.Error "Invalid date format"
+// @Failure 500 {object} structs.Error "Failed to insert birthday"
+// @Router /birthday [post]
+// @Tags birthdays
+// @x-order 7
 func AddBirthday(c *gin.Context) {
 	var req structs.BirthdayNameDateAdd
 	user, err := auth.Authenticate(c, &req)
@@ -77,7 +89,18 @@ func AddBirthday(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
-// Delete birthday func
+// @Summary Delete a birthday
+// @Description This endpoint deletes a birthday for the authenticated user.
+// @Accept  json
+// @Produce  json
+// @Param   birthday  body     structs.BirthdayNameDateModify  true  "Delete birthday"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid encryption key or email"
+// @Failure 400 {object} structs.Error "Invalid date format"
+// @Failure 500 {object} structs.Error "Failed to delete birthday"
+// @Router /birthday [delete]
+// @Tags birthdays
+// @x-order 8
 func DeleteBirthday(c *gin.Context) {
 	var req structs.BirthdayNameDateModify
 	user, err := auth.Authenticate(c, &req)
@@ -106,7 +129,21 @@ func DeleteBirthday(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
-// Modify birthday func
+// @Summary Modify a birthday
+// @Description This endpoint modifies a birthday for the authenticated user.
+// @Accept  json
+// @Produce  json
+// @Param   birthday  body     structs.BirthdayNameDateModify  true  "Modify birthday"
+// @Success 200 {object} structs.Success
+// @Failure 400 {object} structs.Error "Invalid encryption key or email"
+// @Failure 400 {object} structs.Error "Invalid date format"
+// @Failure 500 {object} structs.Error "Birthday doesn't exist"
+// @Failure 500 {object} structs.Error "Failed to begin transaction"
+// @Failure 500 {object} structs.Error "Failed to update birthday"
+// @Failure 500 {object} structs.Error "Failed to commit transaction"
+// @Router /birthday [put]
+// @Tags birthdays
+// @x-order 9
 func ModifyBirthday(c *gin.Context) {
 	var req structs.BirthdayNameDateModify
 	user, err := auth.Authenticate(c, &req)
@@ -125,12 +162,14 @@ func ModifyBirthday(c *gin.Context) {
 	birthday, err := models.Birthdays(
 		models.BirthdayWhere.UserID.EQ(user.ID),
 		models.BirthdayWhere.ID.EQ(req.ID),
-		models.BirthdayWhere.Name.EQ(req.Name),
-		models.BirthdayWhere.Date.EQ(date),
 	).One(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Birthday doesn't exist", false) {
 		return
 	}
+
+	// Update the birthday
+	birthday.Name = req.Name
+	birthday.Date = date
 
 	// Start a new transaction
 	tx, err := env.DB.Begin()

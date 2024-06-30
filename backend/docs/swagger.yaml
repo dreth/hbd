@@ -11,6 +11,46 @@ definitions:
         example: John Doe
         type: string
     type: object
+  structs.BirthdayNameDateAdd:
+    properties:
+      auth:
+        $ref: '#/definitions/structs.LoginRequest'
+      date:
+        example: "2021-01-01"
+        type: string
+      name:
+        example: John Doe
+        type: string
+    required:
+    - auth
+    - date
+    - name
+    type: object
+  structs.BirthdayNameDateModify:
+    properties:
+      auth:
+        $ref: '#/definitions/structs.LoginRequest'
+      date:
+        example: "2021-01-01"
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: John Doe
+        type: string
+    required:
+    - auth
+    - date
+    - id
+    - name
+    type: object
+  structs.EncryptionKey:
+    properties:
+      encryption_key:
+        example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
+        type: string
+    type: object
   structs.Error:
     properties:
       error:
@@ -61,6 +101,7 @@ definitions:
         example: 270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3
         type: string
       new_telegram_user_id:
+        example: "123456789"
         type: string
       new_timezone:
         example: America/New_York
@@ -108,6 +149,97 @@ definitions:
 info:
   contact: {}
 paths:
+  /birthday:
+    delete:
+      consumes:
+      - application/json
+      description: This endpoint deletes a birthday for the authenticated user.
+      parameters:
+      - description: Delete birthday
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/structs.BirthdayNameDateModify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to delete birthday
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Delete a birthday
+      tags:
+      - birthdays
+      x-order: 8
+    post:
+      consumes:
+      - application/json
+      description: This endpoint adds a new birthday for the authenticated user.
+      parameters:
+      - description: Add birthday
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/structs.BirthdayNameDateAdd'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to insert birthday
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Add a new birthday
+      tags:
+      - birthdays
+      x-order: 7
+    put:
+      consumes:
+      - application/json
+      description: This endpoint modifies a birthday for the authenticated user.
+      parameters:
+      - description: Modify birthday
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/structs.BirthdayNameDateModify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid date format
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to commit transaction
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Modify a birthday
+      tags:
+      - birthdays
+      x-order: 9
   /check-birthdays:
     post:
       consumes:
@@ -182,11 +314,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: encryption_key
+          description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/structs.EncryptionKey'
         "500":
           description: Failed to generate encryption key
           schema:

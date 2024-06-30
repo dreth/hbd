@@ -15,6 +15,143 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/birthday": {
+            "put": {
+                "description": "This endpoint modifies a birthday for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Modify a birthday",
+                "parameters": [
+                    {
+                        "description": "Modify birthday",
+                        "name": "birthday",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structs.BirthdayNameDateModify"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to commit transaction",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    }
+                },
+                "x-order": 9
+            },
+            "post": {
+                "description": "This endpoint adds a new birthday for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Add a new birthday",
+                "parameters": [
+                    {
+                        "description": "Add birthday",
+                        "name": "birthday",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structs.BirthdayNameDateAdd"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to insert birthday",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    }
+                },
+                "x-order": 7
+            },
+            "delete": {
+                "description": "This endpoint deletes a birthday for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Delete a birthday",
+                "parameters": [
+                    {
+                        "description": "Delete birthday",
+                        "name": "birthday",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structs.BirthdayNameDateModify"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid date format",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete birthday",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    }
+                },
+                "x-order": 8
+            }
+        },
         "/check-birthdays": {
             "post": {
                 "description": "This endpoint checks for user reminders through a POST request.",
@@ -127,12 +264,9 @@ const docTemplate = `{
                 "summary": "Generate a new encryption key",
                 "responses": {
                     "200": {
-                        "description": "encryption_key",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/structs.EncryptionKey"
                         }
                     },
                     "500": {
@@ -317,6 +451,62 @@ const docTemplate = `{
                 }
             }
         },
+        "structs.BirthdayNameDateAdd": {
+            "type": "object",
+            "required": [
+                "auth",
+                "date",
+                "name"
+            ],
+            "properties": {
+                "auth": {
+                    "$ref": "#/definitions/structs.LoginRequest"
+                },
+                "date": {
+                    "type": "string",
+                    "example": "2021-01-01"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                }
+            }
+        },
+        "structs.BirthdayNameDateModify": {
+            "type": "object",
+            "required": [
+                "auth",
+                "date",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "auth": {
+                    "$ref": "#/definitions/structs.LoginRequest"
+                },
+                "date": {
+                    "type": "string",
+                    "example": "2021-01-01"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                }
+            }
+        },
+        "structs.EncryptionKey": {
+            "type": "object",
+            "properties": {
+                "encryption_key": {
+                    "type": "string",
+                    "example": "9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1"
+                }
+            }
+        },
         "structs.Error": {
             "type": "object",
             "properties": {
@@ -395,7 +585,8 @@ const docTemplate = `{
                     "example": "270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3"
                 },
                 "new_telegram_user_id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "123456789"
                 },
                 "new_timezone": {
                     "type": "string",

@@ -21,12 +21,12 @@ type ModifyUserRequest struct {
 	NewReminderTime      string       `json:"new_reminder_time" binding:"required" example:"15:04"`
 	NewTimezone          string       `json:"new_timezone" binding:"required" example:"America/New_York"`
 	NewTelegramBotAPIKey string       `json:"new_telegram_bot_api_key" binding:"required" example:"270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3"`
-	NewTelegramUserID    string       `json:"new_telegram_user_id" binding:"required" exaple:"123456789"`
+	NewTelegramUserID    string       `json:"new_telegram_user_id" binding:"required" example:"123456789"`
 }
 
 type BirthdayNameDateModify struct {
 	Auth LoginRequest `json:"auth" binding:"required"`
-	ID   int       `json:"id" binding:"required" example:"1"`
+	ID   int          `json:"id" binding:"required" example:"1"`
 	Name string       `json:"name" binding:"required" example:"John Doe"`
 	Date string       `json:"date" binding:"required" example:"2021-01-01"`
 }
