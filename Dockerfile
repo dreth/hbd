@@ -22,27 +22,31 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy the Next.js app files
-COPY frontend/package*.json ./
-RUN npm install
+RUN mkdir frontend
+COPY frontend/package*.json ./frontend/
+RUN cd frontend && npm install
 
 # Copy the rest of the frontend code
-COPY frontend/ ./
+COPY frontend/ ./frontend
+
+# Copy the backend code into the container.
+COPY backend/ ./backend
 
 # Build the Next.js app
-RUN npm run build
+RUN cd frontend && npm run build
 
 # Install additional tools
 RUN apk add --no-cache ca-certificates bash
 
 # Copy the Go API binary
-COPY --from=go-builder /build/main /main
+COPY --from=go-builder /build/main ./backend/main
 
 # Command to run both the API server and the Next.js server
 # Using a bash script to start both services
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
 
 # Expose the necessary ports
-EXPOSE 8418
+EXPOSE 8418 8417
 
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
