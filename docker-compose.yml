@@ -1,5 +1,4 @@
-version: '3.8'
-
+---
 services:
   hbd-db:
     image: postgres:16.3-bookworm
@@ -12,13 +11,14 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "6684:5432"
-  
+
   hbd:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: hbd
     ports:
+      - "8417:8417"
       - "8418:8418"
     depends_on:
       - hbd-db
