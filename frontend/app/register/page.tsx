@@ -19,6 +19,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Toggle } from "@/components/ui/toggle";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -150,19 +151,16 @@ export default function Register() {
                 ))}
               </SelectContent>
             </Select>
-            {/* Checkbox to enable/disable input */}
+            {/* Toggle to enable/disable input */}
             <div className="flex items-center space-x-2">
-              <Checkbox
+              <Toggle
                 id="toggleTimeZoneInput"
-                checked={!isTimezoneDisabled}
-                onCheckedChange={handleTimezoneCheckboxChange}
-              />
-              <label
-                htmlFor="toggleTimeZoneInput"
-                className="text-sm font-medium whitespace-nowrap leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                pressed={!isTimezoneDisabled}
+                onPressedChange={handleTimezoneCheckboxChange}
+                aria-label="Toggle Edit"
               >
-                Want to change time zone?
-              </label>
+                Edit
+              </Toggle>
             </div>
           </div>
         </div>
