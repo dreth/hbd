@@ -35,7 +35,7 @@ func main() {
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8418", "https://hbd.wtf"},
+		AllowOrigins:     []string{"http://localhost:8418", "http://localhost:3000", "https://hbd.wtf"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
