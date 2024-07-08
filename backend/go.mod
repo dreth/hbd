@@ -4,6 +4,7 @@ go 1.22.0
 
 require (
 	github.com/friendsofgo/errors v0.9.2
+	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang-migrate/migrate/v4 v4.17.1
