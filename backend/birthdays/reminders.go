@@ -99,23 +99,28 @@ func queryWithTime(time time.Time) (*sql.Rows, error) {
 
 // sendBirthdayReminder sends birthday reminders to the user via Telegram.
 func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
+	// SQL query to fetch names and dates of birthdays for the given user on the current date
 	query := `
         SELECT name, date FROM birthdays 
         WHERE user_id = $1 AND EXTRACT(MONTH FROM date) = $2 AND EXTRACT(DAY FROM date) = $3
     `
 
+	// Get the current date in UTC
 	now := time.Now().UTC()
+	// Execute the SQL query with user ID and the current month and day as parameters
 	rows, err := env.DB.Query(query, userId, now.Month(), now.Day())
 	if err != nil {
 		log.Println("Error querying birthdays:", err)
 		return
 	}
-	defer rows.Close()
+	defer rows.Close() // Ensure the rows are closed after processing
 
 	var birthdays []string
+	// Iterate over the rows returned by the query
 	for rows.Next() {
 		var name string
 		var date time.Time
+		// Scan the name and date fields from the current row
 		if err := rows.Scan(&name, &date); err != nil {
 			log.Println("Error scanning birthday:", err)
 			continue
@@ -125,30 +130,37 @@ func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 		var ageStr string
 		if date.Year() != 0 && date.Year() != now.Year() {
 			age := now.Year() - date.Year()
+			// Adjust age if the birthday hasn't occurred yet this year
 			if now.Month() < date.Month() || (now.Month() == date.Month() && now.Day() < date.Day()) {
 				age--
 			}
 			ageStr = fmt.Sprintf(" - Turns %d", age)
 		}
 
+		// Add the birthday info to the list
 		birthdays = append(birthdays, fmt.Sprintf("> %s%s", name, ageStr))
 	}
 
+	// If there are any birthdays for today, create the reminder message
 	if len(birthdays) > 0 {
 		reminder := fmt.Sprintf("🎂 Birthdays for today: %s\n\n%s", now.Format("2006-01-02"), helper.JoinStrings(birthdays, "\n"))
+		// Send the reminder via Telegram
 		sendTelegramMessage(botAPIKey, telegramUserID, reminder)
 	}
 }
 
 // sendTelegramMessage sends a message via the Telegram bot API.
 func sendTelegramMessage(botAPIKey, telegramUserID, message string) {
+	// Create a new Telegram bot instance using the provided API key
 	bot, err := tgbotapi.NewBotAPI(botAPIKey)
 	if err != nil {
 		log.Println("Error creating Telegram bot:", err)
 		return
 	}
 
+	// Create a new message to send to the specified Telegram user/channel
 	msg := tgbotapi.NewMessageToChannel(telegramUserID, message)
+	// Send the message via the Telegram bot API
 	_, err = bot.Send(msg)
 	if err != nil {
 		log.Println("Error sending Telegram message:", err)

@@ -26,26 +26,31 @@ import (
 // @Tags reminders
 // @x-order 6
 func CallReminderChecker(c *gin.Context) {
+	// Declare a variable to hold the login request data
 	var req structs.LoginRequest
 
-	// Authenticate the user
+	// Authenticate the user and get user information
 	user, err := auth.Authenticate(c, &req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
 		return
 	}
 
+	// Decrypt the user's Telegram bot API key
 	decryptedBotAPIKey, err := encryption.Decrypt(env.MK, user.TelegramBotAPIKey)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
 		return
 	}
 
+	// Decrypt the user's Telegram user ID
 	decryptedUserID, err := encryption.Decrypt(env.MK, user.TelegramUserID)
 	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
 		return
 	}
 
+	// Send the birthday reminder
 	sendBirthdayReminder(user.ID, decryptedBotAPIKey, decryptedUserID)
 
+	// Respond with a success message
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
@@ -62,30 +67,36 @@ func CallReminderChecker(c *gin.Context) {
 // @Tags birthdays
 // @x-order 7
 func AddBirthday(c *gin.Context) {
+	// Declare a variable to hold the request data
 	var req structs.BirthdayNameDateAdd
+
+	// Authenticate the user and get user information
 	user, err := auth.Authenticate(c, &req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid encryption key or email", true) {
 		return
 	}
 
-	// Perform the insert operation
+	// Parse the date from the request
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
 		helper.HE(c, err, http.StatusBadRequest, "Invalid date format", true)
 		return
 	}
 
+	// Create a Birthday model with the parsed data
 	b := models.Birthday{
 		UserID: user.ID,
 		Name:   req.Name,
 		Date:   date,
 	}
 
+	// Insert the birthday into the database
 	err = b.Insert(c, env.DB, boil.Infer())
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to insert birthday", false) {
 		return
 	}
 
+	// Respond with a success message
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 
@@ -102,20 +113,23 @@ func AddBirthday(c *gin.Context) {
 // @Tags birthdays
 // @x-order 8
 func DeleteBirthday(c *gin.Context) {
+	// Declare a variable to hold the request data
 	var req structs.BirthdayNameDateModify
+
+	// Authenticate the user and get user information
 	user, err := auth.Authenticate(c, &req)
 	if helper.HE(c, err, http.StatusBadRequest, "Invalid encryption key or email", true) {
 		return
 	}
 
-	// Parse date
+	// Parse the date from the request
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
 		helper.HE(c, err, http.StatusBadRequest, "Invalid date format", true)
 		return
 	}
 
-	// Perform the delete operation
+	// Perform the delete operation on the birthdays matching the criteria
 	_, err = models.Birthdays(
 		models.BirthdayWhere.UserID.EQ(user.ID),
 		models.BirthdayWhere.ID.EQ(req.ID),
@@ -126,6 +140,7 @@ func DeleteBirthday(c *gin.Context) {
 		return
 	}
 
+	// Respond with a success message
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
 

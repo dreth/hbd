@@ -82,11 +82,16 @@ func Authenticate(c *gin.Context, req interface{}) (*models.User, error) {
 // @Tags auth
 // @x-order 1
 func GetEncryptionKey(c *gin.Context) {
+	// Create a byte slice to hold the generated encryption key
 	key := make([]byte, 32)
+
+	// Generate a random 32-byte encryption key
 	_, err := rand.Read(key)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate encryption key", false) {
 		return
 	}
+
+	// Respond with the generated encryption key in hexadecimal format
 	c.JSON(http.StatusOK, structs.EncryptionKey{EncryptionKey: hex.EncodeToString(key)})
 }
 
