@@ -9,8 +9,7 @@ import (
 	"hbd/encryption"
 	"hbd/env"
 	"hbd/helper"
-
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"hbd/telegram"
 )
 
 // CheckReminders runs periodically to check for user reminders.
@@ -145,24 +144,6 @@ func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	if len(birthdays) > 0 {
 		reminder := fmt.Sprintf("🎂 Birthdays for today: %s\n\n%s", now.Format("2006-01-02"), helper.JoinStrings(birthdays, "\n"))
 		// Send the reminder via Telegram
-		sendTelegramMessage(botAPIKey, telegramUserID, reminder)
-	}
-}
-
-// sendTelegramMessage sends a message via the Telegram bot API.
-func sendTelegramMessage(botAPIKey, telegramUserID, message string) {
-	// Create a new Telegram bot instance using the provided API key
-	bot, err := tgbotapi.NewBotAPI(botAPIKey)
-	if err != nil {
-		log.Println("Error creating Telegram bot:", err)
-		return
-	}
-
-	// Create a new message to send to the specified Telegram user/channel
-	msg := tgbotapi.NewMessageToChannel(telegramUserID, message)
-	// Send the message via the Telegram bot API
-	_, err = bot.Send(msg)
-	if err != nil {
-		log.Println("Error sending Telegram message:", err)
+		telegram.SendTelegramMessage(botAPIKey, telegramUserID, reminder)
 	}
 }

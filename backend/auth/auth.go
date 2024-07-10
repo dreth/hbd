@@ -3,11 +3,13 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"hbd/encryption"
 	"hbd/env"
 	"hbd/helper"
 	"hbd/models"
 	"hbd/structs"
+	"hbd/telegram"
 	"net/http"
 	"reflect"
 	"time"
@@ -185,6 +187,9 @@ func Register(c *gin.Context) {
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to create user", false) {
 		return
 	}
+
+	// As the user was successfully created, send a telegram message through the bot and ID to confirm the registration
+	telegram.SendTelegramMessage(req.TelegramBotAPIKey, req.TelegramUserID, fmt.Sprintf("🎂 Your user has been successfully registered, through this bot and user ID you'll receive your birthday reminders (if there's any) at %s (Timezone: %s).", req.ReminderTime, req.Timezone))
 
 	c.JSON(http.StatusOK, structs.Success{Success: true})
 }
