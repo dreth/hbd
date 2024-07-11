@@ -33,13 +33,14 @@ export default function Dashboard() {
 
   // State to hold user data
   const [userData, setUserData] = useState({
-    email: email || localStorage.getItem("email") || "",
-    encryptionKey: encryptionKey || localStorage.getItem("encryptionKey") || "",
-    reminderTime: localStorage.getItem("reminderTime") || "",
-    timeZone: localStorage.getItem("timeZone") || "",
-    telegramApiKey: localStorage.getItem("telegramApiKey") || "",
-    telegramUser: localStorage.getItem("telegramUser") || "",
+    email: email || "",
+    encryptionKey: encryptionKey || "",
+    reminderTime: "",
+    timeZone: "",
+    telegramApiKey: "",
+    telegramUser: "",
   });
+
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
   const [birthdays, setBirthdays] = useState<
@@ -64,6 +65,22 @@ export default function Dashboard() {
   // State to hold error messages
   const [nameError, setNameError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Only access localStorage on the client side
+    if (typeof window !== "undefined") {
+      setUserData((prevData) => ({
+        ...prevData,
+        email: email || localStorage.getItem("email") || "",
+        encryptionKey: encryptionKey || localStorage.getItem("encryptionKey") || "",
+        reminderTime: localStorage.getItem("reminderTime") || "",
+        timeZone: localStorage.getItem("timeZone") || "",
+        telegramApiKey: localStorage.getItem("telegramApiKey") || "",
+        telegramUser: localStorage.getItem("telegramUser") || "",
+      }));
+    }
+  }, [email, encryptionKey]);
+
 
   useEffect(() => {
     // Fetch user data from login payload
@@ -215,7 +232,7 @@ export default function Dashboard() {
             date,
           };
           setBirthdays(updatedBirthdays);
-          setEditIndex(null); // Reset edit index after updating
+          setEditIndex(birthdays[editIndex].id); // Reset edit index after updating
           setName("");
           setDate("");
         }
@@ -241,7 +258,7 @@ export default function Dashboard() {
         if (response.success) {
           const newBirthdays = birthdays.filter((_, i) => i !== deleteIndex);
           setBirthdays(newBirthdays);
-          setDeleteIndex(null); // Reset delete index after deleting
+          setDeleteIndex(birthdays[deleteIndex].id); // Reset delete index after deleting
         }
       } catch (error) {
         console.error("Error deleting birthday", error);
@@ -267,6 +284,10 @@ export default function Dashboard() {
   const handleTimezoneCheckboxChange = () => {
     setIsTimezoneDisabled(!isTimezoneDisabled);
   };
+
+  const handleNameChangeBirthday = (name: string) => {
+    setName(name);
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
@@ -401,9 +422,9 @@ export default function Dashboard() {
               </Toggle>
             </div>
           </div>
-          {/* Telegram User field */}
+          {/* Telegram User ID field */}
           <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-            <strong className="lg:whitespace-nowrap">Telegram User:</strong>
+            <strong className="lg:whitespace-nowrap">Telegram User ID:</strong>
             <Input
               type="text"
               placeholder="new telegram user?"
@@ -414,6 +435,7 @@ export default function Dashboard() {
                 setUserData({ ...userData, telegramUser: e.target.value })
               }
             />
+            <Alert>Teta</Alert>
             {/* Toggle to enable/disable input */}
             <div className="flex items-center space-x-2">
               <Toggle
@@ -457,7 +479,7 @@ export default function Dashboard() {
                   type="text"
                   placeholder="Name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => handleNameChangeBirthday(e.target.value)}
                   className="mt-1 block w-full bg-primary-foreground"
                 />
                 {nameError && (

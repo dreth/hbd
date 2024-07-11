@@ -68,6 +68,12 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // clear localstorage on submit
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+    }
+
     const userData = {
       email,
       encryption_key: encryptionKey,
@@ -88,11 +94,15 @@ export default function Register() {
         }, 2000); // Delay for user to see the success message
       } else {
         setRegisterSuccess(false);
-        setRegisterError(response.error || "Registration failed. Please try again.");
+        setRegisterError(
+          response.error || "Registration failed. Please try again."
+        );
       }
     } catch (error: any) {
       setRegisterSuccess(false);
-      setRegisterError(error.response?.data?.error || "Registration failed. Please try again.");
+      setRegisterError(
+        error.response?.data?.error || "Registration failed. Please try again."
+      );
       console.error("Error registering user:", error);
     }
   };
@@ -243,16 +253,27 @@ export default function Register() {
             htmlFor="telegram-user"
             className="block text-sm font-medium text-primary"
           >
-            Telegram User
+            Telegram User ID
           </label>
           <Input
             id="telegram-user"
             type="text"
-            placeholder="Telegram User"
+            placeholder="Telegram User ID"
             value={telegramUser}
             onChange={(e) => setTelegramUser(e.target.value)}
             className="mt-1 block w-full bg-primary-foreground"
           />
+          {telegramApiKey && (
+            <Alert className="max-w-lg mt-3 bg-primary-foreground">
+              <OctagonAlert className="h-4 w-4" />
+              <AlertTitle className="text-primary">
+                Need help finding your ID?
+              </AlertTitle>
+              <AlertDescription>
+                Start a conversation with your bot <b>from your mobile phone</b> using <code>/start</code> send a random message to it and then follow this <Link href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`} className="font-bold underline">link</Link>. You should see a JSON response which will show a numeric ID in several places of the JSON response. That&apos;s your ID!
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
         <div className="flex flex-col md:flex-row items-center justify-between">
           <TooltipProvider>
@@ -280,7 +301,9 @@ export default function Register() {
       {registerSuccess !== null && (
         <div className="max-w-lg mt-3 bg-primary-foreground p-4 rounded-lg shadow-md">
           {registerSuccess ? (
-            <p className="text-green-600">Registration successful! Redirecting to dashboard...</p>
+            <p className="text-green-600">
+              Registration successful! Redirecting to dashboard...
+            </p>
           ) : (
             <p className="text-red-600">{registerError}</p>
           )}
