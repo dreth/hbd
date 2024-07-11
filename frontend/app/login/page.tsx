@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,19 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { useRouter } from "next/navigation";  // Use next/navigation for app directory
+import { loginUser } from "@/lib/api/apiService";
+import { useAuth } from "@/src/context/AuthContext"; // Import the AuthContext
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [encryptionKey, setEncryptionKey] = useState("");
   const [emailError, setEmailError] = useState("");
   const [keyError, setKeyError] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginSuccess, setLoginSuccess] = useState<boolean | null>(null);
+  const router = useRouter();  // Initialize useRouter from next/navigation
+  const { setAuthInfo } = useAuth();  // Destructure setAuthInfo from useAuth
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -25,7 +32,7 @@ export default function Login() {
     return key.length === 64;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let isValid = true;
 
@@ -44,8 +51,17 @@ export default function Login() {
     }
 
     if (isValid) {
-      // Proceed with form submission
-      console.log("Form is valid. Submitting...");
+      try {
+        const response = await loginUser({ email, encryption_key: encryptionKey });
+        setAuthInfo(email, encryptionKey);  // Store email and encryption key in context
+        setLoginSuccess(true);
+        console.log("Login successful:", response);
+        router.push("/dashboard");  // Redirect to /dashboard
+      } catch (error) {
+        setLoginError("Invalid email or encryption key.");
+        setLoginSuccess(false);
+        console.error("Login error:", error);
+      }
     }
   };
 
@@ -86,6 +102,7 @@ export default function Login() {
           />
           {keyError && <p className="text-red-600 text-sm mt-1">{keyError}</p>}
         </div>
+        {loginError && <p className="text-red-600 text-sm mt-1">{loginError}</p>}
         <div className="flex flex-col lg:flex-row items-center justify-between">
           <TooltipProvider>
             <Tooltip>

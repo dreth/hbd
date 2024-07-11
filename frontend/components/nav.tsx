@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Moon, Sun } from "lucide-react"
+import { Cake } from 'lucide-react';
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
@@ -49,8 +50,7 @@ const Nav: React.FC = () => {
     <nav className="flex justify-between items-center p-4">
       <div className="flex items-center">
         {/* Left side  */}
-        <a href="/" className="text-xl font-bold">Logo</a>
-        <p className="ml-4 text-sm text-gray-500">encryption key</p>
+        <a href="/" className="text-xl font-bold"><Cake/></a>
       </div>
       <div className="flex items-center">
         {/* Right side */}

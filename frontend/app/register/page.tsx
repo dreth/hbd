@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
-import { OctagonAlert } from "lucide-react";
+import { OctagonAlert, BadgeAlert } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -18,22 +19,37 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Toggle } from "@/components/ui/toggle";
+import { generateEncryptionKey, registerUser } from "@/lib/api/apiService";
+import { useAuth } from "@/src/context/AuthContext"; // Import useAuth
 
 export default function Register() {
+  const { setAuthInfo } = useAuth(); // Use the context to set auth info
   const [email, setEmail] = useState("");
-  const [encryptionKey, setEncryptionKey] = useState(
-    "Generated Encryption Key"
-  );
+  const [encryptionKey, setEncryptionKey] = useState("");
   const [reminderTime, setReminderTime] = useState("");
   const [timeZone, setTimeZone] = useState("");
   const [telegramApiKey, setTelegramApiKey] = useState("");
   const [telegramUser, setTelegramUser] = useState("");
   const [copySuccess, setCopySuccess] = useState("");
   const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
+  const [registerSuccess, setRegisterSuccess] = useState<boolean | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null); // State for registration error
+
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
+    const fetchEncryptionKey = async () => {
+      try {
+        const key = await generateEncryptionKey();
+        setEncryptionKey(key);
+      } catch (error) {
+        console.error("Error fetching encryption key:", error);
+      }
+    };
+
+    fetchEncryptionKey();
+
     // Detect and set the user's timezone
     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setTimeZone(userTimeZone);
@@ -50,9 +66,35 @@ export default function Register() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add form submission logic here
+    const userData = {
+      email,
+      encryption_key: encryptionKey,
+      reminder_time: reminderTime,
+      telegram_bot_api_key: telegramApiKey,
+      telegram_user_id: telegramUser,
+      timezone: timeZone,
+    };
+
+    try {
+      const response = await registerUser(userData);
+      if (response.success) {
+        setAuthInfo(email, encryptionKey); // Set the auth info in context
+        setRegisterSuccess(true);
+        setRegisterError(null);
+        setTimeout(() => {
+          router.push("/dashboard"); // Redirect to /dashboard after successful registration
+        }, 2000); // Delay for user to see the success message
+      } else {
+        setRegisterSuccess(false);
+        setRegisterError(response.error || "Registration failed. Please try again.");
+      }
+    } catch (error: any) {
+      setRegisterSuccess(false);
+      setRegisterError(error.response?.data?.error || "Registration failed. Please try again.");
+      console.error("Error registering user:", error);
+    }
   };
 
   // Get the list of supported time zones
@@ -71,6 +113,14 @@ export default function Register() {
         onSubmit={handleSubmit}
         className="w-full max-w-lg bg-secondary p-8 rounded-lg shadow-md space-y-6"
       >
+        <Alert className="max-w-lg mt-3 bg-primary-foreground">
+          <OctagonAlert className="h-4 w-4" />
+          <AlertTitle className="text-primary">Email Privacy Disclaimer: </AlertTitle>
+          <AlertDescription>
+            IT IS HASHED BRO WE DONT CARE ABOUT IT
+          </AlertDescription>
+        </Alert>
+
         <div>
           <label
             htmlFor="email"
@@ -87,6 +137,14 @@ export default function Register() {
             className="mt-1 block w-full bg-primary-foreground"
           />
         </div>
+        <Alert className="max-w-lg my-3 bg-primary-foreground">
+          <BadgeAlert className="h-4 w-4" />
+          <AlertTitle className="text-primary">Please </AlertTitle>
+          <AlertDescription>
+            Remember to copy your encryption key before registering!
+          </AlertDescription>
+        </Alert>
+
         <div>
           <label
             htmlFor="encryption-key"
@@ -219,13 +277,15 @@ export default function Register() {
           </button>
         </div>
       </form>
-      <Alert className="max-w-lg mt-3 bg-primary-foreground">
-        <OctagonAlert className="h-4 w-4" />
-        <AlertTitle>Email Privacy Disclaimer: </AlertTitle>
-        <AlertDescription>
-          IT IS HASHED BRO WE DONT CARE ABOUT IT
-        </AlertDescription>
-      </Alert>
+      {registerSuccess !== null && (
+        <div className="max-w-lg mt-3 bg-primary-foreground p-4 rounded-lg shadow-md">
+          {registerSuccess ? (
+            <p className="text-green-600">Registration successful! Redirecting to dashboard...</p>
+          ) : (
+            <p className="text-red-600">{registerError}</p>
+          )}
+        </div>
+      )}
     </main>
   );
 }
