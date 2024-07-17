@@ -1,0 +1,4 @@
+# .sqlboiler.toml
+[sqlite3]
+  dbname  = "hbd.db"
+  blacklist = ["schema_migrations"]

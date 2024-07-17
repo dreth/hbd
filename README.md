@@ -4,23 +4,47 @@ Birthday bot backend and frontend
 
 ## Migrations
 
-### Up
+### Postgres
+
+#### Up
 
 ```bash
 migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up
 ```
 
-### Down
+#### Down
 
 ```bash
 migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down
 ```
 
-### Down to last migration
+#### Down to last migration
 
 ```bash
 migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down 1
 ```
+
+### SQLite
+
+#### Up
+
+```bash
+migrate -database 'sqlite3://hbd.db' -path ./migrations up
+```
+
+#### Down
+
+```bash
+migrate -database 'sqlite3://hbd.db' -path ./migrations down
+```
+
+#### Down to last migration
+
+```bash
+migrate -database 'sqlite3://hbd.db' -path ./migrations down 1
+```
+
+
 
 ## SQLBoiler
 

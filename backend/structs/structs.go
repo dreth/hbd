@@ -26,7 +26,7 @@ type ModifyUserRequest struct {
 
 type BirthdayNameDateModify struct {
 	Auth LoginRequest `json:"auth" binding:"required"`
-	ID   int          `json:"id" binding:"required" example:"1"`
+	ID   int64        `json:"id" binding:"required" example:"1"`
 	Name string       `json:"name" binding:"required" example:"John Doe"`
 	Date string       `json:"date" binding:"required" example:"2021-01-01"`
 }
@@ -38,13 +38,13 @@ type BirthdayNameDateAdd struct {
 }
 
 type BirthdayFull struct {
-	ID   int    `json:"id" example:"1"`
+	ID   int64  `json:"id" example:"1"`
 	Name string `json:"name" example:"John Doe"`
 	Date string `json:"date" example:"2021-01-01"`
 }
 
 type BirthdayID struct {
-	ID int `json:"id" example:"1"`
+	ID int64 `json:"id" example:"1"`
 }
 
 // RESPONSES

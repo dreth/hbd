@@ -175,7 +175,7 @@ func Register(c *gin.Context) {
 		EmailHash:             emailHash,
 		EncryptionKey:         hex.EncodeToString(encryptedKey),
 		EncryptionKeyHash:     encryption.HashStringWithSHA256(req.EncryptionKey),
-		ReminderTime:          reminderTime,
+		ReminderTime:          reminderTime.String(),
 		Timezone:              req.Timezone,
 		TelegramBotAPIKey:     hex.EncodeToString(encryptedBotAPIKey),
 		TelegramBotAPIKeyHash: encryption.HashStringWithSHA256(req.TelegramUserID),
@@ -232,9 +232,10 @@ func Login(c *gin.Context) {
 
 	// Combine the TIME with a date to handle timezone conversion
 	now := time.Now()
+	rTAsTime, err := time.Parse("15:04:05", user.ReminderTime)
 	reminderTime := time.Date(
 		now.Year(), now.Month(), now.Day(),
-		user.ReminderTime.Hour(), user.ReminderTime.Minute(), user.ReminderTime.Second(), 0,
+		rTAsTime.Hour(), rTAsTime.Minute(), rTAsTime.Second(), 0,
 		time.UTC,
 	)
 
@@ -242,7 +243,7 @@ func Login(c *gin.Context) {
 	reminderTimeLocal := reminderTime.In(location).Format("15:04")
 
 	// Find the birthdays by user id
-	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID), qm.Select("id", "name", "date")).All(c, env.DB)
+	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID.Int64), qm.Select("id", "name", "date")).All(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Failed to fetch birthdays", false) {
 		return
 	}
@@ -253,7 +254,7 @@ func Login(c *gin.Context) {
 	// Iterate over the birthdays and append the filtered data to the new slice
 	for _, birthday := range birthdays {
 		filteredBirthdays = append(filteredBirthdays, structs.BirthdayFull{
-			ID:   birthday.ID,
+			ID:   birthday.ID.Int64,
 			Name: birthday.Name,
 			Date: birthday.Date.Format("2006-01-02"),
 		})
@@ -329,7 +330,7 @@ func ModifyUser(c *gin.Context) {
 	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).In(time.UTC)
 
 	// Update the user's details
-	user.ReminderTime = reminderTime
+	user.ReminderTime = reminderTime.String()
 	user.Timezone = req.NewTimezone
 	user.TelegramBotAPIKey = hex.EncodeToString(encryptedBotAPIKey)
 	user.TelegramBotAPIKeyHash = telegramBotAPIKeyHash

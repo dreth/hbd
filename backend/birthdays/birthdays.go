@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
@@ -48,7 +49,7 @@ func CallReminderChecker(c *gin.Context) {
 	}
 
 	// Send the birthday reminder
-	sendBirthdayReminder(user.ID, decryptedBotAPIKey, decryptedUserID)
+	sendBirthdayReminder(int(user.ID.Int64), decryptedBotAPIKey, decryptedUserID)
 
 	// Respond with a success message
 	c.JSON(http.StatusOK, structs.Success{Success: true})
@@ -85,7 +86,7 @@ func AddBirthday(c *gin.Context) {
 
 	// Create a Birthday model with the parsed data
 	b := models.Birthday{
-		UserID: user.ID,
+		UserID: user.ID.Int64,
 		Name:   req.Name,
 		Date:   date,
 	}
@@ -131,8 +132,8 @@ func DeleteBirthday(c *gin.Context) {
 
 	// Perform the delete operation on the birthdays matching the criteria
 	_, err = models.Birthdays(
-		models.BirthdayWhere.UserID.EQ(user.ID),
-		models.BirthdayWhere.ID.EQ(req.ID),
+		models.BirthdayWhere.UserID.EQ(user.ID.Int64),
+		models.BirthdayWhere.ID.EQ(null.Int64From(req.ID)),
 		models.BirthdayWhere.Name.EQ(req.Name),
 		models.BirthdayWhere.Date.EQ(date),
 	).DeleteAll(c, env.DB)
@@ -175,8 +176,8 @@ func ModifyBirthday(c *gin.Context) {
 
 	// Get the birthday
 	birthday, err := models.Birthdays(
-		models.BirthdayWhere.UserID.EQ(user.ID),
-		models.BirthdayWhere.ID.EQ(req.ID),
+		models.BirthdayWhere.UserID.EQ(user.ID.Int64),
+		models.BirthdayWhere.ID.EQ(null.Int64From(req.ID)),
 	).One(c, env.DB)
 	if helper.HE(c, err, http.StatusInternalServerError, "Birthday doesn't exist", false) {
 		return
