@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
-import { OctagonAlert, BadgeAlert } from "lucide-react";
+import { OctagonAlert, BadgeAlert, CircleHelp } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -20,6 +20,11 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { generateEncryptionKey, registerUser } from "@/lib/api/apiService";
 import { useAuth } from "@/src/context/AuthContext"; // Import useAuth
 
@@ -125,7 +130,9 @@ export default function Register() {
       >
         <Alert className="max-w-lg mt-3 bg-primary-foreground">
           <OctagonAlert className="h-4 w-4" />
-          <AlertTitle className="text-primary">Email Privacy Disclaimer: </AlertTitle>
+          <AlertTitle className="text-primary">
+            Email Privacy Disclaimer:{" "}
+          </AlertTitle>
           <AlertDescription>
             IT IS HASHED BRO WE DONT CARE ABOUT IT
           </AlertDescription>
@@ -235,9 +242,31 @@ export default function Register() {
         <div>
           <label
             htmlFor="telegram-api-key"
-            className="block text-sm font-medium text-primary"
+            className="text-sm font-medium text-primary flex items-center"
           >
             Telegram Bot API Key
+            <Popover>
+              <PopoverTrigger>
+                <CircleHelp className="ml-2 text-secondary-foreground w-4 h-4" />
+              </PopoverTrigger>
+              <PopoverContent>
+                <p className="text-primary text-lg">Need help finding your ID?</p>
+                <p>
+                  Start a conversation with your bot{" "}
+                  <b>from your mobile phone</b> using{" "}
+                  <code className="bg-blue-100 p-0.5 rounded-md">/start</code>{" "}
+                  send a random message to it and then follow this{" "}
+                  <Link
+                    href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`}
+                    className="font-bold underline"
+                  >
+                    link
+                  </Link>
+                  . You should see a JSON response which will show a numeric ID
+                  in several places of the JSON response. That&apos;s your ID!
+                </p>
+              </PopoverContent>
+            </Popover>
           </label>
           <Input
             id="telegram-api-key"
@@ -270,7 +299,18 @@ export default function Register() {
                 Need help finding your ID?
               </AlertTitle>
               <AlertDescription>
-                Start a conversation with your bot <b>from your mobile phone</b> using <code>/start</code> send a random message to it and then follow this <Link href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`} className="font-bold underline">link</Link>. You should see a JSON response which will show a numeric ID in several places of the JSON response. That&apos;s your ID!
+                Start a conversation with your bot <b>from your mobile phone</b>{" "}
+                using{" "}
+                <code className="bg-blue-100 p-0.5 rounded-md">/start</code>{" "}
+                send a random message to it and then follow this{" "}
+                <Link
+                  href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`}
+                  className="font-bold underline"
+                >
+                  link
+                </Link>
+                . You should see a JSON response which will show a numeric ID in
+                several places of the JSON response. That&apos;s your ID!
               </AlertDescription>
             </Alert>
           )}

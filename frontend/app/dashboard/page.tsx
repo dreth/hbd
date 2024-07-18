@@ -12,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Toggle } from "@/components/ui/toggle";
 import {
   modifyUser,
@@ -72,7 +78,8 @@ export default function Dashboard() {
       setUserData((prevData) => ({
         ...prevData,
         email: email || localStorage.getItem("email") || "",
-        encryptionKey: encryptionKey || localStorage.getItem("encryptionKey") || "",
+        encryptionKey:
+          encryptionKey || localStorage.getItem("encryptionKey") || "",
         reminderTime: localStorage.getItem("reminderTime") || "",
         timeZone: localStorage.getItem("timeZone") || "",
         telegramApiKey: localStorage.getItem("telegramApiKey") || "",
@@ -80,7 +87,6 @@ export default function Dashboard() {
       }));
     }
   }, [email, encryptionKey]);
-
 
   useEffect(() => {
     // Fetch user data from login payload
@@ -195,7 +201,7 @@ export default function Dashboard() {
           date,
         });
         if (response.success) {
-          setBirthdays([...birthdays, { id: null, name, date }]);
+          setBirthdays([...birthdays, { id: response.id, name, date }]);
           setName("");
           setDate("");
         }
@@ -212,7 +218,8 @@ export default function Dashboard() {
     setEditIndex(index); // Set the edit index to the current birthday
   };
 
-  const handleUpdateBirthday = async () => {
+  const handleUpdateBirthday = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
     if (editIndex !== null && name && date) {
       try {
         const response = await modifyBirthday({
@@ -232,7 +239,7 @@ export default function Dashboard() {
             date,
           };
           setBirthdays(updatedBirthdays);
-          setEditIndex(birthdays[editIndex].id); // Reset edit index after updating
+          setEditIndex(null); // Reset edit index after updating
           setName("");
           setDate("");
         }
@@ -258,7 +265,7 @@ export default function Dashboard() {
         if (response.success) {
           const newBirthdays = birthdays.filter((_, i) => i !== deleteIndex);
           setBirthdays(newBirthdays);
-          setDeleteIndex(birthdays[deleteIndex].id); // Reset delete index after deleting
+          setDeleteIndex(null); // Reset delete index after deleting
         }
       } catch (error) {
         console.error("Error deleting birthday", error);
@@ -287,176 +294,195 @@ export default function Dashboard() {
 
   const handleNameChangeBirthday = (name: string) => {
     setName(name);
-  }
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
       <h1 className="text-4xl font-bold text-center my-8">Dashboard</h1>
       <div className="flex flex-col justify-center gap-8 w-full max-w-screen-2xl p-2 lg:p-10">
-        <div className="w-full bg-secondary p-8 rounded-lg shadow-md space-y-6">
-          <h2 className="text-2xl font-semibold">User Information</h2>
-          {/* Encryption Key field */}
-          <div className="flex flex-col lg:flex-row justify-between space-x-4 mb-4">
-            <div>
-              <strong>Encryption Key:</strong>{" "}
-              {isEncryptionKeyVisible ? (
-                <span className="break-all">{userData.encryptionKey}</span>
-              ) : (
-                <span className="break-all">
-                  ****************************************************************
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => setIsEncryptionKeyVisible(!isEncryptionKeyVisible)}
-              className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md w-full md:w-fit hover:bg-blue-700 transition duration-300"
-            >
-              {isEncryptionKeyVisible ? "Hide" : "Show"}
-            </button>
-          </div>
-          {/* Email input field */}
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-            <strong>Email:</strong>
-            <Input
-              type="email"
-              placeholder="new email?"
-              value={userData.email}
-              className="bg-primary-foreground"
-              disabled={isEmailDisabled}
-              onChange={(e) =>
-                setUserData({ ...userData, email: e.target.value })
-              }
-            />
-            {/* Toggle to enable/disable input */}
-            <div className="flex items-center space-x-2">
-              <Toggle
-                id="toggleEmailInput"
-                pressed={!isEmailDisabled}
-                onPressedChange={handleEmailCheckboxChange}
-                aria-label="Toggle Edit"
-              >
-                Edit
-              </Toggle>
-            </div>
-          </div>
-          {/* Reminder Time input field */}
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-            <strong className="lg:whitespace-nowrap">Reminder Time:</strong>
-            <Input
-              type="time"
-              placeholder="new reminder time?"
-              value={userData.reminderTime}
-              className="bg-primary-foreground"
-              onChange={(e) =>
-                setUserData({ ...userData, reminderTime: e.target.value })
-              }
-            />
-          </div>
-          {/* Time zone input field */}
-          <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
-            <strong className="lg:whitespace-nowrap">Time Zone:</strong>
-            <Select
-              value={timeZone}
-              onValueChange={setTimeZone}
-              disabled={isTimezoneDisabled}
-            >
-              <SelectTrigger className="bg-primary-foreground">
-                <SelectValue placeholder={timeZone} />
-              </SelectTrigger>
-              <SelectContent>
-                {timeZones.map((zone) => (
-                  <SelectItem key={zone} value={zone}>
-                    {zone}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* Toggle to enable/disable input */}
-            <div className="flex items-center space-x-2">
-              <Toggle
-                id="toggleTimeZoneInput"
-                pressed={!isTimezoneDisabled}
-                onPressedChange={handleTimezoneCheckboxChange}
-                aria-label="Toggle Edit"
-              >
-                Edit
-              </Toggle>
-            </div>
-          </div>
-          {/* Telegram API Key field */}
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-            <strong className="lg:whitespace-nowrap">
-              Telegram Bot API Key:
-            </strong>
-            <Input
-              type="text"
-              placeholder="new telegram API key?"
-              value={
-                isTelegramApiKeyVisible
-                  ? userData.telegramApiKey
-                  : "************"
-              }
-              className="bg-primary-foreground"
-              disabled={isTelegramApiKeyDisabled}
-              onChange={(e) =>
-                setUserData({ ...userData, telegramApiKey: e.target.value })
-              }
-            />
-            <button
-              onClick={() =>
-                setIsTelegramApiKeyVisible(!isTelegramApiKeyVisible)
-              }
-              className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
-            >
-              {isTelegramApiKeyVisible ? "Hide" : "Show"}
-            </button>
-            {/* Toggle to enable/disable input */}
-            <div className="flex items-center space-x-2">
-              <Toggle
-                id="toggleTelegramApiKeyInput"
-                pressed={!isTelegramApiKeyDisabled}
-                onPressedChange={handleTelegramApiKeyCheckboxChange}
-                aria-label="Toggle Edit"
-              >
-                Edit
-              </Toggle>
-            </div>
-          </div>
-          {/* Telegram User ID field */}
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-            <strong className="lg:whitespace-nowrap">Telegram User ID:</strong>
-            <Input
-              type="text"
-              placeholder="new telegram user?"
-              value={userData.telegramUser}
-              className="bg-primary-foreground"
-              disabled={isTelegramUserDisabled}
-              onChange={(e) =>
-                setUserData({ ...userData, telegramUser: e.target.value })
-              }
-            />
-            <Alert>Teta</Alert>
-            {/* Toggle to enable/disable input */}
-            <div className="flex items-center space-x-2">
-              <Toggle
-                id="toggleTelegramUserInput"
-                pressed={!isTelegramUserDisabled}
-                onPressedChange={handleTelegramUserCheckboxChange}
-                aria-label="Toggle Edit"
-              >
-                Edit
-              </Toggle>
-            </div>
-          </div>
-          <div className="flex justify-center">
-            <button
-              onClick={handleUpdateUser}
-              className="w-full px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
-            >
-              Update User Data
-            </button>
-          </div>
-        </div>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="item-1" className="bg-secondary rounded-lg px-6">
+            <AccordionTrigger className="text-2xl font-semibold">
+              User Information
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="w-full bg-secondary p-8 rounded-lg shadow-md space-y-6">
+                {/* Encryption Key field */}
+                <div className="flex flex-col lg:flex-row justify-between space-x-4 mb-4">
+                  <div>
+                    <strong>Encryption Key:</strong>{" "}
+                    {isEncryptionKeyVisible ? (
+                      <span className="break-all">
+                        {userData.encryptionKey}
+                      </span>
+                    ) : (
+                      <span className="break-all">
+                        ****************************************************************
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() =>
+                      setIsEncryptionKeyVisible(!isEncryptionKeyVisible)
+                    }
+                    className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md w-full md:w-fit hover:bg-blue-700 transition duration-300"
+                  >
+                    {isEncryptionKeyVisible ? "Hide" : "Show"}
+                  </button>
+                </div>
+                {/* Email input field */}
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+                  <strong>Email:</strong>
+                  <Input
+                    type="email"
+                    placeholder="new email?"
+                    value={userData.email}
+                    className="bg-primary-foreground"
+                    disabled={isEmailDisabled}
+                    onChange={(e) =>
+                      setUserData({ ...userData, email: e.target.value })
+                    }
+                  />
+                  {/* Toggle to enable/disable input */}
+                  <div className="flex items-center space-x-2">
+                    <Toggle
+                      id="toggleEmailInput"
+                      pressed={!isEmailDisabled}
+                      onPressedChange={handleEmailCheckboxChange}
+                      aria-label="Toggle Edit"
+                    >
+                      Edit
+                    </Toggle>
+                  </div>
+                </div>
+                {/* Reminder Time input field */}
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+                  <strong className="lg:whitespace-nowrap">
+                    Reminder Time:
+                  </strong>
+                  <Input
+                    type="time"
+                    placeholder="new reminder time?"
+                    value={userData.reminderTime}
+                    className="bg-primary-foreground"
+                    onChange={(e) =>
+                      setUserData({ ...userData, reminderTime: e.target.value })
+                    }
+                  />
+                </div>
+                {/* Time zone input field */}
+                <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
+                  <strong className="lg:whitespace-nowrap">Time Zone:</strong>
+                  <Select
+                    value={timeZone}
+                    onValueChange={setTimeZone}
+                    disabled={isTimezoneDisabled}
+                  >
+                    <SelectTrigger className="bg-primary-foreground">
+                      <SelectValue placeholder={timeZone} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeZones.map((zone) => (
+                        <SelectItem key={zone} value={zone}>
+                          {zone}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {/* Toggle to enable/disable input */}
+                  <div className="flex items-center space-x-2">
+                    <Toggle
+                      id="toggleTimeZoneInput"
+                      pressed={!isTimezoneDisabled}
+                      onPressedChange={handleTimezoneCheckboxChange}
+                      aria-label="Toggle Edit"
+                    >
+                      Edit
+                    </Toggle>
+                  </div>
+                </div>
+                {/* Telegram API Key field */}
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+                  <strong className="lg:whitespace-nowrap">
+                    Telegram Bot API Key:
+                  </strong>
+                  <Input
+                    type="text"
+                    placeholder="new telegram API key?"
+                    value={
+                      isTelegramApiKeyVisible
+                        ? userData.telegramApiKey
+                        : "************"
+                    }
+                    className="bg-primary-foreground"
+                    disabled={isTelegramApiKeyDisabled}
+                    onChange={(e) =>
+                      setUserData({
+                        ...userData,
+                        telegramApiKey: e.target.value,
+                      })
+                    }
+                  />
+                  <button
+                    onClick={() =>
+                      setIsTelegramApiKeyVisible(!isTelegramApiKeyVisible)
+                    }
+                    className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
+                  >
+                    {isTelegramApiKeyVisible ? "Hide" : "Show"}
+                  </button>
+                  {/* Toggle to enable/disable input */}
+                  <div className="flex items-center space-x-2">
+                    <Toggle
+                      id="toggleTelegramApiKeyInput"
+                      pressed={!isTelegramApiKeyDisabled}
+                      onPressedChange={handleTelegramApiKeyCheckboxChange}
+                      aria-label="Toggle Edit"
+                    >
+                      Edit
+                    </Toggle>
+                  </div>
+                </div>
+                {/* Telegram User ID field */}
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+                  <strong className="lg:whitespace-nowrap">
+                    Telegram User ID:
+                  </strong>
+                  <Input
+                    type="text"
+                    placeholder="new telegram user?"
+                    value={userData.telegramUser}
+                    className="bg-primary-foreground"
+                    disabled={isTelegramUserDisabled}
+                    onChange={(e) =>
+                      setUserData({ ...userData, telegramUser: e.target.value })
+                    }
+                  />
+                  {/* Toggle to enable/disable input */}
+                  <div className="flex items-center space-x-2">
+                    <Toggle
+                      id="toggleTelegramUserInput"
+                      pressed={!isTelegramUserDisabled}
+                      onPressedChange={handleTelegramUserCheckboxChange}
+                      aria-label="Toggle Edit"
+                    >
+                      Edit
+                    </Toggle>
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleUpdateUser}
+                    className="w-full px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
+                  >
+                    Update User Data
+                  </button>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
         {/* Birthdays Section */}
         <div className="w-full bg-secondary p-8 rounded-lg shadow-md space-y-6">
           <h2 className="text-2xl font-semibold">Add Birthday</h2>

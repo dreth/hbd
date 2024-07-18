@@ -1,7 +1,6 @@
 "use client";
 
-
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface AuthContextType {
   email: string;
@@ -12,13 +11,24 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [email, setEmail] = useState('');
-  const [encryptionKey, setEncryptionKey] = useState('');
+  const [email, setEmail] = useState(localStorage.getItem('email') || '');
+  const [encryptionKey, setEncryptionKey] = useState(localStorage.getItem('encryptionKey') || '');
 
   const setAuthInfo = (email: string, encryptionKey: string) => {
     setEmail(email);
     setEncryptionKey(encryptionKey);
+    localStorage.setItem('email', email);
+    localStorage.setItem('encryptionKey', encryptionKey);
   };
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('email');
+    const storedKey = localStorage.getItem('encryptionKey');
+    if (storedEmail && storedKey) {
+      setEmail(storedEmail);
+      setEncryptionKey(storedKey);
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{ email, encryptionKey, setAuthInfo }}>
