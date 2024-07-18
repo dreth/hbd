@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!email || !encryptionKey) {
-      router.push("/login");
+      router.push('/login');
     }
   }, [email, encryptionKey, router]);
 
@@ -163,7 +163,7 @@ export default function Dashboard() {
     e.preventDefault();
     setNameError(null);
     setDateError(null);
-  
+
     if (!name) {
       setNameError("Name is required.");
     }
@@ -180,6 +180,7 @@ export default function Dashboard() {
           name,
           date,
         });
+        console.log("Add birthday response:", response);
         if (response.id && response.name && response.date) {
           setBirthdays([...birthdays, { id: response.id, name: response.name, date: response.date }]);
           setName("");
@@ -200,7 +201,8 @@ export default function Dashboard() {
     setEditIndex(index);
   };
 
-  const handleUpdateBirthday = async () => {
+  const handleUpdateBirthday = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
     if (editIndex !== null && name && date) {
       try {
         const response = await modifyBirthday({
@@ -274,7 +276,6 @@ export default function Dashboard() {
             </AccordionTrigger>
             <AccordionContent>
               <div className="w-full bg-secondary p-8 rounded-lg shadow-md space-y-6">
-                {/* Encryption Key field */}
                 <div className="flex flex-col lg:flex-row justify-between space-x-4 mb-4">
                   <div>
                     <strong>Encryption Key:</strong>{" "}
@@ -295,7 +296,6 @@ export default function Dashboard() {
                     {isEncryptionKeyVisible ? "Hide" : "Show"}
                   </button>
                 </div>
-                {/* Email input field */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong>Email:</strong>
                   <Input
@@ -319,7 +319,6 @@ export default function Dashboard() {
                     </Toggle>
                   </div>
                 </div>
-                {/* Reminder Time input field */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Reminder Time:</strong>
                   <Input
@@ -332,7 +331,6 @@ export default function Dashboard() {
                     }
                   />
                 </div>
-                {/* Time zone input field */}
                 <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Time Zone:</strong>
                   <Select
@@ -362,7 +360,6 @@ export default function Dashboard() {
                     </Toggle>
                   </div>
                 </div>
-                {/* Telegram API Key field */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">
                     Telegram Bot API Key:
@@ -403,7 +400,6 @@ export default function Dashboard() {
                     </Toggle>
                   </div>
                 </div>
-                {/* Telegram User ID field */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Telegram User ID:</strong>
                   <Input
@@ -555,52 +551,51 @@ export default function Dashboard() {
           </ul>
         </div>
       </div>
-      {/* Delete user field */}
       <div className="w-full">
-      <div className="flex justify-center">
-        <button
-          onClick={logout}
-          className="w-full max-w-40 px-6 py-2 bg-slate-500 text-white font-semibold rounded-md shadow-md hover:bg-slate-800 transition duration-300"
-        >
-          Logout
-        </button>
-      </div>
-      <div className="flex justify-center mt-6">
-        {!confirmDeleteUser ? (
+        <div className="flex justify-center">
           <button
-            onClick={() => setConfirmDeleteUser(true)}
-            className="w-full max-w-40 px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
+            onClick={logout}
+            className="w-full max-w-40 px-6 py-2 bg-slate-500 text-white font-semibold rounded-md shadow-md hover:bg-slate-800 transition duration-300"
           >
-            Delete User
+            Logout
           </button>
-        ) : (
-          <div className="flex flex-col justify-center items-center space-y-4">
-            <Alert className="max-w-lg mt-3">
-              <OctagonAlert className="h-4 w-4" />
-              <AlertTitle className="text-destructive">
-                There is no way back from this{" "}
-              </AlertTitle>
-              <AlertDescription>
-                Please ve careful with this action
-              </AlertDescription>
-            </Alert>
-            <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-              <button
-                onClick={handleDeleteUser}
-                className="w-full lg:w-64 px-3 py-2 bg-red-700 text-white font-semibold rounded-md shadow-md hover:bg-red-900 transition duration-300 whitespace-nowrap"
-              >
-                Confirm Delete
-              </button>
-              <button
-                onClick={() => setConfirmDeleteUser(false)}
-                className="w-full lg:w-64 px-3 py-2 bg-gray-600 text-white font-semibold rounded-md shadow-md hover:bg-gray-700 transition duration-300"
-              >
-                Cancel
-              </button>
+        </div>
+        <div className="flex justify-center mt-6">
+          {!confirmDeleteUser ? (
+            <button
+              onClick={() => setConfirmDeleteUser(true)}
+              className="w-full max-w-40 px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
+            >
+              Delete User
+            </button>
+          ) : (
+            <div className="flex flex-col justify-center items-center space-y-4">
+              <Alert className="max-w-lg mt-3">
+                <OctagonAlert className="h-4 w-4" />
+                <AlertTitle className="text-destructive">
+                  There is no way back from this{" "}
+                </AlertTitle>
+                <AlertDescription>
+                  Please be careful with this action
+                </AlertDescription>
+              </Alert>
+              <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+                <button
+                  onClick={handleDeleteUser}
+                  className="w-full lg:w-64 px-3 py-2 bg-red-700 text-white font-semibold rounded-md shadow-md hover:bg-red-900 transition duration-300 whitespace-nowrap"
+                >
+                  Confirm Delete
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteUser(false)}
+                  className="w-full lg:w-64 px-3 py-2 bg-gray-600 text-white font-semibold rounded-md shadow-md hover:bg-gray-700 transition duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       </div>
     </main>
   );
