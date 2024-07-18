@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!email || !encryptionKey) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [email, encryptionKey, router]);
 
@@ -161,7 +161,6 @@ export default function Dashboard() {
 
   const handleAddBirthday = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    // Reset error messages
     setNameError(null);
     setDateError(null);
   
@@ -181,7 +180,6 @@ export default function Dashboard() {
           name,
           date,
         });
-        console.log("Add birthday response:", response);
         if (response.id && response.name && response.date) {
           setBirthdays([...birthdays, { id: response.id, name: response.name, date: response.date }]);
           setName("");
@@ -194,7 +192,6 @@ export default function Dashboard() {
       }
     }
   };
-    
 
   const handleEditBirthday = (index: number) => {
     const birthday = birthdays[index];
