@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation"; 
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { generateEncryptionKey, registerUser } from "@/lib/api/apiService";
-import { useAuth } from "@/src/context/AuthContext"; // Import useAuth
+import { useAuth } from "@/src/context/AuthContext";
 
 export default function Register() {
   const { setAuthInfo } = useAuth(); // Use the context to set auth info
@@ -39,7 +39,7 @@ export default function Register() {
   const [copySuccess, setCopySuccess] = useState("");
   const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
   const [registerSuccess, setRegisterSuccess] = useState<boolean | null>(null);
-  const [registerError, setRegisterError] = useState<string | null>(null); // State for registration error
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
   const router = useRouter(); // Initialize useRouter
 
@@ -254,7 +254,7 @@ export default function Register() {
                 <p>
                   Start a conversation with your bot{" "}
                   <b>from your mobile phone</b> using{" "}
-                  <code className="bg-blue-100 p-0.5 rounded-md">/start</code>{" "}
+                  <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">/start</code>{" "}
                   send a random message to it and then follow this{" "}
                   <Link
                     href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`}
@@ -301,7 +301,7 @@ export default function Register() {
               <AlertDescription>
                 Start a conversation with your bot <b>from your mobile phone</b>{" "}
                 using{" "}
-                <code className="bg-blue-100 p-0.5 rounded-md">/start</code>{" "}
+                <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">/start</code>{" "}
                 send a random message to it and then follow this{" "}
                 <Link
                   href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`}

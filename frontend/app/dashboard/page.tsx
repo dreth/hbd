@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { OctagonAlert } from "lucide-react";
+import { AlertCircle, OctagonAlert } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -30,14 +29,18 @@ import {
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "next/navigation";
 
-// Add CSS class for ring effect
 const ringClass = "ring-2 ring-blue-500";
 
 export default function Dashboard() {
-  const { email, encryptionKey } = useAuth();
+  const { email, encryptionKey, logout } = useAuth();
   const router = useRouter();
 
-  // State to hold user data
+  useEffect(() => {
+    if (!email || !encryptionKey) {
+      router.push('/login');
+    }
+  }, [email, encryptionKey, router]);
+
   const [userData, setUserData] = useState({
     email: email || "",
     encryptionKey: encryptionKey || "",
@@ -59,44 +62,35 @@ export default function Dashboard() {
   const [isEncryptionKeyVisible, setIsEncryptionKeyVisible] = useState(false);
   const [isTelegramApiKeyVisible, setIsTelegramApiKeyVisible] = useState(false);
   const [isEmailDisabled, setIsEmailDisabled] = useState(true);
-  const [isTelegramApiKeyDisabled, setIsTelegramApiKeyDisabled] =
-    useState(true);
+  const [isTelegramApiKeyDisabled, setIsTelegramApiKeyDisabled] = useState(true);
   const [isTelegramUserDisabled, setIsTelegramUserDisabled] = useState(true);
   const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
   const [timeZone, setTimeZone] = useState(userData.timeZone);
-  const [editIndex, setEditIndex] = useState<number | null>(null); // State to track the index of the birthday being edited
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null); // State to track the index of the birthday to be deleted
-  const [confirmDeleteUser, setConfirmDeleteUser] = useState<boolean>(false); // State for delete user confirmation
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [confirmDeleteUser, setConfirmDeleteUser] = useState<boolean>(false);
 
-  // State to hold error messages
   const [nameError, setNameError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only access localStorage on the client side
-    if (typeof window !== "undefined") {
-      setUserData((prevData) => ({
+    if (email && encryptionKey) {
+      setUserData(prevData => ({
         ...prevData,
-        email: email || localStorage.getItem("email") || "",
-        encryptionKey:
-          encryptionKey || localStorage.getItem("encryptionKey") || "",
-        reminderTime: localStorage.getItem("reminderTime") || "",
-        timeZone: localStorage.getItem("timeZone") || "",
-        telegramApiKey: localStorage.getItem("telegramApiKey") || "",
-        telegramUser: localStorage.getItem("telegramUser") || "",
+        email,
+        encryptionKey,
       }));
     }
   }, [email, encryptionKey]);
 
   useEffect(() => {
-    // Fetch user data from login payload
     const fetchUserData = async () => {
       try {
         const response = await loginUser({
           email: userData.email,
           encryption_key: userData.encryptionKey,
         });
-        setUserData((prevData) => ({
+        setUserData(prevData => ({
           ...prevData,
           reminderTime: response.reminder_time,
           timeZone: response.timezone,
@@ -104,12 +98,6 @@ export default function Dashboard() {
           telegramUser: response.telegram_user_id,
         }));
         setTimeZone(response.timezone);
-        localStorage.setItem("reminderTime", response.reminder_time);
-        localStorage.setItem("timeZone", response.timezone);
-        localStorage.setItem("telegramApiKey", response.telegram_bot_api_key);
-        localStorage.setItem("telegramUser", response.telegram_user_id);
-        localStorage.setItem("encryptionKey", userData.encryptionKey);
-
         if (response.birthdays) {
           setBirthdays(response.birthdays);
         }
@@ -122,7 +110,6 @@ export default function Dashboard() {
     }
   }, [userData.email, userData.encryptionKey]);
 
-  // Handlers to toggle the disabled state
   const handleEmailCheckboxChange = () => {
     setIsEmailDisabled(!isEmailDisabled);
   };
@@ -149,12 +136,6 @@ export default function Dashboard() {
         new_timezone: timeZone,
       });
       console.log("User updated successfully");
-      localStorage.setItem("email", userData.email);
-      localStorage.setItem("reminderTime", userData.reminderTime);
-      localStorage.setItem("telegramApiKey", userData.telegramApiKey);
-      localStorage.setItem("telegramUser", userData.telegramUser);
-      localStorage.setItem("timeZone", timeZone);
-      localStorage.setItem("encryptionKey", userData.encryptionKey);
     } catch (error) {
       console.error("Error updating user", error);
     }
@@ -170,8 +151,8 @@ export default function Dashboard() {
           encryption_key: userData.encryptionKey,
         });
         console.log("User deleted successfully");
-        localStorage.clear();
-        router.push("/"); // Redirect to home page after deletion
+        logout();
+        router.push("/");
       } catch (error) {
         console.error("Error deleting user", error);
       }
@@ -183,7 +164,7 @@ export default function Dashboard() {
     // Reset error messages
     setNameError(null);
     setDateError(null);
-
+  
     if (!name) {
       setNameError("Name is required.");
     }
@@ -200,26 +181,29 @@ export default function Dashboard() {
           name,
           date,
         });
-        if (response.success) {
-          setBirthdays([...birthdays, { id: response.id, name, date }]);
+        console.log("Add birthday response:", response);
+        if (response.id && response.name && response.date) {
+          setBirthdays([...birthdays, { id: response.id, name: response.name, date: response.date }]);
           setName("");
           setDate("");
+        } else {
+          console.error("Failed to add birthday: Invalid response format");
         }
       } catch (error) {
         console.error("Error adding birthday", error);
       }
     }
   };
+    
 
   const handleEditBirthday = (index: number) => {
     const birthday = birthdays[index];
     setName(birthday.name);
     setDate(birthday.date);
-    setEditIndex(index); // Set the edit index to the current birthday
+    setEditIndex(index);
   };
 
-  const handleUpdateBirthday = async (e: { preventDefault: () => void }) => {
-    e.preventDefault();
+  const handleUpdateBirthday = async () => {
     if (editIndex !== null && name && date) {
       try {
         const response = await modifyBirthday({
@@ -227,19 +211,15 @@ export default function Dashboard() {
             email: userData.email,
             encryption_key: userData.encryptionKey,
           },
-          id: birthdays[editIndex].id, // Assuming each birthday has a unique id
+          id: birthdays[editIndex].id,
           name,
           date,
         });
         if (response.success) {
           const updatedBirthdays = [...birthdays];
-          updatedBirthdays[editIndex] = {
-            id: birthdays[editIndex].id,
-            name,
-            date,
-          };
+          updatedBirthdays[editIndex] = { id: birthdays[editIndex].id, name, date };
           setBirthdays(updatedBirthdays);
-          setEditIndex(null); // Reset edit index after updating
+          setEditIndex(null);
           setName("");
           setDate("");
         }
@@ -263,9 +243,8 @@ export default function Dashboard() {
           name: birthdayToDelete.name,
         });
         if (response.success) {
-          const newBirthdays = birthdays.filter((_, i) => i !== deleteIndex);
-          setBirthdays(newBirthdays);
-          setDeleteIndex(null); // Reset delete index after deleting
+          setBirthdays(prevBirthdays => prevBirthdays.filter((_, i) => i !== deleteIndex));
+          setDeleteIndex(null);
         }
       } catch (error) {
         console.error("Error deleting birthday", error);
@@ -274,18 +253,9 @@ export default function Dashboard() {
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputDate = e.target.value;
-    const [year, month, day] = inputDate.split("-");
-    if (year === "0000" || year === "0000") {
-      // Keep the date as is if the year is set to 0000
-      setDate(`0000-${month}-${day}`);
-    } else {
-      // Otherwise, format it to yyyy-mm-dd
-      setDate(inputDate);
-    }
+    setDate(e.target.value);
   };
 
-  // Get the list of supported time zones
   const timeZones = Intl.supportedValuesOf("timeZone");
 
   const handleTimezoneCheckboxChange = () => {
@@ -312,9 +282,7 @@ export default function Dashboard() {
                   <div>
                     <strong>Encryption Key:</strong>{" "}
                     {isEncryptionKeyVisible ? (
-                      <span className="break-all">
-                        {userData.encryptionKey}
-                      </span>
+                      <span className="break-all">{userData.encryptionKey}</span>
                     ) : (
                       <span className="break-all">
                         ****************************************************************
@@ -343,7 +311,6 @@ export default function Dashboard() {
                       setUserData({ ...userData, email: e.target.value })
                     }
                   />
-                  {/* Toggle to enable/disable input */}
                   <div className="flex items-center space-x-2">
                     <Toggle
                       id="toggleEmailInput"
@@ -357,9 +324,7 @@ export default function Dashboard() {
                 </div>
                 {/* Reminder Time input field */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-                  <strong className="lg:whitespace-nowrap">
-                    Reminder Time:
-                  </strong>
+                  <strong className="lg:whitespace-nowrap">Reminder Time:</strong>
                   <Input
                     type="time"
                     placeholder="new reminder time?"
@@ -389,7 +354,6 @@ export default function Dashboard() {
                       ))}
                     </SelectContent>
                   </Select>
-                  {/* Toggle to enable/disable input */}
                   <div className="flex items-center space-x-2">
                     <Toggle
                       id="toggleTimeZoneInput"
@@ -431,7 +395,6 @@ export default function Dashboard() {
                   >
                     {isTelegramApiKeyVisible ? "Hide" : "Show"}
                   </button>
-                  {/* Toggle to enable/disable input */}
                   <div className="flex items-center space-x-2">
                     <Toggle
                       id="toggleTelegramApiKeyInput"
@@ -445,9 +408,7 @@ export default function Dashboard() {
                 </div>
                 {/* Telegram User ID field */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-                  <strong className="lg:whitespace-nowrap">
-                    Telegram User ID:
-                  </strong>
+                  <strong className="lg:whitespace-nowrap">Telegram User ID:</strong>
                   <Input
                     type="text"
                     placeholder="new telegram user?"
@@ -458,7 +419,6 @@ export default function Dashboard() {
                       setUserData({ ...userData, telegramUser: e.target.value })
                     }
                   />
-                  {/* Toggle to enable/disable input */}
                   <div className="flex items-center space-x-2">
                     <Toggle
                       id="toggleTelegramUserInput"
@@ -522,7 +482,7 @@ export default function Dashboard() {
                 <Input
                   id="date"
                   type="date"
-                  placeholder="Date"
+                  placeholder="yyyy-mm-dd"
                   value={date}
                   onChange={handleDateChange}
                   className="mt-1 block w-full bg-primary-foreground"
@@ -550,7 +510,7 @@ export default function Dashboard() {
                 >
                   <div className="flex flex-col lg:flex-row justify-between lg:justify-normal items-center w-full mr-2">
                     <span className="font-medium mr-2">{birthday.name}</span>
-                    <span>{birthday.date}</span>
+                    <span>{birthday.date.split('-').reverse().join('/')}</span>
                   </div>
                   <div className="flex space-x-2 justify-center">
                     <button
@@ -599,17 +559,26 @@ export default function Dashboard() {
         </div>
       </div>
       {/* Delete user field */}
+      <div className="w-full">
       <div className="flex justify-center">
+        <button
+          onClick={logout}
+          className="w-full max-w-40 px-6 py-2 bg-slate-500 text-white font-semibold rounded-md shadow-md hover:bg-slate-800 transition duration-300"
+        >
+          Logout
+        </button>
+      </div>
+      <div className="flex justify-center mt-6">
         {!confirmDeleteUser ? (
           <button
             onClick={() => setConfirmDeleteUser(true)}
-            className="w-full px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
+            className="w-full max-w-40 px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
           >
             Delete User
           </button>
         ) : (
           <div className="flex flex-col justify-center items-center space-y-4">
-            <Alert className="max-w-lg mt-3 bg-destructive-foreground">
+            <Alert className="max-w-lg mt-3">
               <OctagonAlert className="h-4 w-4" />
               <AlertTitle className="text-destructive">
                 There is no way back from this{" "}
@@ -634,6 +603,7 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </main>
   );

@@ -6,19 +6,27 @@ interface AuthContextType {
   email: string;
   encryptionKey: string;
   setAuthInfo: (email: string, encryptionKey: string) => void;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [email, setEmail] = useState(localStorage.getItem('email') || '');
-  const [encryptionKey, setEncryptionKey] = useState(localStorage.getItem('encryptionKey') || '');
+  const [email, setEmail] = useState<string | null>(null);
+  const [encryptionKey, setEncryptionKey] = useState<string | null>(null);
 
   const setAuthInfo = (email: string, encryptionKey: string) => {
     setEmail(email);
     setEncryptionKey(encryptionKey);
     localStorage.setItem('email', email);
     localStorage.setItem('encryptionKey', encryptionKey);
+  };
+
+  const logout = () => {
+    setEmail(null);
+    setEncryptionKey(null);
+    localStorage.removeItem('email');
+    localStorage.removeItem('encryptionKey');
   };
 
   useEffect(() => {
@@ -31,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ email, encryptionKey, setAuthInfo }}>
+    <AuthContext.Provider value={{ email: email ?? '', encryptionKey: encryptionKey ?? '', setAuthInfo, logout }}>
       {children}
     </AuthContext.Provider>
   );
