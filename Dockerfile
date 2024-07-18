@@ -36,7 +36,7 @@ COPY backend/ ./backend
 RUN cd frontend && npm run build
 
 # Install additional tools
-RUN apk add --no-cache tzdata sqlite ca-certificates bash
+RUN apk add --no-cache tzdata sqlite ca-certificates bash gcc
 
 # Copy the Go API binary
 COPY --from=go-builder /build/main ./backend/main
