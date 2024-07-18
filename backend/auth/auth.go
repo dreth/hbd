@@ -232,7 +232,10 @@ func Login(c *gin.Context) {
 
 	// Combine the TIME with a date to handle timezone conversion
 	now := time.Now()
-	rTAsTime, err := time.Parse("15:04:05", user.ReminderTime)
+	rTAsTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", user.ReminderTime)
+	if helper.HE(c, err, http.StatusBadRequest, "Invalid reminder time format", false) {
+		return
+	}
 	reminderTime := time.Date(
 		now.Year(), now.Month(), now.Day(),
 		rTAsTime.Hour(), rTAsTime.Minute(), rTAsTime.Second(), 0,

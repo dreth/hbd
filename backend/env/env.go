@@ -14,6 +14,15 @@ import (
 var DB *sql.DB = db()
 var MK string = mk()
 
+func DBType() string {
+	loadDotenv()
+	dbType := os.Getenv("DB_TYPE")
+	if dbType == "" {
+		dbType = "postgres" // default to postgres
+	}
+	return dbType
+}
+
 func loadDotenv() {
 	// Load the .env file
 	env := os.Getenv("ENVIRONMENT")
@@ -43,15 +52,11 @@ func db() *sql.DB {
 	if databaseURL == "" {
 		log.Fatal("DATABASE_URL environment variable not set")
 	}
-	dbType := os.Getenv("DB_TYPE")
-	if dbType == "" {
-		dbType = "postgres" // default to postgres
-	}
 
 	var db *sql.DB
 	var err error
 
-	if dbType == "sqlite" {
+	if DBType() == "sqlite" {
 		db, err = sql.Open("sqlite3", databaseURL)
 	} else {
 		db, err = sql.Open("postgres", databaseURL)

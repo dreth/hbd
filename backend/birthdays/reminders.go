@@ -99,10 +99,21 @@ func queryWithTime(time time.Time) (*sql.Rows, error) {
 // sendBirthdayReminder sends birthday reminders to the user via Telegram.
 func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	// SQL query to fetch names and dates of birthdays for the given user on the current date
-	query := `
+	var query string
+	if env.DBType() == "sqlite" {
+		query = `
+		SELECT name, date FROM birthdays
+		WHERE user_id = $1 AND 
+		strftime('%m', date) = '$2' AND 
+		strftime('%d', date) = '$3'`
+	} else {
+		query = `
         SELECT name, date FROM birthdays 
-        WHERE user_id = $1 AND EXTRACT(MONTH FROM date) = $2 AND EXTRACT(DAY FROM date) = $3
+        WHERE user_id = $1 AND 
+		EXTRACT(MONTH FROM TO_DATE(date, 'YYYY-MM-DD')) = $2 AND 
+		EXTRACT(DAY FROM TO_DATE(date, 'YYYY-MM-DD')) = $3
     `
+	}
 
 	// Get the current date in UTC
 	now := time.Now().UTC()
