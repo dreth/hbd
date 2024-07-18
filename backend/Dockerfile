@@ -1,5 +1,5 @@
 # Stage 1: Build the Go application
-FROM golang:1.22.4-alpine AS builder
+FROM --platform=linux/amd64 golang:1.22.4-alpine AS builder
 
 # Install necessary dependencies for building the application and SQLite
 RUN apk add --no-cache gcc libc-dev sqlite-dev musl-dev
