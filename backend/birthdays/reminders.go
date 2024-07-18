@@ -103,16 +103,15 @@ func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	if env.DBType() == "sqlite" {
 		query = `
 		SELECT name, date FROM birthdays
-		WHERE user_id = $1 AND 
-		strftime('%m', date) = '$2' AND 
-		strftime('%d', date) = '$3'`
+		WHERE user_id = ? AND 
+		cast(strftime('%m', date) as integer) = ? AND 
+		cast(strftime('%d', date) as integer) = ?`
 	} else {
 		query = `
         SELECT name, date FROM birthdays 
         WHERE user_id = $1 AND 
-		EXTRACT(MONTH FROM TO_DATE(date, 'YYYY-MM-DD')) = $2 AND 
-		EXTRACT(DAY FROM TO_DATE(date, 'YYYY-MM-DD')) = $3
-    `
+		EXTRACT(MONTH FROM TO_DATE(date, 'YYYY-MM-DD'))::int = $2 AND 
+		EXTRACT(DAY FROM TO_DATE(date, 'YYYY-MM-DD'))::int = $3`
 	}
 
 	// Get the current date in UTC
