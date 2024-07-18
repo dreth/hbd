@@ -8,8 +8,6 @@ services:
     ports:
       - "8417:8417"
       - "8418:8418"
-    depends_on:
-      - hbd-db
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=sqlite3://backend/hbd.db
