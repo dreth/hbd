@@ -1,6 +1,9 @@
 # Stage 1: Build the Go API server
 FROM golang:1.22.4-alpine AS go-builder
 
+# add gcc
+RUN apk add --no-cache gcc libc-dev sqlite-dev
+
 # Move to working directory (/build).
 WORKDIR /build
 
