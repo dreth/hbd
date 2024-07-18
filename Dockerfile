@@ -2,7 +2,7 @@
 FROM golang:1.22.4-alpine AS go-builder
 
 # add gcc
-RUN apk add --no-cache gcc libc-dev sqlite-dev
+RUN apk add --no-cache gcc libc-dev sqlite-dev musl-dev
 
 # Move to working directory (/build).
 WORKDIR /build
