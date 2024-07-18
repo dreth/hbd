@@ -2,7 +2,7 @@
 FROM golang:1.22.4-alpine AS builder
 
 # Install necessary dependencies for building the application and SQLite
-RUN apk add --no-cache gcc libc-dev sqlite-dev
+RUN apk add --no-cache gcc libc-dev sqlite-dev musl-dev
 
 # Move to working directory (/build)
 WORKDIR /build
@@ -16,7 +16,7 @@ COPY . .
 
 # Set necessary environment variables needed for the image and build the API server
 ENV CGO_ENABLED=1 GOOS=linux GOARCH=amd64
-RUN go build -ldflags="-s -w" -o main .
+RUN go build -tags musl --ldflags "-extldflags -static -s -w" -o main .
 
 # Stage 2: Create the final lightweight image
 FROM alpine:latest
