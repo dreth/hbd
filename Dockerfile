@@ -12,7 +12,7 @@ RUN go mod download
 COPY backend/ ./
 
 # Set necessary environment variables needed for our image and build the API server.
-ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+ENV CGO_ENABLED=1 GOOS=linux GOARCH=amd64
 RUN go build -ldflags="-s -w" -o main .
 
 # Stage 2: Build the Next.js app
