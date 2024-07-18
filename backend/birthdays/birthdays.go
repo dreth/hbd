@@ -60,7 +60,7 @@ func CallReminderChecker(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   birthday  body     structs.BirthdayNameDateAdd  true  "Add birthday"
-// @Success 200 {object} structs.Success
+// @Success 200 {object} structs.BirthdayFull
 // @Failure 400 {object} structs.Error "Invalid encryption key or email"
 // @Failure 400 {object} structs.Error "Invalid date format"
 // @Failure 500 {object} structs.Error "Failed to insert birthday"
@@ -98,7 +98,11 @@ func AddBirthday(c *gin.Context) {
 	}
 
 	// Respond with a success message
-	c.JSON(http.StatusOK, structs.Success{Success: true})
+	c.JSON(http.StatusOK, structs.BirthdayFull{
+		ID:   b.ID.Int64,
+		Name: b.Name,
+		Date: b.Date.Format("2006-01-02"),
+	})
 }
 
 // @Summary Delete a birthday

@@ -88,7 +88,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/structs.Success"
+                            "$ref": "#/definitions/structs.BirthdayFull"
                         }
                     },
                     "400": {
