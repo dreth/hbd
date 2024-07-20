@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, OctagonAlert } from "lucide-react";
+import { AlertCircle, OctagonAlert, Cake, Gift } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -28,6 +28,13 @@ import {
 } from "@/lib/api/apiService";
 import { useAuth } from "@/src/context/AuthContext";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const ringClass = "ring-2 ring-blue-500";
 
@@ -37,7 +44,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!email || !encryptionKey) {
-      router.push('/login');
+      router.push("/");
     }
   }, [email, encryptionKey, router]);
 
@@ -62,9 +69,11 @@ export default function Dashboard() {
   const [isEncryptionKeyVisible, setIsEncryptionKeyVisible] = useState(false);
   const [isTelegramApiKeyVisible, setIsTelegramApiKeyVisible] = useState(false);
   const [isEmailDisabled, setIsEmailDisabled] = useState(true);
-  const [isTelegramApiKeyDisabled, setIsTelegramApiKeyDisabled] = useState(true);
+  const [isTelegramApiKeyDisabled, setIsTelegramApiKeyDisabled] =
+    useState(true);
   const [isTelegramUserDisabled, setIsTelegramUserDisabled] = useState(true);
   const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
+  const [isReminderTimeDisabled, setIsReminderTimeDisabled] = useState(true);
   const [timeZone, setTimeZone] = useState(userData.timeZone);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -73,9 +82,13 @@ export default function Dashboard() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
+  const getIcon = (index: number) => {
+    return index % 2 === 0 ? <Cake className="h-6 w-6 text-accent" /> : <Gift className="h-6 w-6 text-primary" />;
+  };
+
   useEffect(() => {
     if (email && encryptionKey) {
-      setUserData(prevData => ({
+      setUserData((prevData) => ({
         ...prevData,
         email,
         encryptionKey,
@@ -90,7 +103,7 @@ export default function Dashboard() {
           email: userData.email,
           encryption_key: userData.encryptionKey,
         });
-        setUserData(prevData => ({
+        setUserData((prevData) => ({
           ...prevData,
           reminderTime: response.reminder_time,
           timeZone: response.timezone,
@@ -182,7 +195,10 @@ export default function Dashboard() {
         });
         console.log("Add birthday response:", response);
         if (response.id && response.name && response.date) {
-          setBirthdays([...birthdays, { id: response.id, name: response.name, date: response.date }]);
+          setBirthdays([
+            ...birthdays,
+            { id: response.id, name: response.name, date: response.date },
+          ]);
           setName("");
           setDate("");
         } else {
@@ -216,7 +232,11 @@ export default function Dashboard() {
         });
         if (response.success) {
           const updatedBirthdays = [...birthdays];
-          updatedBirthdays[editIndex] = { id: birthdays[editIndex].id, name, date };
+          updatedBirthdays[editIndex] = {
+            id: birthdays[editIndex].id,
+            name,
+            date,
+          };
           setBirthdays(updatedBirthdays);
           setEditIndex(null);
           setName("");
@@ -242,7 +262,9 @@ export default function Dashboard() {
           name: birthdayToDelete.name,
         });
         if (response.success) {
-          setBirthdays(prevBirthdays => prevBirthdays.filter((_, i) => i !== deleteIndex));
+          setBirthdays((prevBirthdays) =>
+            prevBirthdays.filter((_, i) => i !== deleteIndex)
+          );
           setDeleteIndex(null);
         }
       } catch (error) {
@@ -261,6 +283,10 @@ export default function Dashboard() {
     setIsTimezoneDisabled(!isTimezoneDisabled);
   };
 
+  const handleReminderTimeCheckboxChange = () => {
+    setIsReminderTimeDisabled(!isReminderTimeDisabled);
+  }
+
   const handleNameChangeBirthday = (name: string) => {
     setName(name);
   };
@@ -270,17 +296,22 @@ export default function Dashboard() {
       <h1 className="text-4xl font-bold text-center my-8">Dashboard</h1>
       <div className="flex flex-col justify-center gap-8 w-full max-w-screen-2xl p-2 lg:p-10">
         <Accordion type="single" collapsible>
-          <AccordionItem value="item-1" className="bg-secondary rounded-lg px-6">
+          <AccordionItem
+            value="item-1"
+            className="bg-secondary rounded-lg px-6"
+          >
             <AccordionTrigger className="text-2xl font-semibold">
               User Information
             </AccordionTrigger>
             <AccordionContent>
-              <div className="w-full bg-secondary p-8 rounded-lg shadow-md space-y-6">
+              <div className="w-full bg-secondary p-8 rounded-lg space-y-6">
                 <div className="flex flex-col lg:flex-row justify-between space-x-4 mb-4">
                   <div>
                     <strong>Encryption Key:</strong>{" "}
                     {isEncryptionKeyVisible ? (
-                      <span className="break-all">{userData.encryptionKey}</span>
+                      <span className="break-all">
+                        {userData.encryptionKey}
+                      </span>
                     ) : (
                       <span className="break-all">
                         ****************************************************************
@@ -302,7 +333,7 @@ export default function Dashboard() {
                     type="email"
                     placeholder="new email?"
                     value={userData.email}
-                    className="bg-primary-foreground"
+                    className="bg-primary-foreground dark:bg-background"
                     disabled={isEmailDisabled}
                     onChange={(e) =>
                       setUserData({ ...userData, email: e.target.value })
@@ -320,16 +351,30 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-                  <strong className="lg:whitespace-nowrap">Reminder Time:</strong>
+                  <strong className="lg:whitespace-nowrap">
+                    Reminder Time:
+                  </strong>
                   <Input
                     type="time"
                     placeholder="new reminder time?"
                     value={userData.reminderTime}
-                    className="bg-primary-foreground"
+                    className="bg-primary-foreground dark:bg-background"
+                    disabled={isReminderTimeDisabled}
                     onChange={(e) =>
                       setUserData({ ...userData, reminderTime: e.target.value })
                     }
                   />
+                                    <div className="flex items-center space-x-2">
+                    <Toggle
+                      id="toggleTimeZoneInput"
+                      pressed={!isReminderTimeDisabled}
+                      onPressedChange={handleReminderTimeCheckboxChange}
+                      aria-label="Toggle Edit"
+                    >
+                      Edit
+                    </Toggle>
+                  </div>
+
                 </div>
                 <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Time Zone:</strong>
@@ -338,7 +383,7 @@ export default function Dashboard() {
                     onValueChange={setTimeZone}
                     disabled={isTimezoneDisabled}
                   >
-                    <SelectTrigger className="bg-primary-foreground">
+                    <SelectTrigger className="bg-primary-foreground dark:bg-background">
                       <SelectValue placeholder={timeZone} />
                     </SelectTrigger>
                     <SelectContent>
@@ -372,7 +417,7 @@ export default function Dashboard() {
                         ? userData.telegramApiKey
                         : "************"
                     }
-                    className="bg-primary-foreground"
+                    className="bg-primary-foreground dark:bg-background"
                     disabled={isTelegramApiKeyDisabled}
                     onChange={(e) =>
                       setUserData({
@@ -401,12 +446,14 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-                  <strong className="lg:whitespace-nowrap">Telegram User ID:</strong>
+                  <strong className="lg:whitespace-nowrap">
+                    Telegram User ID:
+                  </strong>
                   <Input
                     type="text"
                     placeholder="new telegram user?"
                     value={userData.telegramUser}
-                    className="bg-primary-foreground"
+                    className="bg-primary-foreground dark:bg-background"
                     disabled={isTelegramUserDisabled}
                     onChange={(e) =>
                       setUserData({ ...userData, telegramUser: e.target.value })
@@ -423,13 +470,47 @@ export default function Dashboard() {
                     </Toggle>
                   </div>
                 </div>
-                <div className="flex justify-center">
+                <div className="flex flex-col justify-center gap-2">
                   <button
                     onClick={handleUpdateUser}
-                    className="w-full px-6 py-2 bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
+                    className="w-full px-6 py-2 bg-primary text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
                   >
                     Update User Data
                   </button>
+                  {!confirmDeleteUser ? (
+                    <button
+                      onClick={() => setConfirmDeleteUser(true)}
+                      className="w-full max-w-40 px-6 py-2 mx-auto bg-destructive text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
+                    >
+                      Delete User
+                    </button>
+                  ) : (
+                    <div className="flex flex-col justify-center items-center space-y-4">
+                      <Alert className="max-w-lg mt-3">
+                        <OctagonAlert className="h-4 w-4" />
+                        <AlertTitle className="text-destructive">
+                          There is no way back from this{" "}
+                        </AlertTitle>
+                        <AlertDescription>
+                          Please be careful with this action, all the information will be deleted and you wont be able to recover it.
+                        </AlertDescription>
+                      </Alert>
+                      <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+                        <button
+                          onClick={handleDeleteUser}
+                          className="w-full lg:w-64 px-3 py-2 bg-red-700 text-white font-semibold rounded-md shadow-md hover:bg-red-900 transition duration-300 whitespace-nowrap"
+                        >
+                          Confirm Delete
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteUser(false)}
+                          className="w-full lg:w-64 px-3 py-2 bg-gray-600 text-white font-semibold rounded-md shadow-md hover:bg-gray-700 transition duration-300"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </AccordionContent>
@@ -459,7 +540,7 @@ export default function Dashboard() {
                   placeholder="Name"
                   value={name}
                   onChange={(e) => handleNameChangeBirthday(e.target.value)}
-                  className="mt-1 block w-full bg-primary-foreground"
+                  className="mt-1 block w-full bg-primary-foreground dark:bg-background"
                 />
                 {nameError && (
                   <p className="text-red-600 text-sm mt-1">{nameError}</p>
@@ -478,7 +559,7 @@ export default function Dashboard() {
                   placeholder="yyyy-mm-dd"
                   value={date}
                   onChange={handleDateChange}
-                  className="mt-1 block w-full bg-primary-foreground"
+                  className="mt-1 block w-full bg-primary-foreground dark:bg-background"
                 />
                 {dateError && (
                   <p className="text-red-600 text-sm mt-1">{dateError}</p>
@@ -499,22 +580,32 @@ export default function Dashboard() {
                 <li
                   className={`${
                     editIndex === index ? ringClass : ""
-                  } flex flex-col lg:flex-row justify-between bg-primary-foreground p-4 rounded-md shadow-md`}
+                  } flex flex-col lg:flex-row justify-between bg-background p-4 rounded-md shadow-md`}
                 >
-                  <div className="flex flex-col lg:flex-row justify-between lg:justify-normal items-center w-full mr-2">
-                    <span className="font-medium mr-2">{birthday.name}</span>
-                    <span>{birthday.date.split('-').reverse().join('/')}</span>
+                  <div className="flex flex-col lg:flex-row justify-between  items-center w-full mr-2">
+                  <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild className="truncate font-medium w-40">
+                      <p>{birthday.name}</p>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{birthday.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                    {getIcon(index)}
+                    <span>{birthday.date.split("-").reverse().join("/")}</span>
                   </div>
                   <div className="flex space-x-2 justify-center">
                     <button
                       onClick={() => handleEditBirthday(index)}
-                      className="px-2 py-1 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 transition duration-300"
+                      className="px-2 py-1 bg-amber-600 text-white font-semibold rounded-md hover:bg-amber-800 transition duration-300"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteIndex(index)}
-                      className="px-2 py-1 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition duration-300"
+                      className="px-2 py-1 bg-rose-500 text-white font-semibold rounded-md hover:bg-rose-600 transition duration-300"
                     >
                       Delete
                     </button>
@@ -559,42 +650,6 @@ export default function Dashboard() {
           >
             Logout
           </button>
-        </div>
-        <div className="flex justify-center mt-6">
-          {!confirmDeleteUser ? (
-            <button
-              onClick={() => setConfirmDeleteUser(true)}
-              className="w-full max-w-40 px-6 py-2 bg-red-600 text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
-            >
-              Delete User
-            </button>
-          ) : (
-            <div className="flex flex-col justify-center items-center space-y-4">
-              <Alert className="max-w-lg mt-3">
-                <OctagonAlert className="h-4 w-4" />
-                <AlertTitle className="text-destructive">
-                  There is no way back from this{" "}
-                </AlertTitle>
-                <AlertDescription>
-                  Please be careful with this action
-                </AlertDescription>
-              </Alert>
-              <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-                <button
-                  onClick={handleDeleteUser}
-                  className="w-full lg:w-64 px-3 py-2 bg-red-700 text-white font-semibold rounded-md shadow-md hover:bg-red-900 transition duration-300 whitespace-nowrap"
-                >
-                  Confirm Delete
-                </button>
-                <button
-                  onClick={() => setConfirmDeleteUser(false)}
-                  className="w-full lg:w-64 px-3 py-2 bg-gray-600 text-white font-semibold rounded-md shadow-md hover:bg-gray-700 transition duration-300"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </main>

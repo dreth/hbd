@@ -8,7 +8,7 @@ import { AuthProvider } from "@/src/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "HBD reminder App",
+  title: "HBD",
   description: "Never forget a birthday again",
 };
 
