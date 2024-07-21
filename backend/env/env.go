@@ -13,6 +13,7 @@ import (
 // Set the MASTER_KEY and DATABASE_URL environment variables
 var DB *sql.DB = db()
 var MK string = mk()
+var CD string = customDomain()
 
 func DBType() string {
 	loadDotenv()
@@ -67,4 +68,14 @@ func db() *sql.DB {
 	}
 
 	return db
+}
+
+// Custom domain for CORS
+func customDomain() string {
+	loadDotenv()
+	customDomain := os.Getenv("CUSTOM_DOMAIN")
+	if customDomain == "" {
+		customDomain = "http://hbd.lotiguere.com"
+	}
+	return customDomain
 }

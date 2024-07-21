@@ -11,7 +11,6 @@ import (
 	"hbd/structs"
 	"hbd/telegram"
 	"net/http"
-	"reflect"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,82 +18,26 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-// Authenticate authenticates a user based on the request payload.
-// It supports requests with direct authentication fields as well as nested auth objects.
-// The function binds the JSON payload to the provided request struct, extracts the email
-// and encryption key, hashes them, and fetches the corresponding user from the database.
-//
-// Parameters:
-//   - c: The Gin context, which provides request and response handling.
-//   - req: A pointer to the request struct which will be populated with the JSON payload.
-//
-// Returns:
-//   - *models.User: The authenticated user object if authentication is successful.
-//   - error: An error object if any error occurs during the process.
-func Authenticate(c *gin.Context, req interface{}) (*models.User, error) {
-	// Bind JSON request to the provided struct
-	err := c.ShouldBindJSON(req)
-	if helper.HE(c, err, http.StatusBadRequest, "Invalid request", true) {
-		return nil, err
-	}
-
-	// Variables to hold email and encryption key
-	var email, encryptionKey string
-
-	// Use reflection to get the underlying value of the request struct
-	reqValue := reflect.ValueOf(req).Elem()
-
-	// Try to find an 'Auth' field in the request struct
-	authField := reqValue.FieldByName("Auth")
-
-	// Check if 'Auth' field is valid and is a struct
-	if authField.IsValid() && authField.Kind() == reflect.Struct {
-		// Extract email and encryption key from the 'Auth' struct
-		email = authField.FieldByName("Email").String()
-		encryptionKey = authField.FieldByName("EncryptionKey").String()
-	} else {
-		// Extract email and encryption key from the top-level struct
-		email = reqValue.FieldByName("Email").String()
-		encryptionKey = reqValue.FieldByName("EncryptionKey").String()
-	}
-
-	// Hash the email and encryption key
-	emailHash := encryption.HashStringWithSHA256(email)
-	encryptionKeyHash := encryption.HashStringWithSHA256(encryptionKey)
-
-	// Fetch the user with the given encryption key and email hash from the database
-	user, err := models.Users(
-		qm.Where("email_hash = ?", emailHash),
-		qm.Where("encryption_key_hash = ?", encryptionKeyHash),
-	).One(c.Request.Context(), boil.GetContextDB())
-	if err != nil {
-		return nil, err
-	}
-
-	// Return the authenticated user
-	return user, nil
-}
-
-// @Summary Generate a new encryption key
-// @Description This endpoint generates a new encryption key for the user.
+// @Summary Generate a new password
+// @Description This endpoint generates a new password for the user.
 // @Produce  json
-// @Success 200 {object} structs.EncryptionKey
-// @Failure 500 {object} structs.Error "Failed to generate encryption key"
+// @Success 200 {object} structs.Password
+// @Failure 500 {object} structs.Error "Failed to generate password"
 // @Router /generate-encryption-key [get]
 // @Tags auth
 // @x-order 1
-func GetEncryptionKey(c *gin.Context) {
-	// Create a byte slice to hold the generated encryption key
-	key := make([]byte, 32)
+func GetPassword(c *gin.Context) {
+	// Create a byte slice to hold the generated password
+	key := make([]byte, 16)
 
-	// Generate a random 32-byte encryption key
+	// Generate a random 16-byte key
 	_, err := rand.Read(key)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate encryption key", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate password", false) {
 		return
 	}
 
-	// Respond with the generated encryption key in hexadecimal format
-	c.JSON(http.StatusOK, structs.EncryptionKey{EncryptionKey: hex.EncodeToString(key)})
+	// Respond with the generated password in hexadecimal format
+	c.JSON(http.StatusOK, structs.Password{Password: hex.EncodeToString(key)})
 }
 
 // @Summary Register a new user
@@ -117,6 +60,22 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// Check the length of the new email < 150 chars
+	lengthErrors := helper.CheckArrayStringLength(
+		[]string{"Email", "Password", "ReminderTime", "Timezone", "TelegramBotAPIKey", "TelegramUserID"},
+		[]string{req.Email, req.Password, req.ReminderTime, req.Timezone, req.TelegramBotAPIKey, req.TelegramUserID},
+		[]int{150, 64, 50, 50, 60, 20},
+		[]int{5, 1, 1, 1, 1, 1},
+		[]int{0, 0, 0, 0, 0, 0},
+	)
+	// Loop over errors and concatenate the strings to return it all at once
+	// first check if all errors are nil, if so, nothing to do, otherwise, loop over the errors and concatenate them
+	if helper.CheckErrors(lengthErrors) != nil {
+		errorStr := helper.ConcatenateErrors(lengthErrors)
+		c.JSON(http.StatusBadRequest, structs.Error{Error: errorStr})
+		return
+	}
+
 	// Hash the email to check for uniqueness
 	emailHash := encryption.HashStringWithSHA256(req.Email)
 
@@ -130,13 +89,13 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Hash the encryption key to check for uniqueness
-	encryptionKeyHash := encryption.HashStringWithSHA256(req.EncryptionKey)
-	if exists, err = models.Users(models.UserWhere.EncryptionKeyHash.EQ(encryptionKeyHash)).Exists(c, env.DB); helper.HE(c, err, http.StatusInternalServerError, "Failed to check existing user", false) {
+	// Hash the password to check for uniqueness
+	PasswordHash := encryption.HashStringWithSHA256(req.Password)
+	if exists, err = models.Users(models.UserWhere.PasswordHash.EQ(PasswordHash)).Exists(c, env.DB); helper.HE(c, err, http.StatusInternalServerError, "Failed to check existing user", false) {
 		return
 	}
 	if exists {
-		c.JSON(http.StatusConflict, gin.H{"error": "Encryption key already registered"})
+		c.JSON(http.StatusConflict, gin.H{"error": "password already registered"})
 		return
 	}
 
@@ -164,17 +123,10 @@ func Register(c *gin.Context) {
 	// Ensure reminderTime is in UTC
 	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).In(time.UTC)
 
-	// Encrypt the user's key using the master key before storing it
-	encryptedKey, err := encryption.Encrypt(env.MK, req.EncryptionKey)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt encryption key", false) {
-		return
-	}
-
 	// Create a new user object
 	user := models.User{
 		EmailHash:             emailHash,
-		EncryptionKey:         hex.EncodeToString(encryptedKey),
-		EncryptionKeyHash:     encryption.HashStringWithSHA256(req.EncryptionKey),
+		PasswordHash:          encryption.HashStringWithSHA256(req.Password),
 		ReminderTime:          reminderTime.String(),
 		Timezone:              req.Timezone,
 		TelegramBotAPIKey:     hex.EncodeToString(encryptedBotAPIKey),
@@ -195,82 +147,116 @@ func Register(c *gin.Context) {
 }
 
 // @Summary Login a user
-// @Description This endpoint logs in a user by validating their email and encryption key.
+// @Description This endpoint logs in a user by validating their email and password. Upon successful authentication,
+// it generates a JWT token and returns the user's details along with the filtered list of birthdays.
+//
+// The login process includes the following steps:
+// 1. Parses the login request payload to extract email and password.
+// 2. Authenticates the user using the provided credentials.
+// 3. Fetches the user data including decrypted Telegram bot API key, user ID, reminder time in local timezone, and birthdays.
+// 4. Generates a JWT token for the authenticated user.
+// 5. Returns the user's details, JWT token, and birthdays.
+//
+// Errors:
+// - Returns 400 if the request payload is invalid.
+// - Returns 401 if the authentication fails due to invalid email or password.
+// - Returns 500 if there is an internal server error while fetching user data or generating the JWT token.
+//
 // @Accept  json
 // @Produce  json
 // @Param   user  body     structs.LoginRequest  true  "Login user"
 // @Success 200 {object} structs.LoginSuccess
 // @Failure 400 {object} structs.Error "Invalid request"
-// @Failure 401 {object} structs.Error "Invalid encryption key or email"
+// @Failure 401 {object} structs.Error "Invalid password or email"
+// @Failure 500 {object} structs.Error "Internal server error"
 // @Router /login [post]
 // @Tags auth
 // @x-order 3
 func Login(c *gin.Context) {
-	// Authenticate the user
+	// Parse the login request payload
 	var req structs.LoginRequest
-	user, err := Authenticate(c, &req)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, structs.Error{Error: "Invalid request"})
 		return
 	}
 
-	// Decrypt the Telegram bot API key and user ID
-	decryptedBotAPIKey, err := encryption.Decrypt(env.MK, user.TelegramBotAPIKey)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
-		return
-	}
-
-	decryptedUserID, err := encryption.Decrypt(env.MK, user.TelegramUserID)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key", false) {
-		return
-	}
-
-	// Load timezone
-	location, err := time.LoadLocation(user.Timezone)
-	if helper.HE(c, err, http.StatusBadRequest, "Invalid timezone", false) {
-		return
-	}
-
-	// Combine the TIME with a date to handle timezone conversion
-	now := time.Now()
-	rTAsTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", user.ReminderTime)
-	if helper.HE(c, err, http.StatusBadRequest, "Invalid reminder time format", false) {
-		return
-	}
-	reminderTime := time.Date(
-		now.Year(), now.Month(), now.Day(),
-		rTAsTime.Hour(), rTAsTime.Minute(), rTAsTime.Second(), 0,
-		time.UTC,
+	// Check the length of the email and password
+	lengthErrors := helper.CheckArrayStringLength(
+		[]string{"Email", "Password"},
+		[]string{req.Email, req.Password},
+		[]int{150, 64},
+		[]int{5, 1},
+		[]int{0, 0},
 	)
-
-	// Convert the combined time to the user's timezone
-	reminderTimeLocal := reminderTime.In(location).Format("15:04")
-
-	// Find the birthdays by user id
-	birthdays, err := models.Birthdays(models.BirthdayWhere.UserID.EQ(user.ID.Int64), qm.Select("id", "name", "date")).All(c, env.DB)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to fetch birthdays", false) {
+	if helper.CheckErrors(lengthErrors) != nil {
+		errorStr := helper.ConcatenateErrors(lengthErrors)
+		c.JSON(http.StatusBadRequest, structs.Error{Error: errorStr})
 		return
 	}
 
-	// Create a new slice to hold the filtered birthday data
-	var filteredBirthdays []structs.BirthdayFull
+	// Hash the email and password
+	emailHash := encryption.HashStringWithSHA256(req.Email)
+	passwordHash := encryption.HashStringWithSHA256(req.Password)
 
-	// Iterate over the birthdays and append the filtered data to the new slice
-	for _, birthday := range birthdays {
-		filteredBirthdays = append(filteredBirthdays, structs.BirthdayFull{
-			ID:   birthday.ID.Int64,
-			Name: birthday.Name,
-			Date: birthday.Date.Format("2006-01-02"),
-		})
+	// Fetch the user with the given email hash and password hash from the database
+	_, err := models.Users(
+		qm.Where("email_hash = ?", emailHash),
+		qm.Where("password_hash = ?", passwordHash),
+	).One(c.Request.Context(), boil.GetContextDB())
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, structs.Error{Error: "Invalid email or password"})
+		return
+	}
+
+	// Set the user email in the context
+	c.Set("Email", req.Email)
+
+	userData, err := GetUserData(c)
+	if helper.HE(c, err, http.StatusInternalServerError, "Invalid encryption key or email", true) {
+		return
+	}
+
+	// Generate JWT token
+	token, err := GenerateJWT(req.Email)
+	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate token", false) {
+		return
 	}
 
 	// Return the user's details along with the filtered birthdays
 	c.JSON(http.StatusOK, structs.LoginSuccess{
-		TelegramBotAPIKey: decryptedBotAPIKey,
-		TelegramUserID:    decryptedUserID,
-		ReminderTime:      reminderTimeLocal,
-		Timezone:          user.Timezone,
-		Birthdays:         filteredBirthdays,
+		Token:             token,
+		TelegramBotAPIKey: userData.TelegramBotAPIKey,
+		TelegramUserID:    userData.TelegramUserID,
+		ReminderTime:      userData.ReminderTime,
+		Timezone:          userData.Timezone,
+		Birthdays:         userData.Birthdays,
 	})
+}
+
+// Me returns the authenticated user's data including decrypted Telegram bot API key and user ID,
+// reminder time converted to the user's timezone, and a list of birthdays associated with the user.
+//
+// The function performs the following steps:
+// 1. Calls GetUserData to fetch and return the user's data.
+// 2. Returns the user's data as a JSON response.
+//
+// Errors:
+// - Returns 500 if there is an internal server error while fetching user data.
+//
+// @Summary Get user data
+// @Description This endpoint returns the authenticated user's data including Telegram bot API key, user ID, reminder time, and birthdays.
+// @Produce  json
+// @Success 200 {object} structs.UserData
+// @Failure 500 {object} structs.Error "Internal server error"
+// @Router /me [get]
+// @Tags user
+func Me(c *gin.Context) {
+	userData, err := GetUserData(c)
+	if helper.HE(c, err, http.StatusInternalServerError, "Invalid encryption key or email", true) {
+		return
+	}
+
+	c.JSON(http.StatusOK, userData)
 }
 
 // @Summary Modify a user's details
@@ -280,16 +266,36 @@ func Login(c *gin.Context) {
 // @Param   user  body     structs.ModifyUserRequest  true  "Modify user"
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
-// @Failure 401 {object} structs.Error "Invalid encryption key"
+// @Failure 401 {object} structs.Error "Unauthorized"
 // @Failure 500 {object} structs.Error "Failed to update user"
 // @Router /modify-user [put]
 // @Tags auth
 // @x-order 4
 func ModifyUser(c *gin.Context) {
-	// Authenticate the user
+	// Retrieve the user from the database
+	user, err := GetUserByEmail(c)
+	if helper.HE(c, err, http.StatusUnauthorized, "Invalid email", false) {
+		return
+	}
+
+	// Parse the request body
 	var req structs.ModifyUserRequest
-	user, err := Authenticate(c, &req)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, structs.Error{Error: "Invalid request"})
+		return
+	}
+
+	// Check the length of the new email and other fields
+	lengthErrors := helper.CheckArrayStringLength(
+		[]string{"NewEmail", "NewPassword", "NewReminderTime", "NewTimezone", "NewTelegramBotAPIKey", "NewTelegramUserID"},
+		[]string{req.NewEmail, req.NewReminderTime, req.NewTimezone, req.NewTelegramBotAPIKey, req.NewTelegramUserID},
+		[]int{150, 64, 50, 50, 60, 20},
+		[]int{5, 5, 1, 1, 1, 1},
+		[]int{0, 0, 0, 0, 0},
+	)
+	if helper.CheckErrors(lengthErrors) != nil {
+		errorStr := helper.ConcatenateErrors(lengthErrors)
+		c.JSON(http.StatusBadRequest, structs.Error{Error: errorStr})
 		return
 	}
 
@@ -319,7 +325,7 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	// Validate and hash the user's email (to be updated)
+	// Validate and hash the user's new email (to be updated)
 	if req.NewEmail != "" {
 		if !helper.IsValidEmail(req.NewEmail) {
 			c.JSON(http.StatusBadRequest, structs.Error{Error: "Invalid email format"})
@@ -366,28 +372,41 @@ func ModifyUser(c *gin.Context) {
 }
 
 // @Summary Delete a user
-// @Description This endpoint deletes a user based on their email and encryption key.
+// @Description This endpoint deletes a user based on their email obtained from the JWT token.
 // @Accept  json
 // @Produce  json
-// @Param   user  body     structs.LoginRequest  true  "Delete user"
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
-// @Failure 401 {object} structs.Error "Invalid encryption key or email"
+// @Failure 401 {object} structs.Error "Unauthorized"
 // @Failure 500 {object} structs.Error "Failed to delete user"
 // @Router /delete-user [delete]
 // @Tags auth
 // @x-order 5
 func DeleteUser(c *gin.Context) {
-	// Authenticate the user
-	var req structs.LoginRequest
-	user, err := Authenticate(c, &req)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid encryption key or email", false) {
+	// Retrieve the user from the database
+	user, err := GetUserByEmail(c)
+	if helper.HE(c, err, http.StatusUnauthorized, "Invalid email", false) {
 		return
 	}
 
 	// Start a new transaction
-	_, err = user.Delete(c, env.DB)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false) {
+	tx, err := env.DB.Begin()
+	if err != nil {
+		helper.HE(c, err, http.StatusInternalServerError, "Failed to begin transaction", false)
+		return
+	}
+
+	// Perform the delete within the transaction
+	_, err = user.Delete(c, tx)
+	if err != nil {
+		tx.Rollback() // Rollback the transaction on error
+		helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false)
+		return
+	}
+
+	// Commit the transaction
+	if err = tx.Commit(); err != nil {
+		helper.HE(c, err, http.StatusInternalServerError, "Failed to commit transaction", false)
 		return
 	}
 

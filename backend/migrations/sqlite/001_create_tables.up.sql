@@ -2,8 +2,7 @@
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email_hash TEXT NOT NULL UNIQUE,
-    encryption_key TEXT NOT NULL UNIQUE,
-    encryption_key_hash TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
     reminder_time TEXT NOT NULL,
     timezone TEXT NOT NULL,
     telegram_bot_api_key TEXT NOT NULL,

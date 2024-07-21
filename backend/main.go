@@ -35,9 +35,9 @@ func main() {
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8418", "http://localhost:3000", "https://hbd.wtf"},
+		AllowOrigins:     []string{"http://localhost:8417", "http://localhost:8418", "http://localhost:3000", env.CD},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           24 * time.Hour,
@@ -58,15 +58,23 @@ func main() {
 	// Auth routes
 	router.POST("/register", auth.Register)
 	router.POST("/login", auth.Login)
-	router.DELETE("/delete-user", auth.DeleteUser)
-	router.PUT("/modify-user", auth.ModifyUser)
-	router.GET("/generate-encryption-key", auth.GetEncryptionKey)
+	router.GET("/generate-password", auth.GetPassword)
 
-	// Birthday routes
-	router.POST("/check-birthdays", birthdays.CallReminderChecker)
-	router.POST("/birthday", birthdays.AddBirthday)
-	router.PUT("/birthday", birthdays.ModifyBirthday)
-	router.DELETE("/birthday", birthdays.DeleteBirthday)
+	// Requires authentication
+	authenticated := router.Group("/")
+	authenticated.Use(middlewares.JWTAuthMiddleware())
+	{
+		// User routes
+		authenticated.GET("/me", auth.Me)
+		authenticated.DELETE("/delete-user", auth.DeleteUser)
+		authenticated.PUT("/modify-user", auth.ModifyUser)
+
+		// Birthday routes
+		authenticated.PATCH("/check-birthdays", birthdays.CallReminderChecker)
+		authenticated.POST("/add-birthday", birthdays.AddBirthday)
+		authenticated.PUT("/modify-birthday", birthdays.ModifyBirthday)
+		authenticated.DELETE("/delete-birthday", birthdays.DeleteBirthday)
+	}
 
 	// Run the server
 	router.Run(":8417")
