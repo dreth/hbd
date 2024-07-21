@@ -24,6 +24,7 @@ type LoginRequest struct {
 
 type ModifyUserRequest struct {
 	NewEmail             string `json:"new_email" example:"example2@lotiguere.com"`
+	NewPassword          string `json:"new_password" example:"9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1"`
 	NewReminderTime      string `json:"new_reminder_time" binding:"required" example:"15:04"`
 	NewTimezone          string `json:"new_timezone" binding:"required" example:"America/New_York"`
 	NewTelegramBotAPIKey string `json:"new_telegram_bot_api_key" binding:"required" example:"270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3"`

@@ -288,10 +288,10 @@ func ModifyUser(c *gin.Context) {
 	// Check the length of the new email and other fields
 	lengthErrors := helper.CheckArrayStringLength(
 		[]string{"NewEmail", "NewPassword", "NewReminderTime", "NewTimezone", "NewTelegramBotAPIKey", "NewTelegramUserID"},
-		[]string{req.NewEmail, req.NewReminderTime, req.NewTimezone, req.NewTelegramBotAPIKey, req.NewTelegramUserID},
+		[]string{req.NewEmail, req.NewPassword, req.NewReminderTime, req.NewTimezone, req.NewTelegramBotAPIKey, req.NewTelegramUserID},
 		[]int{150, 64, 50, 50, 60, 20},
 		[]int{5, 5, 1, 1, 1, 1},
-		[]int{0, 0, 0, 0, 0},
+		[]int{0, 0, 0, 0, 0, 0},
 	)
 	if helper.CheckErrors(lengthErrors) != nil {
 		errorStr := helper.ConcatenateErrors(lengthErrors)
@@ -333,6 +333,12 @@ func ModifyUser(c *gin.Context) {
 		}
 		emailHash := encryption.HashStringWithSHA256(req.NewEmail)
 		user.EmailHash = emailHash
+	}
+
+	// Validate and hash the user's new password (to be updated)
+	if req.NewPassword != "" {
+		PasswordHash := encryption.HashStringWithSHA256(req.NewPassword)
+		user.PasswordHash = PasswordHash
 	}
 
 	// Ensure reminderTime is in UTC
