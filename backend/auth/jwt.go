@@ -12,7 +12,7 @@ import (
 var jwtKey = []byte(env.MK)
 
 func GenerateJWT(email string) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
+	expirationTime := time.Now().Add(720 * time.Hour)
 	claims := &structs.Claims{
 		Email: email,
 		StandardClaims: jwt.StandardClaims{

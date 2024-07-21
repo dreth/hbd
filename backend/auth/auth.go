@@ -373,8 +373,30 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	// Return a success response
-	c.JSON(http.StatusOK, structs.Success{Success: true})
+	// After committing the transaction, emit another JWT token with the new email
+	token, err := GenerateJWT(req.NewEmail)
+	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate token", false) {
+		return
+	}
+
+	// Update the email in the context
+	c.Set("Email", req.NewEmail)
+
+	// Get the user data post-changes
+	userData, err := GetUserData(c)
+	if helper.HE(c, err, http.StatusInternalServerError, "Invalid encryption key or email", true) {
+		return
+	}
+
+	// Return the new token with the new user data
+	c.JSON(http.StatusOK, structs.LoginSuccess{
+		Token:             token,
+		TelegramBotAPIKey: userData.TelegramBotAPIKey,
+		TelegramUserID:    userData.TelegramUserID,
+		ReminderTime:      userData.ReminderTime,
+		Timezone:          userData.Timezone,
+		Birthdays:         userData.Birthdays,
+	})
 }
 
 // @Summary Delete a user
