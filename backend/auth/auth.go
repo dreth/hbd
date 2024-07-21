@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
@@ -22,7 +23,7 @@ import (
 // @Description This endpoint generates a new password for the user.
 // @Produce  json
 // @Success 200 {object} structs.Password
-// @Failure 500 {object} structs.Error "Failed to generate password"
+// @Failure 500 {object} structs.Error "failed to generate password"
 // @Router /generate-encryption-key [get]
 // @Tags auth
 // @x-order 1
@@ -32,7 +33,7 @@ func GetPassword(c *gin.Context) {
 
 	// Generate a random 16-byte key
 	_, err := rand.Read(key)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate password", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate password", false) {
 		return
 	}
 
@@ -48,7 +49,7 @@ func GetPassword(c *gin.Context) {
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 409 {object} structs.Error "Email or Telegram bot API key already registered"
-// @Failure 500 {object} structs.Error "Failed to create user"
+// @Failure 500 {object} structs.Error "failed to create user"
 // @Router /register [post]
 // @Tags auth
 // @x-order 2
@@ -81,7 +82,7 @@ func Register(c *gin.Context) {
 
 	// Check if the email hash already exists in the database
 	exists, err := models.Users(models.UserWhere.EmailHash.EQ(emailHash)).Exists(c, env.DB)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to check existing user", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to check existing user", false) {
 		return
 	}
 	if exists {
@@ -91,7 +92,7 @@ func Register(c *gin.Context) {
 
 	// Hash the password to check for uniqueness
 	PasswordHash := encryption.HashStringWithSHA256(req.Password)
-	if exists, err = models.Users(models.UserWhere.PasswordHash.EQ(PasswordHash)).Exists(c, env.DB); helper.HE(c, err, http.StatusInternalServerError, "Failed to check existing user", false) {
+	if exists, err = models.Users(models.UserWhere.PasswordHash.EQ(PasswordHash)).Exists(c, env.DB); helper.HE(c, err, http.StatusInternalServerError, "failed to check existing user", false) {
 		return
 	}
 	if exists {
@@ -100,12 +101,12 @@ func Register(c *gin.Context) {
 	}
 
 	encryptedBotAPIKey, err := encryption.Encrypt(env.MK, req.TelegramBotAPIKey)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt Telegram bot API key", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to encrypt Telegram bot API key", false) {
 		return
 	}
 
 	encryptedUserID, err := encryption.Encrypt(env.MK, req.TelegramUserID)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt Telegram user ID", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to encrypt Telegram user ID", false) {
 		return
 	}
 
@@ -136,7 +137,7 @@ func Register(c *gin.Context) {
 	}
 
 	err = user.Insert(c, env.DB, boil.Infer())
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to create user", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to create user", false) {
 		return
 	}
 
@@ -167,7 +168,7 @@ func Register(c *gin.Context) {
 // @Param   user  body     structs.LoginRequest  true  "Login user"
 // @Success 200 {object} structs.LoginSuccess
 // @Failure 400 {object} structs.Error "Invalid request"
-// @Failure 401 {object} structs.Error "Invalid password or email"
+// @Failure 401 {object} structs.Error "invalid email or password"
 // @Failure 500 {object} structs.Error "Internal server error"
 // @Router /login [post]
 // @Tags auth
@@ -204,7 +205,7 @@ func Login(c *gin.Context) {
 		qm.Where("password_hash = ?", passwordHash),
 	).One(c.Request.Context(), boil.GetContextDB())
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, structs.Error{Error: "Invalid email or password"})
+		c.JSON(http.StatusUnauthorized, structs.Error{Error: "invalid email or password"})
 		return
 	}
 
@@ -212,13 +213,13 @@ func Login(c *gin.Context) {
 	c.Set("Email", req.Email)
 
 	userData, err := GetUserData(c)
-	if helper.HE(c, err, http.StatusInternalServerError, "Invalid encryption key or email", true) {
+	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {
 		return
 	}
 
 	// Generate JWT token
 	token, err := GenerateJWT(req.Email)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate token", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
 	}
 
@@ -252,7 +253,7 @@ func Login(c *gin.Context) {
 // @Tags user
 func Me(c *gin.Context) {
 	userData, err := GetUserData(c)
-	if helper.HE(c, err, http.StatusInternalServerError, "Invalid encryption key or email", true) {
+	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {
 		return
 	}
 
@@ -267,14 +268,14 @@ func Me(c *gin.Context) {
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 401 {object} structs.Error "Unauthorized"
-// @Failure 500 {object} structs.Error "Failed to update user"
+// @Failure 500 {object} structs.Error "failed to update user"
 // @Router /modify-user [put]
 // @Tags auth
 // @x-order 4
 func ModifyUser(c *gin.Context) {
 	// Retrieve the user from the database
 	user, err := GetUserByEmail(c)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid email", false) {
+	if helper.HE(c, err, http.StatusUnauthorized, "invalid email", false) {
 		return
 	}
 
@@ -315,20 +316,20 @@ func ModifyUser(c *gin.Context) {
 	// Encrypt the new Telegram bot API key and user ID
 	telegramBotAPIKeyHash := encryption.HashStringWithSHA256(req.NewTelegramBotAPIKey)
 	encryptedBotAPIKey, err := encryption.Encrypt(env.MK, req.NewTelegramBotAPIKey)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt Telegram bot API key", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to encrypt Telegram bot API key", false) {
 		return
 	}
 
 	telegramUserIDHash := encryption.HashStringWithSHA256(req.NewTelegramUserID)
 	encryptedUserID, err := encryption.Encrypt(env.MK, req.NewTelegramUserID)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to encrypt Telegram user ID", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to encrypt Telegram user ID", false) {
 		return
 	}
 
 	// Validate and hash the user's new email (to be updated)
 	if req.NewEmail != "" {
 		if !helper.IsValidEmail(req.NewEmail) {
-			c.JSON(http.StatusBadRequest, structs.Error{Error: "Invalid email format"})
+			c.JSON(http.StatusBadRequest, structs.Error{Error: "invalid email format"})
 			return
 		}
 		emailHash := encryption.HashStringWithSHA256(req.NewEmail)
@@ -355,7 +356,7 @@ func ModifyUser(c *gin.Context) {
 	// Start a new transaction
 	tx, err := env.DB.Begin()
 	if err != nil {
-		helper.HE(c, err, http.StatusInternalServerError, "Failed to begin transaction", false)
+		helper.HE(c, err, http.StatusInternalServerError, "failed to begin transaction", false)
 		return
 	}
 
@@ -363,19 +364,19 @@ func ModifyUser(c *gin.Context) {
 	_, err = user.Update(c, tx, boil.Infer())
 	if err != nil {
 		tx.Rollback() // Rollback the transaction on error
-		helper.HE(c, err, http.StatusInternalServerError, "Failed to update user", false)
+		helper.HE(c, err, http.StatusInternalServerError, "failed to update user", false)
 		return
 	}
 
 	// Commit the transaction
 	if err = tx.Commit(); err != nil {
-		helper.HE(c, err, http.StatusInternalServerError, "Failed to commit transaction", false)
+		helper.HE(c, err, http.StatusInternalServerError, "failed to commit transaction", false)
 		return
 	}
 
 	// After committing the transaction, emit another JWT token with the new email
 	token, err := GenerateJWT(req.NewEmail)
-	if helper.HE(c, err, http.StatusInternalServerError, "Failed to generate token", false) {
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
 	}
 
@@ -384,7 +385,7 @@ func ModifyUser(c *gin.Context) {
 
 	// Get the user data post-changes
 	userData, err := GetUserData(c)
-	if helper.HE(c, err, http.StatusInternalServerError, "Invalid encryption key or email", true) {
+	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {
 		return
 	}
 
@@ -406,21 +407,27 @@ func ModifyUser(c *gin.Context) {
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 401 {object} structs.Error "Unauthorized"
-// @Failure 500 {object} structs.Error "Failed to delete user"
+// @Failure 500 {object} structs.Error "failed to delete user"
 // @Router /delete-user [delete]
 // @Tags auth
 // @x-order 5
 func DeleteUser(c *gin.Context) {
 	// Retrieve the user from the database
 	user, err := GetUserByEmail(c)
-	if helper.HE(c, err, http.StatusUnauthorized, "Invalid email", false) {
+	if helper.HE(c, err, http.StatusUnauthorized, "invalid email", false) {
+		return
+	}
+
+	// Retrieve the user data and get the telegram bot api key and ID to send a confirmation message that the account has been deleted
+	userData, err := GetUserData(c)
+	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {
 		return
 	}
 
 	// Start a new transaction
 	tx, err := env.DB.Begin()
 	if err != nil {
-		helper.HE(c, err, http.StatusInternalServerError, "Failed to begin transaction", false)
+		helper.HE(c, err, http.StatusInternalServerError, "failed to begin transaction", false)
 		return
 	}
 
@@ -428,15 +435,19 @@ func DeleteUser(c *gin.Context) {
 	_, err = user.Delete(c, tx)
 	if err != nil {
 		tx.Rollback() // Rollback the transaction on error
-		helper.HE(c, err, http.StatusInternalServerError, "Failed to delete user", false)
+		helper.HE(c, err, http.StatusInternalServerError, "failed to delete user", false)
 		return
 	}
 
 	// Commit the transaction
 	if err = tx.Commit(); err != nil {
-		helper.HE(c, err, http.StatusInternalServerError, "Failed to commit transaction", false)
+		helper.HE(c, err, http.StatusInternalServerError, "failed to commit transaction", false)
 		return
 	}
+
+	// Because the transaction is successful, let's retain
+	tgbotapi.NewBotAPI(userData.TelegramBotAPIKey)
+	telegram.SendTelegramMessage(userData.TelegramBotAPIKey, userData.TelegramUserID, "🎂 Your account and all your data has successfully been deleted forever. We're sorry to see you go ):\n\nThanks for checking out the app! If you have any feedback, feel free to open an issue: https://github.com/dreth/hbd/issues, we really appreciate it!")
 
 	// Return a success response
 	c.JSON(http.StatusOK, structs.Success{Success: true})
