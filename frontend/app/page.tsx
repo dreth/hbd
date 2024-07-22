@@ -18,8 +18,14 @@ import {
 } from "@/lib/api/apiService";
 import { useAuth } from "@/src/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { OctagonAlert, BadgeAlert, CircleHelp } from "lucide-react";
+import {
+  OctagonAlert,
+  BadgeAlert,
+  CircleHelp,
+  GitPullRequestArrow,
+  BookOpen,
+  Coffee,
+} from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -27,7 +33,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
 import {
   Popover,
   PopoverContent,
@@ -179,12 +184,12 @@ export default function Home() {
         <h1 className="text-lg md:text-2xl lg:text-4xl font-bold text-center mb-2">
           HBD
         </h1>
-        <Tabs defaultValue="login" className="">
+        <Tabs defaultValue="login" className="flex flex-col justify-start">
           <TabsList className="flex justify-center bg-background">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign up</TabsTrigger>
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign up</TabsTrigger>
           </TabsList>
-          <TabsContent value="login" className="w-[600px]">
+          <TabsContent value="login">
             <form
               onSubmit={handleLoginSubmit}
               className="w-full max-w-md bg-secondary p-8 rounded-lg shadow-md space-y-6"
@@ -230,15 +235,13 @@ export default function Home() {
               {loginError && (
                 <p className="text-red-600 text-sm mt-1">{loginError}</p>
               )}
-              <div className="flex flex-col lg:flex-row items-center justify-between">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Link href="/register">
-                        <span className="text-sm text-primary cursor-help">
+                        <p className="text-sm text-primary cursor-help">
                           Forgot your encryption key?
-                        </span>
-                      </Link>
+                        </p>
                     </TooltipTrigger>
                     <TooltipContent className="bg-destructive">
                       <p>gg fam go start over</p>
@@ -253,14 +256,8 @@ export default function Home() {
                 </button>
               </div>
             </form>
-            <p className="text-sm text-gray-600 mt-4">
-              Don&apos;t have an account?{" "}
-              <Link href="/register">
-                <span className="text-blue-600 hover:underline">Register</span>
-              </Link>
-            </p>
           </TabsContent>
-          <TabsContent value="signup" className="w-[600px]">
+          <TabsContent value="signup">
             <form
               onSubmit={handleRegisterSubmit}
               className="w-full max-w-md bg-secondary p-8 rounded-lg shadow-md space-y-6"
@@ -269,7 +266,7 @@ export default function Home() {
                 <h3 className="font-medium text-primary">
                   Copy your encryption key before registering!
                 </h3>
-                <div className="flex flex-col md:flex-row items-center mt-1">
+                <div className="flex items-center mt-1">
                   <Input
                     id="encryption-key"
                     type="text"
@@ -281,7 +278,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={handleCopyClick}
-                    className="ml-2 px-3 py-1 mt-1 lg:mt-0 w-full lg:w-auto bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
+                    className="ml-2 px-3 py-1 w-auto bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
                   >
                     Copy
                   </button>
@@ -306,11 +303,11 @@ export default function Home() {
                   className="mt-1 block w-full bg-primary-foreground dark:bg-background"
                 />
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-col md:flex-row md:items-center gap-3">
                 <div>
                   <label
                     htmlFor="reminder-time"
-                    className="block text-sm font-medium text-primary"
+                    className="block text-sm font-medium text-primary whitespace-nowrap"
                   >
                     Reminder Time
                   </label>
@@ -437,21 +434,7 @@ export default function Home() {
                   IT IS HASHED BRO WE DON&apos;T CARE ABOUT IT
                 </AlertDescription>
               </Alert>
-              <div className="flex flex-col md:flex-row items-center justify-between">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link href="/login">
-                        <span className="text-sm text-primary">
-                          Already have an account?
-                        </span>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Click here to login</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              <div className="flex justify-end">
                 <button
                   type="submit"
                   className="px-6 py-2 bg-primary w-full lg:w-fit text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
@@ -473,6 +456,78 @@ export default function Home() {
             )}
           </TabsContent>
         </Tabs>
+        <br />
+        <hr className="border-primary" />
+        <div className="flex justify-evenly mt-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="https://swagger.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <BookOpen className="w-5 h-5 hover:text-accent" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Swagger</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="https://github.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <GitPullRequestArrow className="w-5 h-5 hover:text-accent" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Github</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="https://buymeacoffee.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Coffee className="w-5 h-5 text-accent hover:text-primary animate-pulse" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Buy me a coffee!</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <br />
+        <hr className="border-primary" />
+        <div className="flex justify-evenly mt-4">
+          <Link
+            href="https://dac.ac/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:rotate-180 duration-300 hover:text-accent"
+          >
+            Daniel
+          </Link>
+          <Link
+            href="https://fbatista.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:rotate-180 hover:text-accent"
+          >
+            Fernando
+          </Link>
+        </div>
       </div>
     </main>
   );
