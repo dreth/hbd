@@ -47,7 +47,7 @@ func CallReminderChecker(c *gin.Context) {
 // @Success 200 {object} structs.BirthdayFull
 // @Failure 400 {object} structs.Error "Invalid request or date format"
 // @Failure 500 {object} structs.Error "Failed to insert birthday"
-// @Router /birthday [post]
+// @Router /add-birthday [post]
 // @Tags birthdays
 // @x-order 7
 func AddBirthday(c *gin.Context) {
@@ -100,7 +100,7 @@ func AddBirthday(c *gin.Context) {
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request or date format"
 // @Failure 500 {object} structs.Error "Failed to delete birthday"
-// @Router /birthday [delete]
+// @Router /delete-birthday [delete]
 // @Tags birthdays
 // @x-order 8
 func DeleteBirthday(c *gin.Context) {
@@ -141,7 +141,7 @@ func DeleteBirthday(c *gin.Context) {
 // @Failure 500 {object} structs.Error "Failed to begin transaction"
 // @Failure 500 {object} structs.Error "Failed to update birthday"
 // @Failure 500 {object} structs.Error "Failed to commit transaction"
-// @Router /birthday [put]
+// @Router /modify-birthday [put]
 // @Tags birthdays
 // @x-order 9
 func ModifyBirthday(c *gin.Context) {

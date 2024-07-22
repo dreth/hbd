@@ -15,52 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/birthday": {
-            "put": {
-                "description": "This endpoint modifies a birthday for the authenticated user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "birthdays"
-                ],
-                "summary": "Modify a birthday",
-                "parameters": [
-                    {
-                        "description": "Modify birthday",
-                        "name": "birthday",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/structs.BirthdayNameDateModify"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/structs.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid date format",
-                        "schema": {
-                            "$ref": "#/definitions/structs.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to commit transaction",
-                        "schema": {
-                            "$ref": "#/definitions/structs.Error"
-                        }
-                    }
-                },
-                "x-order": 9
-            },
+        "/add-birthday": {
             "post": {
                 "description": "This endpoint adds a new birthday for the authenticated user.",
                 "consumes": [
@@ -92,7 +47,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid date format",
+                        "description": "Invalid request or date format",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -105,51 +60,6 @@ const docTemplate = `{
                     }
                 },
                 "x-order": 7
-            },
-            "delete": {
-                "description": "This endpoint deletes a birthday for the authenticated user.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "birthdays"
-                ],
-                "summary": "Delete a birthday",
-                "parameters": [
-                    {
-                        "description": "Delete birthday",
-                        "name": "birthday",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/structs.BirthdayNameDateModify"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/structs.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid date format",
-                        "schema": {
-                            "$ref": "#/definitions/structs.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to delete birthday",
-                        "schema": {
-                            "$ref": "#/definitions/structs.Error"
-                        }
-                    }
-                },
-                "x-order": 8
             }
         },
         "/check-birthdays": {
@@ -199,6 +109,53 @@ const docTemplate = `{
                 "x-order": 6
             }
         },
+        "/delete-birthday": {
+            "delete": {
+                "description": "This endpoint deletes a birthday for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Delete a birthday",
+                "parameters": [
+                    {
+                        "description": "Delete birthday",
+                        "name": "birthday",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structs.BirthdayNameDateModify"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or date format",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete birthday",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    }
+                },
+                "x-order": 8
+            }
+        },
         "/delete-user": {
             "delete": {
                 "description": "This endpoint deletes a user based on their email obtained from the JWT token.",
@@ -232,7 +189,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to delete user",
+                        "description": "failed to delete user",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -241,7 +198,7 @@ const docTemplate = `{
                 "x-order": 5
             }
         },
-        "/generate-encryption-key": {
+        "/generate-password": {
             "get": {
                 "description": "This endpoint generates a new password for the user.",
                 "produces": [
@@ -259,7 +216,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to generate password",
+                        "description": "failed to generate password",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -306,7 +263,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Invalid password or email",
+                        "description": "invalid email or password",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -345,6 +302,53 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/modify-birthday": {
+            "put": {
+                "description": "This endpoint modifies a birthday for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "birthdays"
+                ],
+                "summary": "Modify a birthday",
+                "parameters": [
+                    {
+                        "description": "Modify birthday",
+                        "name": "birthday",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/structs.BirthdayNameDateModify"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or date format",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to commit transaction",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Error"
+                        }
+                    }
+                },
+                "x-order": 9
             }
         },
         "/modify-user": {
@@ -391,7 +395,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to update user",
+                        "description": "failed to update user",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -444,7 +448,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to create user",
+                        "description": "failed to create user",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -579,6 +583,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "example2@lotiguere.com"
                 },
+                "new_password": {
+                    "type": "string",
+                    "example": "9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1"
+                },
                 "new_reminder_time": {
                     "type": "string",
                     "example": "15:04"
@@ -659,6 +667,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/structs.BirthdayFull"
                     }
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "reminder_time": {
                     "type": "string",

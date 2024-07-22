@@ -24,7 +24,7 @@ import (
 // @Produce  json
 // @Success 200 {object} structs.Password
 // @Failure 500 {object} structs.Error "failed to generate password"
-// @Router /generate-encryption-key [get]
+// @Router /generate-password [get]
 // @Tags auth
 // @x-order 1
 func GetPassword(c *gin.Context) {
