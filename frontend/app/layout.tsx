@@ -26,10 +26,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Nav />
-            <AuthProvider> 
+          <AuthProvider> 
+            <Nav />
               {children}
-            </AuthProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

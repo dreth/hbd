@@ -1,9 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, OctagonAlert, Cake, Gift } from "lucide-react";
+import {
+  AlertCircle,
+  OctagonAlert,
+  Cake,
+  Gift,
+  GitPullRequestArrow,
+  BookOpen,
+  Coffee,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -34,7 +43,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 
 const ringClass = "ring-2 ring-blue-500";
 
@@ -83,7 +91,11 @@ export default function Dashboard() {
   const [dateError, setDateError] = useState<string | null>(null);
 
   const getIcon = (index: number) => {
-    return index % 2 === 0 ? <Cake className="h-6 w-6 text-accent" /> : <Gift className="h-6 w-6 text-primary" />;
+    return index % 2 === 0 ? (
+      <Cake className="h-6 w-6 text-accent" />
+    ) : (
+      <Gift className="h-6 w-6 text-primary" />
+    );
   };
 
   useEffect(() => {
@@ -285,7 +297,7 @@ export default function Dashboard() {
 
   const handleReminderTimeCheckboxChange = () => {
     setIsReminderTimeDisabled(!isReminderTimeDisabled);
-  }
+  };
 
   const handleNameChangeBirthday = (name: string) => {
     setName(name);
@@ -295,6 +307,7 @@ export default function Dashboard() {
     <main className="flex min-h-screen flex-col items-center p-8">
       <h1 className="text-4xl font-bold text-center my-8">Dashboard</h1>
       <div className="flex flex-col justify-center gap-8 w-full max-w-screen-2xl p-2 lg:p-10">
+        {/* User Info Section */}
         <Accordion type="single" collapsible>
           <AccordionItem
             value="item-1"
@@ -304,8 +317,8 @@ export default function Dashboard() {
               User Information
             </AccordionTrigger>
             <AccordionContent>
-              <div className="w-full bg-secondary p-8 rounded-lg space-y-6">
-                <div className="flex flex-col lg:flex-row justify-between space-x-4 mb-4">
+              <div className="w-full bg-secondary lg:p-8 rounded-lg space-y-6">
+                <div className="flex justify-between space-x-4 mb-4">
                   <div>
                     <strong>Encryption Key:</strong>{" "}
                     {isEncryptionKeyVisible ? (
@@ -364,7 +377,7 @@ export default function Dashboard() {
                       setUserData({ ...userData, reminderTime: e.target.value })
                     }
                   />
-                                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     <Toggle
                       id="toggleTimeZoneInput"
                       pressed={!isReminderTimeDisabled}
@@ -374,7 +387,6 @@ export default function Dashboard() {
                       Edit
                     </Toggle>
                   </div>
-
                 </div>
                 <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Time Zone:</strong>
@@ -470,10 +482,10 @@ export default function Dashboard() {
                     </Toggle>
                   </div>
                 </div>
-                <div className="flex flex-col justify-center gap-2">
+                <div className="flex justify-center gap-2">
                   <button
                     onClick={handleUpdateUser}
-                    className="w-full px-6 py-2 bg-primary text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
+                    className="w-full max-h-9 px-6 py-2 bg-primary text-white font-semibold rounded-md shadow-md hover:bg-sky-700 transition duration-300"
                   >
                     Update User Data
                   </button>
@@ -492,7 +504,9 @@ export default function Dashboard() {
                           There is no way back from this{" "}
                         </AlertTitle>
                         <AlertDescription>
-                          Please be careful with this action, all the information will be deleted and you wont be able to recover it.
+                          Please be careful with this action, all the
+                          information will be deleted and you wont be able to
+                          recover it.
                         </AlertDescription>
                       </Alert>
                       <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
@@ -583,16 +597,19 @@ export default function Dashboard() {
                   } flex flex-col lg:flex-row justify-between bg-background p-4 rounded-md shadow-md`}
                 >
                   <div className="flex flex-col lg:flex-row justify-between  items-center w-full mr-2">
-                  <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild className="truncate font-medium w-40">
-                      <p>{birthday.name}</p>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{birthday.name}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger
+                          asChild
+                          className="truncate font-medium w-40"
+                        >
+                          <p>{birthday.name}</p>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{birthday.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {getIcon(index)}
                     <span>{birthday.date.split("-").reverse().join("/")}</span>
                   </div>
@@ -612,14 +629,13 @@ export default function Dashboard() {
                   </div>
                 </li>
                 {deleteIndex === index && (
-                  <Alert
-                    variant="destructive"
-                    className="mt-2 bg-primary-foreground"
-                  >
+                  <Alert variant="destructive" className="mt-2 bg-background">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Are you sure?</AlertTitle>
-                    <AlertDescription>
+                    <AlertTitle>
                       Are you sure you want to delete this birthday?
+                    </AlertTitle>
+                    <AlertDescription>
+                      There is no way back from this action.
                       <div className="mt-4 flex justify-end space-x-2">
                         <button
                           onClick={() => setDeleteIndex(null)}
@@ -641,15 +657,57 @@ export default function Dashboard() {
             ))}
           </ul>
         </div>
-      </div>
-      <div className="w-full">
-        <div className="flex justify-center">
-          <button
-            onClick={logout}
-            className="w-full max-w-40 px-6 py-2 bg-slate-500 text-white font-semibold rounded-md shadow-md hover:bg-slate-800 transition duration-300"
-          >
-            Logout
-          </button>
+
+        <hr className="w-full border-primary" />
+        <div className="flex justify-evenly mt-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="https://swagger.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <BookOpen className="w-5 h-5 hover:text-accent" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Swagger</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="https://github.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <GitPullRequestArrow className="w-5 h-5 hover:text-accent" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Github</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  href="https://buymeacoffee.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Coffee className="w-5 h-5 hover:text-primary animate-pulse" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Buy me a coffee!</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </main>
