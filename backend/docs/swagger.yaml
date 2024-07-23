@@ -13,8 +13,6 @@ definitions:
     type: object
   structs.BirthdayNameDateAdd:
     properties:
-      auth:
-        $ref: '#/definitions/structs.LoginRequest'
       date:
         example: "2021-01-01"
         type: string
@@ -22,14 +20,11 @@ definitions:
         example: John Doe
         type: string
     required:
-    - auth
     - date
     - name
     type: object
   structs.BirthdayNameDateModify:
     properties:
-      auth:
-        $ref: '#/definitions/structs.LoginRequest'
       date:
         example: "2021-01-01"
         type: string
@@ -40,16 +35,9 @@ definitions:
         example: John Doe
         type: string
     required:
-    - auth
     - date
     - id
     - name
-    type: object
-  structs.EncryptionKey:
-    properties:
-      encryption_key:
-        example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
-        type: string
     type: object
   structs.Error:
     properties:
@@ -59,14 +47,14 @@ definitions:
   structs.LoginRequest:
     properties:
       email:
-        example: example@hbd.wtf
+        example: example@lotiguere.com
         type: string
-      encryption_key:
+      password:
         example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
         type: string
     required:
     - email
-    - encryption_key
+    - password
     type: object
   structs.LoginSuccess:
     properties:
@@ -86,13 +74,16 @@ definitions:
       timezone:
         example: America/New_York
         type: string
+      token:
+        type: string
     type: object
   structs.ModifyUserRequest:
     properties:
-      auth:
-        $ref: '#/definitions/structs.LoginRequest'
       new_email:
-        example: example2@hbd.wtf
+        example: example2@lotiguere.com
+        type: string
+      new_password:
+        example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
         type: string
       new_reminder_time:
         example: "15:04"
@@ -107,18 +98,23 @@ definitions:
         example: America/New_York
         type: string
     required:
-    - auth
     - new_reminder_time
     - new_telegram_bot_api_key
     - new_telegram_user_id
     - new_timezone
     type: object
+  structs.Password:
+    properties:
+      password:
+        example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
+        type: string
+    type: object
   structs.RegisterRequest:
     properties:
       email:
-        example: example@hbd.wtf
+        example: example@lotiguere.com
         type: string
-      encryption_key:
+      password:
         example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
         type: string
       reminder_time:
@@ -135,7 +131,7 @@ definitions:
         type: string
     required:
     - email
-    - encryption_key
+    - password
     - reminder_time
     - telegram_bot_api_key
     - telegram_user_id
@@ -146,40 +142,32 @@ definitions:
       success:
         type: boolean
     type: object
+  structs.UserData:
+    properties:
+      birthdays:
+        items:
+          $ref: '#/definitions/structs.BirthdayFull'
+        type: array
+      id:
+        example: 1
+        type: integer
+      reminder_time:
+        example: "15:04"
+        type: string
+      telegram_bot_api_key:
+        example: 270485614:AAHfiqksKZ8WmR2zSjiQ7jd8Eud81ggE3e-3
+        type: string
+      telegram_user_id:
+        example: "123456789"
+        type: string
+      timezone:
+        example: America/New_York
+        type: string
+    type: object
 info:
   contact: {}
 paths:
-  /birthday:
-    delete:
-      consumes:
-      - application/json
-      description: This endpoint deletes a birthday for the authenticated user.
-      parameters:
-      - description: Delete birthday
-        in: body
-        name: birthday
-        required: true
-        schema:
-          $ref: '#/definitions/structs.BirthdayNameDateModify'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/structs.Success'
-        "400":
-          description: Invalid date format
-          schema:
-            $ref: '#/definitions/structs.Error'
-        "500":
-          description: Failed to delete birthday
-          schema:
-            $ref: '#/definitions/structs.Error'
-      summary: Delete a birthday
-      tags:
-      - birthdays
-      x-order: 8
+  /add-birthday:
     post:
       consumes:
       - application/json
@@ -199,7 +187,7 @@ paths:
           schema:
             $ref: '#/definitions/structs.BirthdayFull'
         "400":
-          description: Invalid date format
+          description: Invalid request or date format
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
@@ -210,36 +198,6 @@ paths:
       tags:
       - birthdays
       x-order: 7
-    put:
-      consumes:
-      - application/json
-      description: This endpoint modifies a birthday for the authenticated user.
-      parameters:
-      - description: Modify birthday
-        in: body
-        name: birthday
-        required: true
-        schema:
-          $ref: '#/definitions/structs.BirthdayNameDateModify'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/structs.Success'
-        "400":
-          description: Invalid date format
-          schema:
-            $ref: '#/definitions/structs.Error'
-        "500":
-          description: Failed to commit transaction
-          schema:
-            $ref: '#/definitions/structs.Error'
-      summary: Modify a birthday
-      tags:
-      - birthdays
-      x-order: 9
   /check-birthdays:
     post:
       consumes:
@@ -271,19 +229,43 @@ paths:
       tags:
       - reminders
       x-order: 6
+  /delete-birthday:
+    delete:
+      consumes:
+      - application/json
+      description: This endpoint deletes a birthday for the authenticated user.
+      parameters:
+      - description: Delete birthday
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/structs.BirthdayNameDateModify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid request or date format
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to delete birthday
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Delete a birthday
+      tags:
+      - birthdays
+      x-order: 8
   /delete-user:
     delete:
       consumes:
       - application/json
-      description: This endpoint deletes a user based on their email and encryption
-        key.
-      parameters:
-      - description: Delete user
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/structs.LoginRequest'
+      description: This endpoint deletes a user based on their email obtained from
+        the JWT token.
       produces:
       - application/json
       responses:
@@ -296,32 +278,32 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "401":
-          description: Invalid encryption key or email
+          description: Unauthorized
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: Failed to delete user
+          description: failed to delete user
           schema:
             $ref: '#/definitions/structs.Error'
       summary: Delete a user
       tags:
       - auth
       x-order: 5
-  /generate-encryption-key:
+  /generate-password:
     get:
-      description: This endpoint generates a new encryption key for the user.
+      description: This endpoint generates a new password for the user.
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/structs.EncryptionKey'
+            $ref: '#/definitions/structs.Password'
         "500":
-          description: Failed to generate encryption key
+          description: failed to generate password
           schema:
             $ref: '#/definitions/structs.Error'
-      summary: Generate a new encryption key
+      summary: Generate a new password
       tags:
       - auth
       x-order: 1
@@ -329,8 +311,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: This endpoint logs in a user by validating their email and encryption
-        key.
+      description: This endpoint logs in a user by validating their email and password.
+        Upon successful authentication,
       parameters:
       - description: Login user
         in: body
@@ -350,13 +332,66 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "401":
-          description: Invalid encryption key or email
+          description: invalid email or password
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Internal server error
           schema:
             $ref: '#/definitions/structs.Error'
       summary: Login a user
       tags:
       - auth
       x-order: 3
+  /me:
+    get:
+      description: This endpoint returns the authenticated user's data including Telegram
+        bot API key, user ID, reminder time, and birthdays.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.UserData'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Get user data
+      tags:
+      - user
+  /modify-birthday:
+    put:
+      consumes:
+      - application/json
+      description: This endpoint modifies a birthday for the authenticated user.
+      parameters:
+      - description: Modify birthday
+        in: body
+        name: birthday
+        required: true
+        schema:
+          $ref: '#/definitions/structs.BirthdayNameDateModify'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Success'
+        "400":
+          description: Invalid request or date format
+          schema:
+            $ref: '#/definitions/structs.Error'
+        "500":
+          description: Failed to commit transaction
+          schema:
+            $ref: '#/definitions/structs.Error'
+      summary: Modify a birthday
+      tags:
+      - birthdays
+      x-order: 9
   /modify-user:
     put:
       consumes:
@@ -382,11 +417,11 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "401":
-          description: Invalid encryption key
+          description: Unauthorized
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: Failed to update user
+          description: failed to update user
           schema:
             $ref: '#/definitions/structs.Error'
       summary: Modify a user's details
@@ -422,7 +457,7 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: Failed to create user
+          description: failed to create user
           schema:
             $ref: '#/definitions/structs.Error'
       summary: Register a new user
