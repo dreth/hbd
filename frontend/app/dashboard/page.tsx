@@ -28,9 +28,9 @@ import {
 } from "@/components/ui/accordion";
 import { Toggle } from "@/components/ui/toggle";
 import {
+  getUserData,
   modifyUser,
   deleteUser,
-  loginUser,
   addBirthday,
   modifyBirthday,
   deleteBirthday,
@@ -47,22 +47,22 @@ import {
 const ringClass = "ring-2 ring-blue-500";
 
 export default function Dashboard() {
-  const { email, encryptionKey, logout } = useAuth();
+  const { email, token, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!email || !encryptionKey) {
+    if (!email || !token) {
       router.push("/");
     }
-  }, [email, encryptionKey, router]);
+  }, [email, token, router]);
 
   const [userData, setUserData] = useState({
     email: email || "",
-    encryptionKey: encryptionKey || "",
     reminderTime: "",
     timeZone: "",
     telegramApiKey: "",
     telegramUser: "",
+    newPassword: "", // Added new password field
   });
 
   const [name, setName] = useState("");
@@ -74,9 +74,9 @@ export default function Dashboard() {
       date: string;
     }[]
   >([]);
-  const [isEncryptionKeyVisible, setIsEncryptionKeyVisible] = useState(false);
   const [isTelegramApiKeyVisible, setIsTelegramApiKeyVisible] = useState(false);
   const [isEmailDisabled, setIsEmailDisabled] = useState(true);
+  const [isPasswordDisabled, setIsPasswordDisabled] = useState(true);
   const [isTelegramApiKeyDisabled, setIsTelegramApiKeyDisabled] =
     useState(true);
   const [isTelegramUserDisabled, setIsTelegramUserDisabled] = useState(true);
@@ -99,22 +99,9 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    if (email && encryptionKey) {
-      setUserData((prevData) => ({
-        ...prevData,
-        email,
-        encryptionKey,
-      }));
-    }
-  }, [email, encryptionKey]);
-
-  useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await loginUser({
-          email: userData.email,
-          encryption_key: userData.encryptionKey,
-        });
+        const response = await getUserData(token);
         setUserData((prevData) => ({
           ...prevData,
           reminderTime: response.reminder_time,
@@ -130,13 +117,17 @@ export default function Dashboard() {
         console.error("Error fetching user data", error);
       }
     };
-    if (userData.email && userData.encryptionKey) {
+    if (token) {
       fetchUserData();
     }
-  }, [userData.email, userData.encryptionKey]);
+  }, [token]);
 
   const handleEmailCheckboxChange = () => {
     setIsEmailDisabled(!isEmailDisabled);
+  };
+
+  const handlePasswordCheckboxChange = () => {
+    setIsPasswordDisabled(!isPasswordDisabled);
   };
 
   const handleTelegramApiKeyCheckboxChange = () => {
@@ -149,18 +140,20 @@ export default function Dashboard() {
 
   const handleUpdateUser = async () => {
     try {
-      await modifyUser({
-        auth: {
-          email: userData.email,
-          encryption_key: userData.encryptionKey,
-        },
+      const response = await modifyUser(token, {
         new_email: userData.email,
+        new_password: userData.newPassword, // Include new password
         new_reminder_time: userData.reminderTime,
         new_telegram_bot_api_key: userData.telegramApiKey,
         new_telegram_user_id: userData.telegramUser,
         new_timezone: timeZone,
       });
       console.log("User updated successfully");
+      setUserData((prevData) => ({
+        ...prevData,
+        token: response.token,
+      }));
+      localStorage.setItem("token", response.token); // Update token in local storage
     } catch (error) {
       console.error("Error updating user", error);
     }
@@ -171,10 +164,7 @@ export default function Dashboard() {
       setConfirmDeleteUser(true);
     } else {
       try {
-        await deleteUser({
-          email: userData.email,
-          encryption_key: userData.encryptionKey,
-        });
+        await deleteUser(token);
         console.log("User deleted successfully");
         logout();
         router.push("/");
@@ -197,11 +187,7 @@ export default function Dashboard() {
     }
     if (name && date) {
       try {
-        const response = await addBirthday({
-          auth: {
-            email: userData.email,
-            encryption_key: userData.encryptionKey,
-          },
+        const response = await addBirthday(token, {
           name,
           date,
         });
@@ -233,11 +219,7 @@ export default function Dashboard() {
     e.preventDefault();
     if (editIndex !== null && name && date) {
       try {
-        const response = await modifyBirthday({
-          auth: {
-            email: userData.email,
-            encryption_key: userData.encryptionKey,
-          },
+        const response = await modifyBirthday(token, {
           id: birthdays[editIndex].id,
           name,
           date,
@@ -264,11 +246,7 @@ export default function Dashboard() {
     if (deleteIndex !== null) {
       try {
         const birthdayToDelete = birthdays[deleteIndex];
-        const response = await deleteBirthday({
-          auth: {
-            email: userData.email,
-            encryption_key: userData.encryptionKey,
-          },
+        const response = await deleteBirthday(token, {
           id: birthdayToDelete.id,
           date: birthdayToDelete.date,
           name: birthdayToDelete.name,
@@ -318,28 +296,6 @@ export default function Dashboard() {
             </AccordionTrigger>
             <AccordionContent>
               <div className="w-full bg-secondary lg:p-8 rounded-lg space-y-6">
-                <div className="flex justify-between space-x-4 mb-4">
-                  <div>
-                    <strong>Encryption Key:</strong>{" "}
-                    {isEncryptionKeyVisible ? (
-                      <span className="break-all">
-                        {userData.encryptionKey}
-                      </span>
-                    ) : (
-                      <span className="break-all">
-                        ****************************************************************
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() =>
-                      setIsEncryptionKeyVisible(!isEncryptionKeyVisible)
-                    }
-                    className="ml-2 px-2 py-1 bg-blue-600 text-white font-semibold rounded-md w-full md:w-fit hover:bg-blue-700 transition duration-300"
-                  >
-                    {isEncryptionKeyVisible ? "Hide" : "Show"}
-                  </button>
-                </div>
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong>Email:</strong>
                   <Input
@@ -357,6 +313,28 @@ export default function Dashboard() {
                       id="toggleEmailInput"
                       pressed={!isEmailDisabled}
                       onPressedChange={handleEmailCheckboxChange}
+                      aria-label="Toggle Edit"
+                    >
+                      Edit
+                    </Toggle>
+                  </div>
+                </div>
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
+                  <strong className="whitespace-nowrap">New Password:</strong>
+                  <Input
+                    type="password"
+                    placeholder="Just leave it blank if you don't want to change it"
+                    className="bg-primary-foreground dark:bg-background"
+                    disabled={isPasswordDisabled}
+                    onChange={(e) =>
+                      setUserData({ ...userData, newPassword: e.target.value })
+                    }
+                  />
+                  <div className="flex items-center space-x-2">
+                    <Toggle
+                      id="togglePasswordInput"
+                      pressed={!isPasswordDisabled}
+                      onPressedChange={handlePasswordCheckboxChange}
                       aria-label="Toggle Edit"
                     >
                       Edit

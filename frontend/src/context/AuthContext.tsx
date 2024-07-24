@@ -1,53 +1,41 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AuthContextType {
-  email: string;
-  encryptionKey: string;
-  setAuthInfo: (email: string, encryptionKey: string) => void;
+  email: string | null;
+  token: string | null;  // Add token to the context type
+  setAuthInfo: (email: string, token: string) => void; // Update setAuthInfo signature
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [email, setEmail] = useState('');
-  const [encryptionKey, setEncryptionKey] = useState('');
+  const [email, setEmail] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);  // Add token state
 
-  useEffect(() => {
-    const storedEmail = localStorage.getItem('email');
-    const storedEncryptionKey = localStorage.getItem('encryptionKey');
-    if (storedEmail && storedEncryptionKey) {
-      setEmail(storedEmail);
-      setEncryptionKey(storedEncryptionKey);
-    }
-  }, []);
-
-  const setAuthInfo = (email: string, encryptionKey: string) => {
+  const setAuthInfo = (email: string, token: string) => {
     setEmail(email);
-    setEncryptionKey(encryptionKey);
-    localStorage.setItem('email', email);
-    localStorage.setItem('encryptionKey', encryptionKey);
+    setToken(token);  // Set token state
   };
 
   const logout = () => {
-    setEmail('');
-    setEncryptionKey('');
-    localStorage.removeItem('email');
-    localStorage.removeItem('encryptionKey');
+    setEmail(null);
+    setToken(null);  // Clear token state
+    localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ email, encryptionKey, setAuthInfo, logout }}>
+    <AuthContext.Provider value={{ email, token, setAuthInfo, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

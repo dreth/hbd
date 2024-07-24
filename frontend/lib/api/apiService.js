@@ -1,26 +1,64 @@
-// src/api/apiService.js
-import api from './axiosConfig';
+
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8417',
+});
+
+// Add a request interceptor to include the Authorization header
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 /**
- * Generate a new encryption key
+ * Generate a password
  */
-export const generateEncryptionKey = async () => {
+export const generatePassword = async () => {
   try {
-    const response = await api.get('/generate-encryption-key');
-    return response.data.encryption_key; // Return only the encryption_key
+    const response = await api.get('/generate-password');
+    return response.data.password; 
   } catch (error) {
-    console.error('Error generating encryption key', error);
+    console.error('Error generating password', error);
     throw error;
   }
 };
 
 /**
- * Register a new user
- * @param {Object} userData - The registration data
+ * Login user
+ * @param {Object} loginData - The login data
+ */
+export const loginUser = async (userData) => {
+  try {
+    const response = await api.post('/login', userData);
+    const { token, ...rest } = response.data;
+    localStorage.setItem('token', token);  // Store token in local storage
+    return { token, ...rest };
+  } catch (error) {
+    console.error('Error logging in', error);
+    throw error;
+  }
+};
+
+
+
+/**
+ * Register user
+ * @param {Object} userData - The user data
  */
 export const registerUser = async (userData) => {
   try {
     const response = await api.post('/register', userData);
+    const token = response.data.token;
+    localStorage.setItem('token', token);
     return response.data;
   } catch (error) {
     console.error('Error registering user', error);
@@ -29,26 +67,29 @@ export const registerUser = async (userData) => {
 };
 
 /**
- * Login a user
- * @param {Object} loginData - The login data
+ * Get user data
  */
-export const loginUser = async (loginData) => {
+export const getUserData = async (token) => {
   try {
-    const response = await api.post('/login', loginData);
+    const response = await api.get('/me');
     return response.data;
   } catch (error) {
-    console.error('Error logging in user', error);
+    console.error('Error fetching user data', error);
     throw error;
   }
 };
 
 /**
  * Modify user details
- * @param {Object} userData - The user data to modify
+ * @param {Object} userData - The new user data
  */
-export const modifyUser = async (userData) => {
+export const modifyUser = async (token, userData) => {
   try {
     const response = await api.put('/modify-user', userData);
+    const token = response.data.token;
+    if (token) {
+      localStorage.setItem('token', token);
+    }
     return response.data;
   } catch (error) {
     console.error('Error modifying user', error);
@@ -57,26 +98,12 @@ export const modifyUser = async (userData) => {
 };
 
 /**
- * Delete a user
- * @param {Object} userData - The user data to delete
- */
-export const deleteUser = async (userData) => {
-  try {
-    const response = await api.delete('/delete-user', { data: userData });
-    return response.data;
-  } catch (error) {
-    console.error('Error deleting user', error);
-    throw error;
-  }
-};
-
-/**
  * Add a new birthday
  * @param {Object} birthdayData - The birthday data to add
  */
-export const addBirthday = async (birthdayData) => {
+export const addBirthday = async (token, birthdayData) => {
   try {
-    const response = await api.post('/birthday', birthdayData);
+    const response = await api.post('/add-birthday', birthdayData);
     return response.data;
   } catch (error) {
     console.error('Error adding birthday', error);
@@ -88,9 +115,9 @@ export const addBirthday = async (birthdayData) => {
  * Modify a birthday
  * @param {Object} birthdayData - The birthday data to modify
  */
-export const modifyBirthday = async (birthdayData) => {
+export const modifyBirthday = async (token, birthdayData) => {
   try {
-    const response = await api.put('/birthday', birthdayData);
+    const response = await api.put('/modify-birthday', birthdayData);
     return response.data;
   } catch (error) {
     console.error('Error modifying birthday', error);
@@ -102,12 +129,26 @@ export const modifyBirthday = async (birthdayData) => {
  * Delete a birthday
  * @param {Object} birthdayData - The birthday data to delete
  */
-export const deleteBirthday = async (birthdayData) => {
+export const deleteBirthday = async (token, birthdayData) => {
   try {
-    const response = await api.delete('/birthday', { data: birthdayData });
+    const response = await api.delete('/delete-birthday', { data: birthdayData });
     return response.data;
   } catch (error) {
     console.error('Error deleting birthday', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete user
+ */
+export const deleteUser = async (p0) => {
+  try {
+    const response = await api.delete('/delete-user');
+    localStorage.removeItem('token');
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting user', error);
     throw error;
   }
 };

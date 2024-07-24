@@ -13,7 +13,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   loginUser,
-  generateEncryptionKey,
+  generatePassword,
   registerUser,
 } from "@/lib/api/apiService";
 import { useAuth } from "@/src/context/AuthContext";
@@ -42,12 +42,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Home() {
   const [email, setEmail] = useState("");
-  const [encryptionKey, setEncryptionKey] = useState("");
+  const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [keyError, setKeyError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState<boolean | null>(null);
-
   const [reminderTime, setReminderTime] = useState("");
   const [timeZone, setTimeZone] = useState("");
   const [telegramApiKey, setTelegramApiKey] = useState("");
@@ -61,17 +60,6 @@ export default function Home() {
   const { setAuthInfo } = useAuth();
 
   useEffect(() => {
-    const fetchEncryptionKey = async () => {
-      try {
-        const key = await generateEncryptionKey();
-        setEncryptionKey(key);
-      } catch (error) {
-        console.error("Error fetching encryption key:", error);
-      }
-    };
-
-    fetchEncryptionKey();
-
     const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setTimeZone(userTimeZone);
   }, []);
@@ -81,8 +69,8 @@ export default function Home() {
     return emailRegex.test(email);
   };
 
-  const validateEncryptionKey = (key: string) => {
-    return key.length === 64;
+  const validatePassword = (password: string) => {
+    return password.length >= 1;
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -90,41 +78,55 @@ export default function Home() {
     let isValid = true;
 
     if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address fam.");
+      setEmailError("Please enter a valid email address.");
       isValid = false;
     } else {
       setEmailError("");
     }
 
-    if (!validateEncryptionKey(encryptionKey)) {
-      setKeyError("Encryption key must be 64 characters long fam.");
+    if (!validatePassword(password)) {
+      setPasswordError("Password must be at least 8 characters long.");
       isValid = false;
     } else {
-      setKeyError("");
+      setPasswordError("");
     }
 
     if (isValid) {
       try {
-        const response = await loginUser({
-          email,
-          encryption_key: encryptionKey,
-        });
-        setAuthInfo(email, encryptionKey);
+        const response = await loginUser({ email, password });
+        setAuthInfo(email, password);
         setLoginSuccess(true);
         console.log("Login successful:", response);
         router.push("/dashboard");
       } catch (error) {
-        setLoginError("Invalid email or encryption key.");
+        setLoginError("Invalid email or password.");
         setLoginSuccess(false);
         console.error("Login error:", error);
       }
     }
   };
 
+  const handleGeneratePasswordClick = async () => {
+    try {
+      const generatedPassword = await generatePassword();
+      setPassword(generatedPassword);
+  
+      navigator.clipboard.writeText(generatedPassword).then(
+        () => {
+          setCopySuccess("Password generated and copied to clipboard!");
+        },
+        (err) => {
+          setCopySuccess("Failed to copy!");
+        }
+      );
+    } catch (error) {
+      console.error("Error generating password", error);
+    }
+  };
   const handleCopyClick = () => {
-    navigator.clipboard.writeText(encryptionKey).then(
+    navigator.clipboard.writeText(password).then(
       () => {
-        setCopySuccess("It's copied fam go save it somewhere safe!");
+        setCopySuccess("Password copied!");
       },
       (err) => {
         setCopySuccess("Failed to copy!");
@@ -141,7 +143,7 @@ export default function Home() {
 
     const userData = {
       email,
-      encryption_key: encryptionKey,
+      password,
       reminder_time: reminderTime,
       telegram_bot_api_key: telegramApiKey,
       telegram_user_id: telegramUser,
@@ -151,12 +153,11 @@ export default function Home() {
     try {
       const response = await registerUser(userData);
       if (response.success) {
-        setAuthInfo(email, encryptionKey);
+        setAuthInfo(email, password);
         setRegisterSuccess(true);
         setRegisterError(null);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 2000);
+        localStorage.setItem("token", response.token);
+        window.location.reload();
       } else {
         setRegisterSuccess(false);
         setRegisterError(
@@ -173,10 +174,6 @@ export default function Home() {
   };
 
   const timeZones = Intl.supportedValuesOf("timeZone");
-
-  const handleTimezoneCheckboxChange = () => {
-    setIsTimezoneDisabled(!isTimezoneDisabled);
-  };
 
   return (
     <main className="flex min-h-screen flex-col items-center p-5 lg:p-10">
@@ -215,21 +212,21 @@ export default function Home() {
               </div>
               <div>
                 <label
-                  htmlFor="encryption-key"
+                  htmlFor="password"
                   className="block text-sm font-medium text-primary"
                 >
-                  Encryption Key
+                  Password
                 </label>
                 <Input
-                  id="encryption-key"
+                  id="password"
                   type="password"
-                  placeholder="Encryption Key"
-                  value={encryptionKey}
-                  onChange={(e) => setEncryptionKey(e.target.value)}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="mt-1 block w-full bg-primary-foreground dark:bg-background"
                 />
-                {keyError && (
-                  <p className="text-red-600 text-sm mt-1">{keyError}</p>
+                {passwordError && (
+                  <p className="text-red-600 text-sm mt-1">{passwordError}</p>
                 )}
               </div>
               {loginError && (
@@ -239,9 +236,9 @@ export default function Home() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                        <p className="text-sm text-primary cursor-help">
-                          Forgot your encryption key?
-                        </p>
+                      <p className="text-sm text-primary cursor-help">
+                        Forgot your password?
+                      </p>
                     </TooltipTrigger>
                     <TooltipContent className="bg-destructive">
                       <p>gg fam go start over</p>
@@ -263,99 +260,173 @@ export default function Home() {
               className="w-full max-w-md bg-secondary p-8 rounded-lg shadow-md space-y-6"
             >
               <div className="space-y-4">
-                <h3 className="font-medium text-primary">
-                  Copy your encryption key before registering!
-                </h3>
-                <div className="flex items-center mt-1">
-                  <Input
-                    id="encryption-key"
-                    type="text"
-                    placeholder="Generated Encryption Key"
-                    value={encryptionKey}
-                    readOnly
-                    className="block w-full bg-primary-foreground dark:bg-background"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleCopyClick}
-                    className="ml-2 px-3 py-1 w-auto bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
-                  >
-                    Copy
-                  </button>
-                </div>
-                {copySuccess && (
-                  <p className="text-sm text-green-600 mt-1">{copySuccess}</p>
-                )}
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-primary"
-                >
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 block w-full bg-primary-foreground dark:bg-background"
-                />
-              </div>
-              <div className="flex flex-col md:flex-row md:items-center gap-3">
                 <div>
                   <label
-                    htmlFor="reminder-time"
-                    className="block text-sm font-medium text-primary whitespace-nowrap"
+                    htmlFor="email"
+                    className="block text-sm font-medium text-primary"
                   >
-                    Reminder Time
+                    Email
                   </label>
                   <Input
-                    id="reminder-time"
-                    type="time"
-                    placeholder="Reminder Time"
-                    value={reminderTime}
-                    onChange={(e) => setReminderTime(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="mt-1 block w-full bg-primary-foreground dark:bg-background"
                   />
                 </div>
-                <div className="space-y-1 w-full">
+                <div>
                   <label
-                    htmlFor="reminder-time"
+                    htmlFor="password"
                     className="block text-sm font-medium text-primary"
                   >
-                    Time Zone
+                    Password
+                    <Popover>
+                      <PopoverTrigger>
+                        <CircleHelp className="ml-2 text-secondary-foreground w-4 h-4" />
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <p className="text-primary">
+                          You can generate a password or enter your own.
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+
                   </label>
-                  <Select onValueChange={setTimeZone}>
-                    <SelectTrigger className="bg-primary-foreground dark:bg-background">
-                      <SelectValue placeholder={timeZone} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeZones.map((zone) => (
-                        <SelectItem key={zone} value={zone}>
-                          {zone}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center mt-1">
+                    <Input
+                      id="password"
+                      type="text"
+                      placeholder="Generated or Entered Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="block w-full bg-primary-foreground dark:bg-background"
+                    />
+                  </div>
+                  <div className="flex justify-between items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleGeneratePasswordClick}
+                    className="mt-2 px-3 py-1 w-full bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
+                  >
+                    Generate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyClick}
+                    className="mt-2 px-3 py-1 w-auto bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
+                  >
+                    Copy
+                  </button>
+                  </div>
+                  {copySuccess && (
+                    <p className="text-sm text-green-600 mt-1">{copySuccess}</p>
+                  )}
                 </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="telegram-api-key"
-                  className="text-sm font-medium text-primary flex items-center"
-                >
-                  Telegram Bot API Key
-                  <Popover>
-                    <PopoverTrigger>
-                      <CircleHelp className="ml-2 text-secondary-foreground w-4 h-4" />
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <p className="text-primary text-lg">
+                <div className="flex flex-col md:flex-row md:items-center gap-3">
+                  <div>
+                    <label
+                      htmlFor="reminder-time"
+                      className="block text-sm font-medium text-primary whitespace-nowrap"
+                    >
+                      Reminder Time
+                    </label>
+                    <Input
+                      id="reminder-time"
+                      type="time"
+                      placeholder="Reminder Time"
+                      value={reminderTime}
+                      onChange={(e) => setReminderTime(e.target.value)}
+                      className="mt-1 block w-full bg-primary-foreground dark:bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1 w-full">
+                    <label
+                      htmlFor="reminder-time"
+                      className="block text-sm font-medium text-primary"
+                    >
+                      Time Zone
+                    </label>
+                    <Select onValueChange={setTimeZone}>
+                      <SelectTrigger className="bg-primary-foreground dark:bg-background">
+                        <SelectValue placeholder={timeZone} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeZones.map((zone) => (
+                          <SelectItem key={zone} value={zone}>
+                            {zone}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <label
+                    htmlFor="telegram-api-key"
+                    className="text-sm font-medium text-primary flex items-center"
+                  >
+                    Telegram Bot API Key
+                    <Popover>
+                      <PopoverTrigger>
+                        <CircleHelp className="ml-2 text-secondary-foreground w-4 h-4" />
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <p className="text-primary text-lg">
+                          Need help finding your ID?
+                        </p>
+                        <p>
+                          Start a conversation with your bot{" "}
+                          <b>from your mobile phone</b> using{" "}
+                          <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">
+                            /start
+                          </code>{" "}
+                          send a random message to it and then follow this{" "}
+                          <Link
+                            href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`}
+                            className="font-bold underline"
+                          >
+                            link
+                          </Link>
+                          . You should see a JSON response which will show a
+                          numeric ID in several places of the JSON response.
+                          That&apos;s your ID!
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  </label>
+                  <Input
+                    id="telegram-api-key"
+                    type="text"
+                    placeholder="Telegram Bot API Key"
+                    value={telegramApiKey}
+                    onChange={(e) => setTelegramApiKey(e.target.value)}
+                    className="mt-1 block w-full bg-primary-foreground dark:bg-background"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="telegram-user"
+                    className="block text-sm font-medium text-primary"
+                  >
+                    Telegram User ID
+                  </label>
+                  <Input
+                    id="telegram-user"
+                    type="text"
+                    placeholder="Telegram User ID"
+                    value={telegramUser}
+                    onChange={(e) => setTelegramUser(e.target.value)}
+                    className="mt-1 block w-full bg-primary-foreground dark:bg-background"
+                  />
+                  {telegramApiKey && (
+                    <Alert className="max-w-lg mt-3 bg-primary-foreground dark:bg-background">
+                      <OctagonAlert className="h-4 w-4" />
+                      <AlertTitle className="text-primary">
                         Need help finding your ID?
-                      </p>
-                      <p>
+                      </AlertTitle>
+                      <AlertDescription>
                         Start a conversation with your bot{" "}
                         <b>from your mobile phone</b> using{" "}
                         <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">
@@ -371,76 +442,27 @@ export default function Home() {
                         . You should see a JSON response which will show a
                         numeric ID in several places of the JSON response.
                         That&apos;s your ID!
-                      </p>
-                    </PopoverContent>
-                  </Popover>
-                </label>
-                <Input
-                  id="telegram-api-key"
-                  type="text"
-                  placeholder="Telegram Bot API Key"
-                  value={telegramApiKey}
-                  onChange={(e) => setTelegramApiKey(e.target.value)}
-                  className="mt-1 block w-full bg-primary-foreground dark:bg-background"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="telegram-user"
-                  className="block text-sm font-medium text-primary"
-                >
-                  Telegram User ID
-                </label>
-                <Input
-                  id="telegram-user"
-                  type="text"
-                  placeholder="Telegram User ID"
-                  value={telegramUser}
-                  onChange={(e) => setTelegramUser(e.target.value)}
-                  className="mt-1 block w-full bg-primary-foreground dark:bg-background"
-                />
-                {telegramApiKey && (
-                  <Alert className="max-w-lg mt-3 bg-primary-foreground dark:bg-background">
-                    <OctagonAlert className="h-4 w-4" />
-                    <AlertTitle className="text-primary">
-                      Need help finding your ID?
-                    </AlertTitle>
-                    <AlertDescription>
-                      Start a conversation with your bot{" "}
-                      <b>from your mobile phone</b> using{" "}
-                      <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">
-                        /start
-                      </code>{" "}
-                      send a random message to it and then follow this{" "}
-                      <Link
-                        href={`https://api.telegram.org/bot${telegramApiKey}/getUpdates`}
-                        className="font-bold underline"
-                      >
-                        link
-                      </Link>
-                      . You should see a JSON response which will show a numeric
-                      ID in several places of the JSON response. That&apos;s
-                      your ID!
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-              <Alert className="max-w-lg mt-3 bg-primary-foreground dark:bg-background">
-                <OctagonAlert className="h-4 w-4" />
-                <AlertTitle className="text-primary">
-                  Email Privacy Disclaimer:{" "}
-                </AlertTitle>
-                <AlertDescription>
-                  IT IS HASHED BRO WE DON&apos;T CARE ABOUT IT
-                </AlertDescription>
-              </Alert>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-primary w-full lg:w-fit text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
-                >
-                  Register
-                </button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+                <Alert className="max-w-lg mt-3 bg-primary-foreground dark:bg-background">
+                  <OctagonAlert className="h-4 w-4" />
+                  <AlertTitle className="text-primary">
+                    Email Privacy Disclaimer:{" "}
+                  </AlertTitle>
+                  <AlertDescription>
+                    IT IS HASHED BRO WE DON&apos;T CARE ABOUT IT
+                  </AlertDescription>
+                </Alert>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-primary w-full lg:w-fit text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
+                  >
+                    Register
+                  </button>
+                </div>
               </div>
             </form>
             {registerSuccess !== null && (
