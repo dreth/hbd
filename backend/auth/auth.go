@@ -144,7 +144,20 @@ func Register(c *gin.Context) {
 	// As the user was successfully created, send a telegram message through the bot and ID to confirm the registration
 	telegram.SendTelegramMessage(req.TelegramBotAPIKey, req.TelegramUserID, fmt.Sprintf("🎂 Your user has been successfully registered, through this bot and user ID you'll receive your birthday reminders (if there's any) at %s (Timezone: %s).\n\nIf you encounter any issues using the app or want to give any feedback to us. Please open an issue here: https://github.com/dreth/hbd/issues, thanks and we hope you find the application useful!", req.ReminderTime, req.Timezone))
 
-	c.JSON(http.StatusOK, structs.Success{Success: true})
+	// Return the token and the user's details
+	token, err := GenerateJWT(req.Email)
+	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
+		return
+	} else {
+		c.JSON(http.StatusOK, structs.LoginSuccess{
+			Token:             token,
+			TelegramBotAPIKey: req.TelegramBotAPIKey,
+			TelegramUserID:    req.TelegramUserID,
+			ReminderTime:      req.ReminderTime,
+			Timezone:          req.Timezone,
+			Birthdays:         []structs.BirthdayFull{},
+		})
+	}
 }
 
 // @Summary Login a user
