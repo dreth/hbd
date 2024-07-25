@@ -128,7 +128,7 @@ func Register(c *gin.Context) {
 	user := models.User{
 		EmailHash:             emailHash,
 		PasswordHash:          encryption.HashStringWithSHA256(req.Password),
-		ReminderTime:          reminderTime.String(),
+		ReminderTime:          reminderTime.Format("15:04"),
 		Timezone:              req.Timezone,
 		TelegramBotAPIKey:     hex.EncodeToString(encryptedBotAPIKey),
 		TelegramBotAPIKeyHash: encryption.HashStringWithSHA256(req.TelegramUserID),
@@ -359,7 +359,7 @@ func ModifyUser(c *gin.Context) {
 	reminderTime = time.Date(now.Year(), now.Month(), now.Day(), reminderTime.Hour(), reminderTime.Minute(), 0, 0, location).In(time.UTC)
 
 	// Update the user's details
-	user.ReminderTime = reminderTime.String()
+	user.ReminderTime = reminderTime.Format("15:04")
 	user.Timezone = req.NewTimezone
 	user.TelegramBotAPIKey = hex.EncodeToString(encryptedBotAPIKey)
 	user.TelegramBotAPIKeyHash = telegramBotAPIKeyHash

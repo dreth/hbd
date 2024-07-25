@@ -1,7 +1,6 @@
 package birthdays
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -14,17 +13,31 @@ import (
 
 // CheckReminders runs periodically to check for user reminders.
 func CheckReminders() {
-	now := time.Now().UTC()
-	rows, err := queryWithTime(now)
+	now := time.Now().UTC().Format("15:04")
+	log.Printf("Checking reminders. Timestamp: %s", now)
+	// SQL query to fetch users with the given reminder time
+	var query string
+	if env.DBType() == "sqlite" {
+		query = `
+	    SELECT id, telegram_bot_api_key, telegram_user_id FROM users
+	    WHERE reminder_time = ?
+	`
+	} else {
+		query = `
+		SELECT id, telegram_bot_api_key, telegram_user_id FROM users
+		WHERE reminder_time = $1
+		`
+	}
+
+	// Execute the SQL query with the current time as a parameter
+	rows, err := env.DB.Query(query, now)
 	if err != nil {
 		log.Println("Error querying users:", err)
 		return
 	}
-	remindBirthdays(rows)
-}
+	defer rows.Close()
 
-// remindBirthdays
-func remindBirthdays(rows *sql.Rows) {
+	// Iterate over the rows returned by the query
 	var userId int
 	var encryptedBotAPIKey, encryptedUserID string
 	for rows.Next() {
@@ -44,56 +57,6 @@ func remindBirthdays(rows *sql.Rows) {
 		}
 		sendBirthdayReminder(userId, botAPIKey, userID)
 	}
-}
-
-// Query with time
-func queryWithTime(time time.Time) (*sql.Rows, error) {
-	log.Printf("Checking reminders. Timestamp: %s", time)
-	query := `
-	    SELECT id, telegram_bot_api_key, telegram_user_id FROM users
-	    WHERE reminder_time = $1
-	`
-	rows, err := env.DB.Query(query, time.Format("15:04"))
-	if err != nil {
-		log.Println("Error querying users:", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	// Define a struct to hold the query result
-	type User struct {
-		ID                int
-		TelegramBotAPIKey string
-		TelegramUserID    string
-	}
-
-	// Iterate through the rows and scan the data
-	for rows.Next() {
-		var user User
-		err := rows.Scan(&user.ID, &user.TelegramBotAPIKey, &user.TelegramUserID)
-		if err != nil {
-			log.Println("Error scanning row:", err)
-			continue
-		}
-		// Print or log the user struct to see the contents
-		fmt.Printf("User: %+v\n", user)
-	}
-
-	// Check for errors from iterating over rows
-	if err := rows.Err(); err != nil {
-		log.Println("Error iterating over rows:", err)
-		return nil, err
-	}
-
-	// If you still need to return rows for other uses
-	// re-execute the query because rows have already been iterated over
-	rows, err = env.DB.Query(query, time.Format("15:04"))
-	if err != nil {
-		log.Println("Error querying users again:", err)
-		return nil, err
-	}
-
-	return rows, nil
 }
 
 // sendBirthdayReminder sends birthday reminders to the user via Telegram.

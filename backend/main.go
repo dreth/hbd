@@ -23,7 +23,7 @@ import (
 func main() {
 	// Set up the cron job to check for birthday reminder checks every minute
 	c := cron.New()
-	c.AddFunc("*/1 * * * *", birthdays.CheckReminders)
+	c.AddFunc("* * * * *", birthdays.CheckReminders)
 	c.Start()
 
 	// Initialize the database connection and run migrations

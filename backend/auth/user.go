@@ -93,7 +93,7 @@ func GetUserData(c *gin.Context) (*structs.UserData, error) {
 
 	// Combine the TIME with a date to handle timezone conversion
 	now := time.Now()
-	rTAsTime, err := time.Parse("2006-01-02 15:04:05 -0700 MST", user.ReminderTime)
+	rTAsTime, err := time.Parse("15:04", user.ReminderTime)
 	if err != nil {
 		return nil, errors.New("invalid reminder time format")
 	}
