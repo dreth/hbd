@@ -20,8 +20,6 @@ jobs:
 
     - name: Navigate to the hbd dir and build + bring up the container
       run: |
-        cd /home/dreth/IOTstack/volumes/hbd &&
-        git pull &&
         docker compose -f docker-compose-prod.yml build &&
         docker stop hbd || true &&
         docker rm hbd || true && 
