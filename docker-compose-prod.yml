@@ -1,0 +1,38 @@
+---
+services:
+  hbd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hbd
+    ports:
+      - "8417:8417"
+      - "8418:8418"
+    environment:
+      - DB_TYPE=sqlite
+      - DATABASE_URL=/app/backend/hbd.db
+      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
+      - PORT=8418
+      - ENVIRONMENT=production
+      - CUSTOM_DOMAIN=https://hbd.lotiguere.com
+    labels:
+      # Frontend
+      - "traefik.enable=true"
+      - "traefik.http.routers.hbd.rule=Host(`hbd.lotiguere.com`)"
+      - "traefik.http.routers.hbd.entrypoints=websecure"
+      - "traefik.http.routers.hbd.tls.certresolver=myresolver"
+      - "traefik.http.services.hbd.loadbalancer.server.port=8418"
+
+      # Backend
+      - "traefik.http.routers.hbd-api.rule=Host(`hbd.lotiguere.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.hbd-api.entrypoints=websecure"
+      - "traefik.http.routers.hbd-api.tls.certresolver=myresolver"
+      - "traefik.http.services.hbd-api.loadbalancer.server.port=8417"
+
+networks:
+  proxy:
+    external: true
+    
+volumes:
+  hbd-data:
+    driver: local

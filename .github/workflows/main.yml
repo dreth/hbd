@@ -1,0 +1,28 @@
+name: CI/CD for website
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy-project:
+    runs-on: home-server
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Check docker compose is present
+      run: |
+        docker compose --version
+
+    - name: Navigate to the hbd dir and build + bring up the container
+      run: |
+        cd /home/dreth/IOTstack/volumes/hbd &&
+        git pull &&
+        docker compose build &&
+        docker stop hbd || true &&
+        docker rm hbd || true && 
+        docker compose up -d hbd

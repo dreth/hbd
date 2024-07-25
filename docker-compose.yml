@@ -8,6 +8,8 @@ services:
     ports:
       - "8417:8417"
       - "8418:8418"
+    volumes:
+      - ./hbd-data:/app
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/backend/hbd.db
@@ -19,7 +21,3 @@ services:
 networks:
   default:
     name: hbd-network
-
-volumes:
-  hbd-data:
-    driver: local

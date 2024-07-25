@@ -208,3 +208,6 @@ go.work.sum
 
 # env file
 .env
+
+# hbd-data directory
+hbd-data/
