@@ -3,7 +3,7 @@ import axios from 'axios';
 
 let baseURL = 'http://localhost:8417';
 if (process.env.ENVIRONMENT === 'production') {
-  baseURL = 'https://0.0.0.0:8417';
+  baseURL = 'https://hbd-api.lotiguere.com';
 }
 
 // Create an Axios instance
