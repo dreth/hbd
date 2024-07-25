@@ -9,4 +9,4 @@ cd /app/backend
 
 # Start the Next.js server
 cd ../frontend
-npm run start -- --port $PORT
+npm run start -- --port $PORT --hostname 0.0.0.0
