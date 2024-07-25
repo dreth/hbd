@@ -30,12 +30,14 @@ services:
       # - "traefik.http.routers.hbd-api.tls.certresolver=myresolver"
       # - "traefik.http.routers.hbd-api.service=hbd-api-service"
       # - "traefik.http.services.hbd-api-service.loadbalancer.server.port=8417"
+    networks:
+      - proxy
 
 networks:
   proxy:
     name: proxy
     external: true
-    
+
 volumes:
   hbd-data:
     driver: local
