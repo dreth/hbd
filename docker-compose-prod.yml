@@ -14,6 +14,7 @@ services:
       - ENVIRONMENT=production
       - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
       - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
+      - GIN_MODE=release
     labels:
       # Frontend
       - "traefik.enable=true"
