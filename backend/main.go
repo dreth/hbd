@@ -35,7 +35,7 @@ func main() {
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8417", "http://localhost:8418", "http://localhost:3000", "http://0.0.0.0:8418", env.CD},
+		AllowOrigins:     []string{"http://localhost:8417", "http://localhost:8418", "http://localhost:3000", "http://0.0.0.0:8418", env.CDFE, env.CDBE},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

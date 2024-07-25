@@ -12,7 +12,8 @@ services:
       - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
       - PORT=8418
       - ENVIRONMENT=production
-      - CUSTOM_DOMAIN=https://hbd.lotiguere.com
+      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
+      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
     labels:
       # Frontend
       - "traefik.enable=true"
@@ -23,7 +24,7 @@ services:
       - "traefik.http.services.hbd-service.loadbalancer.server.port=8418"
 
       # Backend
-      - "traefik.http.routers.hbd-api.rule=Host(`hbd.lotiguere.com`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.hbd-api.rule=Host(`hbd-api.lotiguere.com`)"
       - "traefik.http.routers.hbd-api.entrypoints=websecure"
       - "traefik.http.routers.hbd-api.tls.certresolver=myresolver"
       - "traefik.http.routers.hbd-api.service=hbd-api-service"

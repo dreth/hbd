@@ -18,7 +18,7 @@ jobs:
       run: |
         docker compose --version
 
-    - name: Navigate to the hbd dir and build + bring up the container
+    - name: build + bring up the container
       run: |
         docker compose -f docker-compose-prod.yml build &&
         docker stop hbd || true &&
