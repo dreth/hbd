@@ -20,7 +20,6 @@ import { useAuth } from "@/src/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   OctagonAlert,
-  BadgeAlert,
   CircleHelp,
   GitPullRequestArrow,
   BookOpen,
@@ -110,7 +109,7 @@ export default function Home() {
     try {
       const generatedPassword = await generatePassword();
       setPassword(generatedPassword);
-  
+
       navigator.clipboard.writeText(generatedPassword).then(
         () => {
           setCopySuccess("Password generated and copied to clipboard!");
@@ -136,11 +135,11 @@ export default function Home() {
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (typeof window !== "undefined") {
       localStorage.clear();
     }
-
+  
     const userData = {
       email,
       password,
@@ -149,15 +148,21 @@ export default function Home() {
       telegram_user_id: telegramUser,
       timezone: timeZone,
     };
-
+  
     try {
       const response = await registerUser(userData);
-      if (response.success) {
-        setAuthInfo(email, password);
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+  
+        const loginResponse = await loginUser({ email, password });
+        setAuthInfo(email, response.token); 
+  
         setRegisterSuccess(true);
         setRegisterError(null);
-        localStorage.setItem("token", response.token);
-        window.location.reload();
+  
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 2000);
       } else {
         setRegisterSuccess(false);
         setRegisterError(
@@ -172,7 +177,7 @@ export default function Home() {
       console.error("Error registering user:", error);
     }
   };
-
+    
   const timeZones = Intl.supportedValuesOf("timeZone");
 
   return (
@@ -292,7 +297,6 @@ export default function Home() {
                         </p>
                       </PopoverContent>
                     </Popover>
-
                   </label>
                   <div className="flex items-center mt-1">
                     <Input
@@ -305,20 +309,20 @@ export default function Home() {
                     />
                   </div>
                   <div className="flex justify-between items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleGeneratePasswordClick}
-                    className="mt-2 px-3 py-1 w-full bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
-                  >
-                    Generate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopyClick}
-                    className="mt-2 px-3 py-1 w-auto bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
-                  >
-                    Copy
-                  </button>
+                    <button
+                      type="button"
+                      onClick={handleGeneratePasswordClick}
+                      className="mt-2 px-3 py-1 w-full bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
+                    >
+                      Generate
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopyClick}
+                      className="mt-2 px-3 py-1 w-auto bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
+                    >
+                      Copy
+                    </button>
                   </div>
                   {copySuccess && (
                     <p className="text-sm text-green-600 mt-1">{copySuccess}</p>
@@ -455,10 +459,10 @@ export default function Home() {
                     IT IS HASHED BRO WE DON&apos;T CARE ABOUT IT
                   </AlertDescription>
                 </Alert>
-                <div className="flex justify-end">
+                <div className="flex justify-center">
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-primary w-full lg:w-fit text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
+                    className="px-6 py-2 bg-primary w-full text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300"
                   >
                     Register
                   </button>

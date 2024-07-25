@@ -40,7 +40,7 @@ export const loginUser = async (userData) => {
   try {
     const response = await api.post('/login', userData);
     const { token, ...rest } = response.data;
-    localStorage.setItem('token', token);  // Store token in local storage
+    localStorage.setItem('token', token);  
     return { token, ...rest };
   } catch (error) {
     console.error('Error logging in', error);
