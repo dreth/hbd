@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-var baseURL = 'http://localhost:8417';
+var baseURL = 'https://hbd-api.lotiguere.com';
 if (process.env.ENVIRONMENT === 'production') {
   baseURL = 'https://hbd-api.lotiguere.com';
 }
