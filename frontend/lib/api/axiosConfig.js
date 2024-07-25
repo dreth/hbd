@@ -2,7 +2,7 @@ import axios from 'axios';
 
 let baseURL = 'http://localhost:8417';
 if (process.env.ENVIRONMENT === 'production') {
-  baseURL = 'https://0.0.0.0:8418';
+  baseURL = 'https://0.0.0.0:8417';
 }
 
 // Create an Axios instance

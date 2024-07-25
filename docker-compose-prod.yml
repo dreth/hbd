@@ -6,9 +6,6 @@ services:
       dockerfile: Dockerfile
     container_name: hbd
     restart: always
-    ports:
-      - "8417:8417"
-      - "8418:8418"
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/backend/hbd.db
