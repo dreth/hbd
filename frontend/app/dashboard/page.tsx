@@ -47,14 +47,20 @@ import {
 const ringClass = "ring-2 ring-blue-500";
 
 export default function Dashboard() {
-  const { email, token, logout } = useAuth();
+  const { email, token, logout, setAuthInfo } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!email || !token) {
+    const storedEmail = localStorage.getItem("email");
+    const storedToken = localStorage.getItem("token");
+
+    if (!email && storedEmail && storedToken) {
+      setAuthInfo(storedEmail, storedToken);
+      localStorage.setItem("email", storedEmail);
+    } else if (!email || !token) {
       router.push("/");
     }
-  }, [email, token, router]);
+  }, [email, token, router, setAuthInfo]);
 
   const [userData, setUserData] = useState({
     email: email || "",
@@ -62,7 +68,7 @@ export default function Dashboard() {
     timeZone: "",
     telegramApiKey: "",
     telegramUser: "",
-    newPassword: "", // Added new password field
+    newPassword: "", 
   });
 
   const [name, setName] = useState("");
@@ -89,6 +95,8 @@ export default function Dashboard() {
 
   const [nameError, setNameError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [updateSuccess, setUpdateSuccess] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
 
   const getIcon = (index: number) => {
     return index % 2 === 0 ? (
@@ -142,7 +150,7 @@ export default function Dashboard() {
     try {
       const response = await modifyUser(token, {
         new_email: userData.email,
-        new_password: userData.newPassword, // Include new password
+        new_password: userData.newPassword, 
         new_reminder_time: userData.reminderTime,
         new_telegram_bot_api_key: userData.telegramApiKey,
         new_telegram_user_id: userData.telegramUser,
@@ -153,9 +161,13 @@ export default function Dashboard() {
         ...prevData,
         token: response.token,
       }));
-      localStorage.setItem("token", response.token); // Update token in local storage
+      localStorage.setItem("token", response.token); 
+      setUpdateSuccess("User updated successfully!");
+      setIsSuccess(true);
     } catch (error) {
       console.error("Error updating user", error);
+      setUpdateSuccess("Error updating user, remember to type your current password to be able to modify user data.");
+      setIsSuccess(false);
     }
   };
 
@@ -320,10 +332,10 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
-                  <strong className="whitespace-nowrap">New Password:</strong>
+                  <strong className="whitespace-nowrap">Password:</strong>
                   <Input
                     type="password"
-                    placeholder="Just leave it blank if you don't want to change it"
+                    placeholder="Type current password to be able to modify user, or type in new password to change it"
                     className="bg-primary-foreground dark:bg-background"
                     disabled={isPasswordDisabled}
                     onChange={(e) =>
@@ -504,6 +516,15 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+                {updateSuccess && (
+                  <div
+                    className={`p-2 ${
+                      isSuccess ? "text-green-700" : "text-red-700"
+                    }`}
+                  >
+                    {updateSuccess}
+                  </div>
+                )}
               </div>
             </AccordionContent>
           </AccordionItem>
