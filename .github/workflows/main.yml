@@ -22,7 +22,7 @@ jobs:
       run: |
         cd /home/dreth/IOTstack/volumes/hbd &&
         git pull &&
-        docker compose build &&
+        docker compose -f docker-compose-prod.yml build &&
         docker stop hbd || true &&
         docker rm hbd || true && 
-        docker compose up -d hbd
+        docker compose -f docker-compose-prod-yml up -d hbd
