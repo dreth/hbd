@@ -53,12 +53,15 @@ func main() {
 	docs.SwaggerInfo.Title = "HBD API"
 	docs.SwaggerInfo.Description = "HBD endpoints for the HBD application frontend"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Auth routes
 	// Create API route group
 	api := router.Group("/api")
 	{
+		// Swagger documentation
+		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+		// Public routes
 		api.POST("/register", auth.Register)
 		api.POST("/login", auth.Login)
 		api.GET("/generate-password", auth.GetPassword)

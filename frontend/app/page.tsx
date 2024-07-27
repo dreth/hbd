@@ -516,7 +516,7 @@ export default function Home() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="/swagger/index.html"
+                  href="/api/swagger/index.html"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
