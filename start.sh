@@ -5,7 +5,7 @@ PORT=${PORT:-8418}
 cd /app/backend
 
 # if 'hbd.db' does not exist, create it as an empty file
-if [ ! -f hbd.db ]; then
+if [ ! -f /app/data/hbd.db ]; then
     touch /app/data/hbd.db
 fi
 
