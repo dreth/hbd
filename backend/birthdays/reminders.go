@@ -14,7 +14,6 @@ import (
 // CheckReminders runs periodically to check for user reminders.
 func CheckReminders() {
 	now := time.Now().UTC().Format("15:04")
-	log.Printf("Checking reminders. Timestamp: %s", now)
 	// SQL query to fetch users with the given reminder time
 	var query string
 	if env.DBType() == "sqlite" {
