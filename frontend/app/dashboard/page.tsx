@@ -694,22 +694,6 @@ export default function Dashboard() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="https://buymeacoffee.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Coffee className="w-5 h-5 hover:text-primary animate-pulse" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Buy me a coffee!</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </div>
     </main>
