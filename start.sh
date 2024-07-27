@@ -10,9 +10,9 @@ if [ ! -f hbd.db ]; then
 fi
 
 # Start the Go API server
-/app/backend/main &
+cd /app/frontend && npm run build
 
 # Start the Next.js server
 # Build the frontend and run it
-cd /app/frontend && npm run build
+/app/backend/main &
 npm run start -- --port $PORT --hostname 0.0.0.0
