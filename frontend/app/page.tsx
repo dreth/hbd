@@ -18,12 +18,7 @@ import {
 } from "@/lib/api/apiService";
 import { useAuth } from "@/src/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  OctagonAlert,
-  CircleHelp,
-  BookOpen,
-  Coffee,
-} from "lucide-react";
+import { OctagonAlert, CircleHelp, BookOpen, Coffee } from "lucide-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Select,
@@ -136,11 +131,11 @@ export default function Home() {
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (typeof window !== "undefined") {
       localStorage.clear();
     }
-  
+
     const userData = {
       email,
       password,
@@ -149,18 +144,18 @@ export default function Home() {
       telegram_user_id: telegramUser,
       timezone: timeZone,
     };
-  
+
     try {
       const response = await registerUser(userData);
       if (response.token) {
         localStorage.setItem("token", response.token);
-  
+
         const loginResponse = await loginUser({ email, password });
-        setAuthInfo(email, response.token); 
-  
+        setAuthInfo(email, response.token);
+
         setRegisterSuccess(true);
         setRegisterError(null);
-  
+
         setTimeout(() => {
           router.push("/dashboard");
         }, 2000);
@@ -178,7 +173,7 @@ export default function Home() {
       console.error("Error registering user:", error);
     }
   };
-    
+
   const timeZones = Intl.supportedValuesOf("timeZone");
 
   return (
@@ -188,7 +183,7 @@ export default function Home() {
           HBD
         </h1>
         <Tabs defaultValue="login" className="flex flex-col justify-start">
-          <TabsList className="flex justify-center bg-background">
+          <TabsList className="flex justify-center">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign up</TabsTrigger>
           </TabsList>
@@ -320,7 +315,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={handleCopyClick}
-                      className="mt-2 px-3 py-1 w-auto bg-green-600 text-white font-semibold rounded-md shadow-md hover:bg-green-700 transition duration-300"
+                      className="mt-2 px-3 py-1 w-auto bg-sky-400 text-white font-semibold rounded-md shadow-md hover:bg-sky-700 transition duration-300"
                     >
                       Copy
                     </button>
@@ -379,6 +374,55 @@ export default function Home() {
                       </PopoverTrigger>
                       <PopoverContent>
                         <p className="text-primary text-lg">
+                          Need help finding your API key?
+                        </p>
+                        <p>Follow these steps to get your Telegram API key:</p>
+                        <ol className="list-decimal ml-4">
+                          <li>Open Telegram.</li>
+                          <li>
+                            Search for <b>BotFather</b>.
+                          </li>
+                          <li>
+                            Start a chat with <b>BotFather</b>.
+                          </li>
+                          <li>
+                            Use the{" "}
+                            <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">
+                              /newbot
+                            </code>{" "}
+                            command to create a new bot.
+                          </li>
+                          <li>Follow the instructions to create a new bot.</li>
+                          <li>Copy the API key.</li>
+                        </ol>
+                        <p>
+                          This API key allows the application to send messages
+                          to you through the bot.
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  </label>
+                  <Input
+                    id="telegram-api-key"
+                    type="text"
+                    placeholder="Telegram Bot API Key"
+                    value={telegramApiKey}
+                    onChange={(e) => setTelegramApiKey(e.target.value)}
+                    className="mt-1 block w-full bg-primary-foreground dark:bg-background"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="telegram-user"
+                    className="block text-sm font-medium text-primary"
+                  >
+                    Telegram User ID
+                    <Popover>
+                      <PopoverTrigger>
+                        <CircleHelp className="ml-2 text-secondary-foreground w-4 h-4" />
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <p className="text-primary text-lg">
                           Need help finding your ID?
                         </p>
                         <p>
@@ -400,22 +444,6 @@ export default function Home() {
                         </p>
                       </PopoverContent>
                     </Popover>
-                  </label>
-                  <Input
-                    id="telegram-api-key"
-                    type="text"
-                    placeholder="Telegram Bot API Key"
-                    value={telegramApiKey}
-                    onChange={(e) => setTelegramApiKey(e.target.value)}
-                    className="mt-1 block w-full bg-primary-foreground dark:bg-background"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="telegram-user"
-                    className="block text-sm font-medium text-primary"
-                  >
-                    Telegram User ID
                   </label>
                   <Input
                     id="telegram-user"
@@ -454,7 +482,7 @@ export default function Home() {
                 <Alert className="max-w-lg mt-3 bg-primary-foreground dark:bg-background">
                   <OctagonAlert className="h-4 w-4" />
                   <AlertTitle className="text-primary">
-                    Email Privacy Disclaimer:{" "}
+                    Email and Password Privacy Disclaimer:{" "}
                   </AlertTitle>
                   <AlertDescription>
                     IT IS HASHED BRO WE DON&apos;T CARE ABOUT IT
@@ -518,22 +546,6 @@ export default function Home() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="https://buymeacoffee.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Coffee className="w-5 h-5 text-accent hover:text-primary animate-pulse" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Buy me a coffee!</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
         <br />
         <hr className="border-primary" />
@@ -542,7 +554,7 @@ export default function Home() {
             href="https://dac.ac/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:rotate-180 duration-300 hover:text-accent"
+            className="hover:text-primary"
           >
             Daniel
           </Link>
@@ -550,7 +562,7 @@ export default function Home() {
             href="https://fbatista.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:rotate-180 hover:text-accent"
+            className="hover:text-primary"
           >
             Fernando
           </Link>
