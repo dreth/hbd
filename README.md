@@ -1,28 +1,76 @@
 # hbd
 
-Birthday bot backend and frontend
+HBD is a simple application (which you can self-host) that serves birthday reminders through telegram.
+
+## Usage
+
+The application usage is very straightforward:
+
+1. Sign up for an account
+    + Requires an email, password, reminder time, timezone, [telegram bot API key](#bot-api-key), and [telegram chat ID](#chat-id)
+2. Add birthdays
+3. Receive reminders
+
+### Getting a bot API key and chat ID
+
+#### Bot API key
+
+1. Open Telegram
+2. Search for `BotFather`
+3. Start a chat with `BotFather`
+4. Use the `/newbot` command to create a new bot
+5. Follow the instructions to create a new bot
+6. Copy the API key
+
+Through this API key the application can send messages to you through the bot.
+
+#### Chat ID
+
+1. Open Telegram on your mobile device
+2. Send `/start` to your newly created bot
+3. Send a message to the bot
+4. Open the following URL in your browser: `https://api.telegram.org/bot<API_KEY>/getUpdates`
+5. Look for the `chat` object in the JSON response
+6. Copy the `id` field
+
+Using this ID the application can send messages to your chat specifically.
+
+## Self-hosting
+
+### Docker
+
+The application is containerized using docker, we use sqlite as the database by default.
+
+#### Docker compose
+
+The repo includes two docker-compose files. 
+
+1. `docker-compose.yml` - This file is used to run the application locally with no reverse proxy. This works fine for use within a local network. We map the ports `8417` and `8418` to the host machine. Port `8417` is the backend port and port `8418` is the frontend port.
+
+```yaml
+---
+services:
+  hbd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hbd
+    ports:
+      - "8417:8417"
+      - "8418:8418"
+    volumes:
+      - ./hbd-data:/app
+    environment:
+      - DB_TYPE=sqlite
+      - DATABASE_URL=/app/backend/hbd.db
+      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
+      - PORT=8418
+      - ENVIRONMENT=development
+      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
+      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
+```
 
 ## Migrations
-
-### Postgres
-
-#### Up
-
-```bash
-migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up
-```
-
-#### Down
-
-```bash
-migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down
-```
-
-#### Down to last migration
-
-```bash
-migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down 1
-```
 
 ### SQLite
 

@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: hbd
+    volumes:
+      - ./hbd-data:/app
     restart: always
     environment:
       - DB_TYPE=sqlite

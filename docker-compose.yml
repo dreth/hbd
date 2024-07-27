@@ -18,7 +18,3 @@ services:
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
       - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
-
-networks:
-  default:
-    name: hbd-network

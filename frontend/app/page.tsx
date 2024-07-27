@@ -21,10 +21,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   OctagonAlert,
   CircleHelp,
-  GitPullRequestArrow,
   BookOpen,
   Coffee,
 } from "lucide-react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Select,
   SelectTrigger,
@@ -509,7 +509,7 @@ export default function Home() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <GitPullRequestArrow className="w-5 h-5 hover:text-accent" />
+                  <GitHubLogoIcon className="w-5 h-5 hover:text-accent" />
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
