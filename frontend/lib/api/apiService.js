@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export var baseURL = process.env.ENVIRONMENT === 'production' ? 'https://hbd-api.lotiguere.com' : 'http://localhost:8417';
+export var baseURL = process.env.CUSTOM_DOMAIN_BACKEND;
 
 // Create an Axios instance
 const api = axios.create({
