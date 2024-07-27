@@ -10,7 +10,7 @@ services:
     restart: always
     environment:
       - DB_TYPE=sqlite
-      - DATABASE_URL=/app/data/hbd.db
+      - DATABASE_URL=sqlite3:///app/data/hbd.db
       - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
       - PORT=8418
       - ENVIRONMENT=production
