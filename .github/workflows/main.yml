@@ -14,11 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: hbd
-
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
         with:
