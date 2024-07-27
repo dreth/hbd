@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - ENVIRONMENT=production
     container_name: hbd
     volumes:
       - ./data:/app/data
