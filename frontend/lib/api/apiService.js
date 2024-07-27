@@ -1,19 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-export var baseURL = process.env.CUSTOM_DOMAIN_BACKEND;
+const prefix = "/api";
 
 // Create an Axios instance
 const api = axios.create({
-  baseURL: baseURL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Add a request interceptor to include the Authorization header
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,10 +28,10 @@ api.interceptors.request.use(
  */
 export const generatePassword = async () => {
   try {
-    const response = await api.get('/generate-password');
-    return response.data.password; 
+    const response = await api.get(prefix + "/generate-password");
+    return response.data.password;
   } catch (error) {
-    console.error('Error generating password', error);
+    console.error("Error generating password", error);
     throw error;
   }
 };
@@ -43,17 +42,15 @@ export const generatePassword = async () => {
  */
 export const loginUser = async (userData) => {
   try {
-    const response = await api.post('/login', userData);
+    const response = await api.post(prefix + "/login", userData);
     const { token, ...rest } = response.data;
-    localStorage.setItem('token', token);  
+    localStorage.setItem("token", token);
     return { token, ...rest };
   } catch (error) {
-    console.error('Error logging in', error);
+    console.error("Error logging in", error);
     throw error;
   }
 };
-
-
 
 /**
  * Register user
@@ -61,12 +58,12 @@ export const loginUser = async (userData) => {
  */
 export const registerUser = async (userData) => {
   try {
-    const response = await api.post('/register', userData);
+    const response = await api.post(prefix + "/register", userData);
     const token = response.data.token;
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
     return response.data;
   } catch (error) {
-    console.error('Error registering user', error);
+    console.error("Error registering user", error);
     throw error;
   }
 };
@@ -76,10 +73,10 @@ export const registerUser = async (userData) => {
  */
 export const getUserData = async (token) => {
   try {
-    const response = await api.get('/me');
+    const response = await api.get(prefix + "/me");
     return response.data;
   } catch (error) {
-    console.error('Error fetching user data', error);
+    console.error("Error fetching user data", error);
     throw error;
   }
 };
@@ -90,14 +87,14 @@ export const getUserData = async (token) => {
  */
 export const modifyUser = async (token, userData) => {
   try {
-    const response = await api.put('/modify-user', userData);
+    const response = await api.put(prefix + "/modify-user", userData);
     const token = response.data.token;
     if (token) {
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
     }
     return response.data;
   } catch (error) {
-    console.error('Error modifying user', error);
+    console.error("Error modifying user", error);
     throw error;
   }
 };
@@ -108,10 +105,10 @@ export const modifyUser = async (token, userData) => {
  */
 export const addBirthday = async (token, birthdayData) => {
   try {
-    const response = await api.post('/add-birthday', birthdayData);
+    const response = await api.post(prefix + "/add-birthday", birthdayData);
     return response.data;
   } catch (error) {
-    console.error('Error adding birthday', error);
+    console.error("Error adding birthday", error);
     throw error;
   }
 };
@@ -122,10 +119,10 @@ export const addBirthday = async (token, birthdayData) => {
  */
 export const modifyBirthday = async (token, birthdayData) => {
   try {
-    const response = await api.put('/modify-birthday', birthdayData);
+    const response = await api.put(prefix + "/modify-birthday", birthdayData);
     return response.data;
   } catch (error) {
-    console.error('Error modifying birthday', error);
+    console.error("Error modifying birthday", error);
     throw error;
   }
 };
@@ -136,10 +133,12 @@ export const modifyBirthday = async (token, birthdayData) => {
  */
 export const deleteBirthday = async (token, birthdayData) => {
   try {
-    const response = await api.delete('/delete-birthday', { data: birthdayData });
+    const response = await api.delete(prefix + "/delete-birthday", {
+      data: birthdayData,
+    });
     return response.data;
   } catch (error) {
-    console.error('Error deleting birthday', error);
+    console.error("Error deleting birthday", error);
     throw error;
   }
 };
@@ -149,11 +148,11 @@ export const deleteBirthday = async (token, birthdayData) => {
  */
 export const deleteUser = async (p0) => {
   try {
-    const response = await api.delete('/delete-user');
-    localStorage.removeItem('token');
+    const response = await api.delete(prefix + "/delete-user");
+    localStorage.removeItem("token");
     return response.data;
   } catch (error) {
-    console.error('Error deleting user', error);
+    console.error("Error deleting user", error);
     throw error;
   }
 };

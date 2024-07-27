@@ -43,7 +43,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { baseURL } from "@/lib/api/apiService";
 
 const ringClass = "ring-2 ring-blue-500";
 
@@ -666,7 +665,7 @@ export default function Dashboard() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href={`${baseURL}/swagger/index.html`}
+                  href="/swagger/index.html"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

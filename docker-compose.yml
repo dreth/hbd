@@ -4,8 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - ENVIRONMENT=development
     container_name: hbd
     volumes:
       - ./data:/app/data
@@ -18,6 +16,5 @@ services:
       - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
       - PORT=8418
       - ENVIRONMENT=development
-      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
-      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
+      - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=debug

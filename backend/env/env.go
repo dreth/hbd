@@ -13,8 +13,7 @@ import (
 // Set the MASTER_KEY and DATABASE_URL environment variables
 var DB *sql.DB = db()
 var MK string = mk()
-var CDFE string = customDomainFrontend()
-var CDBE string = customDomainBackend()
+var CD string = customDomain()
 
 func DBType() string {
 	loadDotenv()
@@ -69,21 +68,11 @@ func db() *sql.DB {
 }
 
 // Custom domain for CORS
-func customDomainFrontend() string {
+func customDomain() string {
 	loadDotenv()
-	customDomain := os.Getenv("CUSTOM_DOMAIN_FRONTEND")
+	customDomain := os.Getenv("CUSTOM_DOMAIN")
 	if customDomain == "" {
 		customDomain = "http://hbd.lotiguere.com"
-	}
-	return customDomain
-}
-
-// Custom domain for CORS
-func customDomainBackend() string {
-	loadDotenv()
-	customDomain := os.Getenv("CUSTOM_DOMAIN_BACKEND")
-	if customDomain == "" {
-		customDomain = "http://hbd-api.lotiguere.com"
 	}
 	return customDomain
 }
