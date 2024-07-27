@@ -44,12 +44,15 @@ RUN apk add --no-cache tzdata sqlite sqlite-dev ca-certificates bash gcc
 # Copy the Go API binary
 COPY --from=go-builder /build/main ./backend/main
 
-# Command to run both the API server and the Next.js server
+# start.sh runs both the API server and the Next.js server
 # Using a bash script to start both services
-COPY start.sh ./start.sh
-RUN chmod +x ./start.sh
+COPY start.sh start.sh
+RUN chmod +x start.sh
 
 # Expose the necessary ports
 EXPOSE 8418 8417
+
+# Create the /app/data directory
+RUN mkdir /app/data
 
 ENTRYPOINT ["/app/start.sh"]

@@ -7,20 +7,36 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy-project:
-    runs-on: home-server
+  deploy-site:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Check docker compose is present
-      run: |
-        docker compose --version
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: hbd
 
-    - name: build + bring up the container
-      run: |
-        docker compose -f docker-compose-prod.yml build &&
-        docker stop hbd || true &&
-        docker rm hbd || true && 
-        docker compose -f docker-compose-prod.yml up -d hbd
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          verbose: true
+          arch: amd64
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to EC2 via SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+            --parameters 'commands=["cd /home/ubuntu/hbd", "sudo docker compose build", "sudo docker stop hbd || true", "sudo docker rm hbd || true", "sudo docker compose up -d hbd"]' \
+            --comment "Deploying new version of hbd"

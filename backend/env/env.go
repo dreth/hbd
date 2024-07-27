@@ -29,10 +29,7 @@ func loadDotenv() {
 	// Load the .env file
 	env := os.Getenv("ENVIRONMENT")
 	if env == "development" || env == "" {
-		err := godotenv.Load()
-		if err != nil {
-			log.Println(".env file is not present")
-		}
+		godotenv.Load()
 	}
 }
 

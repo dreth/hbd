@@ -38,6 +38,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { baseURL } from "@/lib/api/apiService";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -489,7 +490,7 @@ export default function Home() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="https://swagger.io/"
+                  href={`${baseURL}/swagger/index.html`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -505,7 +506,7 @@ export default function Home() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="https://github.com/"
+                  href="https://github.com/dreth/hbd"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

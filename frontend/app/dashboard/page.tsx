@@ -43,6 +43,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { baseURL } from "@/lib/api/apiService";
 
 const ringClass = "ring-2 ring-blue-500";
 
@@ -68,7 +69,7 @@ export default function Dashboard() {
     timeZone: "",
     telegramApiKey: "",
     telegramUser: "",
-    newPassword: "", 
+    newPassword: "",
   });
 
   const [name, setName] = useState("");
@@ -150,7 +151,7 @@ export default function Dashboard() {
     try {
       const response = await modifyUser(token, {
         new_email: userData.email,
-        new_password: userData.newPassword, 
+        new_password: userData.newPassword,
         new_reminder_time: userData.reminderTime,
         new_telegram_bot_api_key: userData.telegramApiKey,
         new_telegram_user_id: userData.telegramUser,
@@ -161,12 +162,14 @@ export default function Dashboard() {
         ...prevData,
         token: response.token,
       }));
-      localStorage.setItem("token", response.token); 
+      localStorage.setItem("token", response.token);
       setUpdateSuccess("User updated successfully!");
       setIsSuccess(true);
     } catch (error) {
       console.error("Error updating user", error);
-      setUpdateSuccess("Error updating user, remember to type your current password to be able to modify user data.");
+      setUpdateSuccess(
+        "Error updating user, remember to type your current password to be able to modify user data."
+      );
       setIsSuccess(false);
     }
   };
@@ -663,7 +666,7 @@ export default function Dashboard() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="https://swagger.io/"
+                  href={`${baseURL}/swagger/index.html`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -679,7 +682,7 @@ export default function Dashboard() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href="https://github.com/"
+                  href="https://github.com/dreth/hbd"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
