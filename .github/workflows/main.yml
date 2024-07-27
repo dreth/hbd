@@ -33,5 +33,5 @@ jobs:
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
-            --parameters 'commands=["cd /home/ubuntu/hbd", "sudo docker compose build", "sudo docker stop hbd || true", "sudo docker rm hbd || true", "sudo docker compose up -d hbd"]' \
+            --parameters 'commands=["cd /home/ubuntu/hbd", "sudo docker compose -f docker-compose-prod.yml build", "sudo docker stop hbd || true", "sudo docker rm hbd || true", "sudo docker compose -f docker-compose-prod.yml up -d hbd"]' \
             --comment "Deploying new version of hbd"

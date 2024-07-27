@@ -49,31 +49,6 @@ The repo includes two docker-compose files. Feel free to customize them to your 
 
 ```yaml
 ---
-services:
-  hbd:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: hbd
-    ports:
-      - "8417:8417"
-      - "8418:8418"
-    volumes:
-      - ./hbd-data:/app
-    environment:
-      - DB_TYPE=sqlite
-      - DATABASE_URL=/app/backend/hbd.db
-      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
-      - PORT=8418
-      - ENVIRONMENT=development
-      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
-      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
-      - GIN_MODE=debug
-```
-2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to.
-
-
-```yaml
 ---
 services:
   hbd:
@@ -82,11 +57,38 @@ services:
       dockerfile: Dockerfile
     container_name: hbd
     volumes:
-      - ./hbd-data:/app
+      - ./data:/app/data
+    ports:
+      - "8417:8417"
+      - "8418:8418"
+    environment:
+      - DB_TYPE=sqlite
+      - DATABASE_URL=/app/data/hbd.db
+      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
+      - PORT=8418
+      - ENVIRONMENT=development
+      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
+      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
+      - GIN_MODE=debug
+```
+
+2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to.
+
+```yaml
+---
+---
+services:
+  hbd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hbd
+    volumes:
+      - ./data:/app/data
     restart: always
     environment:
       - DB_TYPE=sqlite
-      - DATABASE_URL=/app/backend/hbd.db
+      - DATABASE_URL=/app/data/hbd.db
       - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
       - PORT=8418
       - ENVIRONMENT=production
@@ -115,10 +117,6 @@ networks:
   proxy:
     name: proxy
     external: true
-
-volumes:
-  hbd-data:
-    driver: local
 ```
 
 ## Migrations
