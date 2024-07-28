@@ -39,13 +39,13 @@ Using this ID the application can send messages to your chat specifically.
 
 ### Docker
 
-The application is containerized using docker, we use sqlite as the database by default.
+The application is containerized using docker, we use sqlite as the database by default, but intend to support postgres in the future.
 
 #### Docker compose
 
 The repo includes two docker-compose files. Feel free to customize them to your needs.
 
-1. `docker-compose.yml` - This file is used to run the application locally with no reverse proxy. This works fine for use within a local network or for development. We map the ports `8417` and `8418` to the host machine. Port `8417` is the backend port and port `8418` is the frontend port.
+1. `docker-compose.yml` - This file is used to run the application locally. It uses an nginx reverse proxy which forwards requests to the application. This is the docker compose file we recommend for personal use unless you want to expose the application to the internet.
 
 ```yaml
 ---
@@ -53,13 +53,12 @@ services:
   hbd:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: local.Dockerfile
     container_name: hbd
     volumes:
       - ./data:/app/data
     ports:
-      - "8417:8417"
-      - "8418:8418"
+      - "8418:80"
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db
@@ -70,7 +69,7 @@ services:
       - GIN_MODE=debug
 ```
 
-2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
+1. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
 
 ```yaml
 ---
@@ -78,7 +77,7 @@ services:
   hbd:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: prod.Dockerfile
     container_name: hbd
     volumes:
       - ./data:/app/data
@@ -114,6 +113,7 @@ networks:
     name: proxy
     external: true
 ```
+
 ## Local development
 
 ### Backend
