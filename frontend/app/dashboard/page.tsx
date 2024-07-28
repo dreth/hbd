@@ -9,10 +9,10 @@ import {
   OctagonAlert,
   Cake,
   Gift,
-  GitPullRequestArrow,
   BookOpen,
   Coffee,
 } from "lucide-react";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Select,
   SelectContent,
@@ -205,7 +205,6 @@ export default function Dashboard() {
           name,
           date,
         });
-        console.log("Add birthday response:", response);
         if (response.id && response.name && response.date) {
           setBirthdays([
             ...birthdays,
@@ -685,7 +684,7 @@ export default function Dashboard() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <GitPullRequestArrow className="w-5 h-5 hover:text-accent" />
+                  <GitHubLogoIcon className="w-5 h-5 hover:text-accent" />
                 </Link>
               </TooltipTrigger>
               <TooltipContent>

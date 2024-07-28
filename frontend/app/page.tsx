@@ -89,7 +89,6 @@ export default function Home() {
         const response = await loginUser({ email, password });
         setAuthInfo(email, password);
         setLoginSuccess(true);
-        console.log("Login successful:", response);
         router.push("/dashboard");
       } catch (error) {
         setLoginError("Invalid email or password.");
