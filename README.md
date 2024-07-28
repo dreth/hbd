@@ -1,6 +1,6 @@
 # hbd
 
-HBD is a simple application (which you can self-host) that serves birthday reminders through telegram.
+HBD is a simple application that serves birthday reminders through telegram.
 
 ![example](example.png)
 
