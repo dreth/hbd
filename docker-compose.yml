@@ -13,7 +13,7 @@ services:
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db
-      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
+      - MASTER_KEY=60bcb71e67cf8e6b71b30af99828974726585c625397f69ccdc587e2f79cf8de
       - PORT=8418
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com

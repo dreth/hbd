@@ -16,15 +16,16 @@ func CheckReminders() {
 	now := time.Now().UTC().Format("15:04")
 	// SQL query to fetch users with the given reminder time
 	var query string
-	if env.DBType() == "sqlite" {
-		query = `
-	    SELECT id, telegram_bot_api_key, telegram_user_id FROM users
-	    WHERE reminder_time = ?
-	`
-	} else {
+	if env.DBType() == "postgres" {
 		query = `
 		SELECT id, telegram_bot_api_key, telegram_user_id FROM users
 		WHERE reminder_time = $1
+		`
+
+	} else {
+		query = `
+	    SELECT id, telegram_bot_api_key, telegram_user_id FROM users
+	    WHERE reminder_time = ?
 		`
 	}
 
@@ -62,18 +63,18 @@ func CheckReminders() {
 func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	// SQL query to fetch names and dates of birthdays for the given user on the current date
 	var query string
-	if env.DBType() == "sqlite" {
-		query = `
-		SELECT name, date FROM birthdays
-		WHERE user_id = ? AND 
-		cast(strftime('%m', date) as integer) = ? AND 
-		cast(strftime('%d', date) as integer) = ?`
-	} else {
+	if env.DBType() == "postgres" {
 		query = `
         SELECT name, date FROM birthdays 
         WHERE user_id = $1 AND 
 		EXTRACT(MONTH FROM TO_DATE(date, 'YYYY-MM-DD'))::int = $2 AND 
 		EXTRACT(DAY FROM TO_DATE(date, 'YYYY-MM-DD'))::int = $3`
+	} else {
+		query = `
+		SELECT name, date FROM birthdays
+		WHERE user_id = ? AND 
+		cast(strftime('%m', date) as integer) = ? AND 
+		cast(strftime('%d', date) as integer) = ?`
 	}
 
 	// Get the current date in UTC

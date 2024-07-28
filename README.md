@@ -45,10 +45,9 @@ The application is containerized using docker, we use sqlite as the database by 
 
 The repo includes two docker-compose files. Feel free to customize them to your needs.
 
-1. `docker-compose.yml` - This file is used to run the application locally with no reverse proxy. This works fine for use within a local network or for development. We map the ports `8417` and `8418` to the host machine. Port `8417` is the backend port and port `8418` is the frontend port. 
+1. `docker-compose.yml` - This file is used to run the application locally with no reverse proxy. This works fine for use within a local network or for development. We map the ports `8417` and `8418` to the host machine. Port `8417` is the backend port and port `8418` is the frontend port.
 
 ```yaml
----
 ---
 services:
   hbd:
@@ -64,18 +63,16 @@ services:
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db
-      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
+      - MASTER_KEY=60bcb71e67cf8e6b71b30af99828974726585c625397f69ccdc587e2f79cf8de
       - PORT=8418
       - ENVIRONMENT=development
-      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
-      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
+      - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=debug
 ```
 
 2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to.
 
 ```yaml
----
 ---
 services:
   hbd:
@@ -89,11 +86,10 @@ services:
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db
-      - MASTER_KEY=35e150e7ca83247f18cb1a37d61d8e161dddec06027f5db009b34da48c25f1b5
+      - MASTER_KEY=${HBD_MASTER_KEY}
       - PORT=8418
       - ENVIRONMENT=production
-      - CUSTOM_DOMAIN_FRONTEND=https://hbd.lotiguere.com
-      - CUSTOM_DOMAIN_BACKEND=https://hbd-api.lotiguere.com
+      - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=release
     labels:
       # Frontend
@@ -105,7 +101,7 @@ services:
       - "traefik.http.services.hbd-service.loadbalancer.server.port=8418"
 
       # Backend
-      - "traefik.http.routers.hbd-api.rule=Host(`hbd-api.lotiguere.com`)"
+      - "traefik.http.routers.hbd-api.rule=Host(`hbd.lotiguere.com`) && PathPrefix(`/api`)"
       - "traefik.http.routers.hbd-api.entrypoints=websecure"
       - "traefik.http.routers.hbd-api.tls.certresolver=myresolver"
       - "traefik.http.routers.hbd-api.service=hbd-api-service"

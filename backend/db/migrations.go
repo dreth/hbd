@@ -25,12 +25,10 @@ func RunMigrations(db *sql.DB) {
 	migrationPath := fmt.Sprintf("file://migrations/%s", dbType)
 
 	switch dbType {
-	case "sqlite":
-		driver, err = sqlite.WithInstance(db, &sqlite.Config{})
 	case "postgres":
 		driver, err = postgres.WithInstance(db, &postgres.Config{})
 	default:
-		log.Fatalf("Unsupported database type: %v", dbType)
+		driver, err = sqlite.WithInstance(db, &sqlite.Config{})
 	}
 
 	if err != nil {

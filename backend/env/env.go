@@ -54,10 +54,10 @@ func db() *sql.DB {
 	var db *sql.DB
 	var err error
 
-	if DBType() == "sqlite" {
-		db, err = sql.Open("sqlite3", databaseURL)
-	} else {
+	if DBType() == "postgres" {
 		db, err = sql.Open("postgres", databaseURL)
+	} else {
+		db, err = sql.Open("sqlite3", databaseURL)
 	}
 
 	if err != nil {
