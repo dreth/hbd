@@ -35,12 +35,6 @@ COPY frontend/ ./frontend
 # Copy the backend code into the container.
 COPY backend/ ./backend
 
-# Define build argument
-ARG ENVIRONMENT
-
-# Set the ENVIRONMENT variable based on the build argument
-ENV ENVIRONMENT=${ENVIRONMENT}
-
 # Build the Next.js app
 RUN cd frontend && npm run build
 
