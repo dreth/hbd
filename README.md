@@ -70,7 +70,7 @@ services:
       - GIN_MODE=debug
 ```
 
-2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to.
+2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
 
 ```yaml
 ---
@@ -114,52 +114,74 @@ networks:
     name: proxy
     external: true
 ```
+## Local development
 
-## Migrations
+### Backend
 
-### SQLite
+The backend uses Gin as the web framework. We use the `air` tool to reload the server on file changes.
 
-#### Up
+```bash
+go get -u github.com/cosmtrek/air
+```
+
+### Frontend
+
+The frontend uses nextjs/react. We use `npm` or `pnpm`to manage the frontend dependencies.
+
+```bash
+npm install
+```
+
+Or:
+
+```bash
+pnpm install
+```
+
+We use tailwindcss for styling. To run the watcher:
+  
+```bash
+npm run watch
+```
+
+### Database
+
+The application uses sqlite, but we intend to also support postgres. We use the `migrate` tool to manage the database migrations.
+
+```bash
+go get -u github.com/mattn/go-sqlite3
+go get -u github.com/golang-migrate/migrate/v4/cmd/migrate
+```
+
+To run the migrations:
 
 ```bash
 migrate -database 'sqlite3://hbd.db' -path ./migrations up
 ```
 
-#### Down
+### ORM
+
+We use `sqlboiler` to generate the ORM models.
 
 ```bash
-migrate -database 'sqlite3://hbd.db' -path ./migrations down
+go get -u github.com/volatiletech/sqlboiler/v4
 ```
 
-#### Down to last migration
-
-```bash
-migrate -database 'sqlite3://hbd.db' -path ./migrations down 1
-```
-
-
-
-## SQLBoiler
-
-Generate models
-
-```bash
-sqlboiler psql
-```
-
-Point to the `.sqlboiler.toml` file
+To generate the models:
 
 ```bash
 sqlboiler psql --config .sqlboiler.toml
 ```
 
-## All together
+### Swagger
+
+We use `swag` to generate the swagger docs.
 
 ```bash
-migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations down && migrate -database 'postgres://postgres:postgres@localhost:6684/postgres?sslmode=disable' -path ./migrations up && sqlboiler psql --config .sqlboiler.toml && air
+go get -u github.com/swaggo/swag/cmd/swag
 ```
 
-## Update swagger docs
+To generate the docs:
 
 ```bash
 swag init

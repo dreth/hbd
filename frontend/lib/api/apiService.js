@@ -4,6 +4,7 @@ const prefix = "/api";
 
 // Create an Axios instance
 const api = axios.create({
+  // baseURL: "http://localhost:3000", - UNCOMMENT THIS LINE FOR LOCAL TESTING
   headers: {
     "Content-Type": "application/json",
   },

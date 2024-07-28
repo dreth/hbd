@@ -1,7 +1,11 @@
+# THIS IS THE LOCAL DOCKERFILE
+# This Dockerfile is used to build the Docker image for local development or local personal use.
+# It is not intended for production use.
+
 # Stage 1: Build the Go API server
 FROM --platform=linux/amd64 golang:1.22.4-alpine AS go-builder
 
-# add gcc
+# Add gcc
 RUN apk add --no-cache gcc libc-dev sqlite-dev musl-dev
 
 # Move to working directory (/build).
@@ -20,6 +24,9 @@ RUN go build -tags musl --ldflags "-extldflags -static -s -w" -o main .
 
 # Stage 2: Build the Next.js app
 FROM node:20-alpine
+
+# Install Nginx
+RUN apk add --no-cache nginx
 
 # Move to working directory (/app).
 WORKDIR /app
@@ -44,15 +51,18 @@ RUN apk add --no-cache tzdata sqlite sqlite-dev ca-certificates bash gcc
 # Copy the Go API binary
 COPY --from=go-builder /build/main ./backend/main
 
+# Copy Nginx configuration file
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # start.sh runs both the API server and the Next.js server
 # Using a bash script to start both services
-COPY start.sh start.sh
-RUN chmod +x start.sh
+COPY local.start.sh local.start.sh
+RUN chmod +x local.start.sh
 
 # Expose the necessary ports
-EXPOSE 8418 8417
+EXPOSE 80
 
 # Create the /app/data directory
 RUN mkdir /app/data
 
-ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["/app/local.start.sh"]

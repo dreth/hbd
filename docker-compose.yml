@@ -3,13 +3,12 @@ services:
   hbd:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: local.Dockerfile
     container_name: hbd
     volumes:
       - ./data:/app/data
     ports:
-      - "8417:8417"
-      - "8418:8418"
+      - "8418:80"
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db

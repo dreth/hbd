@@ -3,7 +3,7 @@ services:
   hbd:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: prod.Dockerfile
     container_name: hbd
     volumes:
       - ./data:/app/data
