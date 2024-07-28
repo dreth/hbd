@@ -2,6 +2,8 @@
 
 HBD is a simple application (which you can self-host) that serves birthday reminders through telegram.
 
+![example](example.png)
+
 ## Usage
 
 The application usage is very straightforward:
