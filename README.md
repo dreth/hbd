@@ -13,30 +13,6 @@ The application usage is very straightforward:
 2. Add birthdays
 3. Receive reminders
 
-### Getting a bot API key and chat ID
-
-#### Bot API key
-
-1. Open Telegram
-2. Search for `BotFather`
-3. Start a chat with `BotFather`
-4. Use the `/newbot` command to create a new bot
-5. Follow the instructions to create a new bot
-6. Copy the API key
-
-Through this API key the application can send messages to you through the bot.
-
-#### Chat ID
-
-1. Open Telegram on your mobile device
-2. Send `/start` to your newly created bot
-3. Send a message to the bot
-4. Open the following URL in your browser: `https://api.telegram.org/bot<API_KEY>/getUpdates`
-5. Look for the `chat` object in the JSON response
-6. Copy the `id` field
-
-Using this ID the application can send messages to your chat specifically.
-
 ## Self-hosting
 
 ### Docker
@@ -71,7 +47,7 @@ services:
       - GIN_MODE=debug
 ```
 
-1. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
+2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
 
 ```yaml
 ---
@@ -115,6 +91,10 @@ networks:
     name: proxy
     external: true
 ```
+
+## Contributing
+
+We accept PRs and issues. Feel free to contribute.
 
 ## Local development
 
@@ -188,3 +168,29 @@ To generate the docs:
 ```bash
 swag init
 ```
+
+## Telegram-related stuff
+
+### Getting a bot API key and chat ID
+
+#### Bot API key
+
+1. Open Telegram
+2. Search for `BotFather`
+3. Start a chat with `BotFather`
+4. Use the `/newbot` command to create a new bot
+5. Follow the instructions to create a new bot
+6. Copy the API key
+
+Through this API key the application can send messages to you through the bot.
+
+#### Chat ID
+
+1. Open Telegram on your mobile device
+2. Send `/start` to your newly created bot
+3. Send a message to the bot
+4. Open the following URL in your browser: `https://api.telegram.org/bot<API_KEY>/getUpdates`
+5. Look for the `chat` object in the JSON response
+6. Copy the `id` field
+
+Using this ID the application can send messages to your chat specifically.
