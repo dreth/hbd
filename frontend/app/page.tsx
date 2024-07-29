@@ -42,10 +42,10 @@ export default function Home() {
   const [loginSuccess, setLoginSuccess] = useState<boolean | null>(null);
   const [reminderTime, setReminderTime] = useState("");
   const [timeZone, setTimeZone] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [telegramApiKey, setTelegramApiKey] = useState("");
   const [telegramUser, setTelegramUser] = useState("");
   const [copySuccess, setCopySuccess] = useState("");
-  const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
   const [registerSuccess, setRegisterSuccess] = useState<boolean | null>(null);
   const [registerError, setRegisterError] = useState<string | null>(null);
 
@@ -87,7 +87,7 @@ export default function Home() {
     if (isValid) {
       try {
         const response = await loginUser({ email, password });
-        setAuthInfo(email, password);
+        setAuthInfo(email, response.token);
         setLoginSuccess(true);
         router.push("/dashboard");
       } catch (error) {
@@ -115,6 +115,7 @@ export default function Home() {
       console.error("Error generating password", error);
     }
   };
+
   const handleCopyClick = () => {
     navigator.clipboard.writeText(password).then(
       () => {
@@ -146,8 +147,8 @@ export default function Home() {
       const response = await registerUser(userData);
       if (response.token) {
         localStorage.setItem("token", response.token);
+        localStorage.setItem("email", email);
 
-        const loginResponse = await loginUser({ email, password });
         setAuthInfo(email, response.token);
 
         setRegisterSuccess(true);
@@ -171,7 +172,9 @@ export default function Home() {
     }
   };
 
-  const timeZones = Intl.supportedValuesOf("timeZone");
+  const filteredTimeZones = Intl.supportedValuesOf("timeZone").filter((zone) =>
+    zone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <main className="flex min-h-screen flex-col items-center p-5 lg:p-10">
@@ -347,10 +350,21 @@ export default function Home() {
                     </label>
                     <Select onValueChange={setTimeZone}>
                       <SelectTrigger className="bg-primary-foreground dark:bg-background">
-                        <SelectValue placeholder={timeZone} />
+                        <SelectValue
+                          placeholder={timeZone || "Select a time zone"}
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        {timeZones.map((zone) => (
+                        <div className="p-2">
+                          <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search time zones"
+                            className="w-full p-2 border rounded"
+                          />
+                        </div>
+                        {filteredTimeZones.map((zone) => (
                           <SelectItem key={zone} value={zone}>
                             {zone}
                           </SelectItem>
@@ -358,7 +372,7 @@ export default function Home() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                </div>{" "}
                 <div>
                   <label
                     htmlFor="telegram-api-key"
@@ -545,25 +559,6 @@ export default function Home() {
           </TooltipProvider>
         </div>
         <br />
-        <hr className="border-primary" />
-        <div className="flex justify-evenly mt-4">
-          <Link
-            href="https://dac.ac/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-primary"
-          >
-            Daniel
-          </Link>
-          <Link
-            href="https://fbatista.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-primary"
-          >
-            Fernando
-          </Link>
-        </div>
       </div>
     </main>
   );
