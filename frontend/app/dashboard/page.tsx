@@ -406,7 +406,10 @@ export default function Dashboard() {
                 </div>
                 <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Time Zone:</strong>
-                  <Select onValueChange={setTimeZone}>
+                  <Select
+                    onValueChange={setTimeZone}
+                    disabled={isTimezoneDisabled}
+                  >
                     <SelectTrigger className="bg-primary-foreground dark:bg-background">
                       <SelectValue
                         placeholder={timeZone || "Select a time zone"}
