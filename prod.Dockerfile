@@ -27,7 +27,7 @@ WORKDIR /app
 # Copy the Next.js app files
 RUN mkdir frontend
 COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm install
+RUN cd frontend && npm install --production
 
 # Copy the rest of the frontend code
 COPY frontend/ ./frontend
