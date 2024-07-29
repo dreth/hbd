@@ -43,7 +43,7 @@ COPY frontend/ ./frontend
 COPY backend/ ./backend
 
 # Build the Next.js app
-RUN cd frontend && npm run build
+RUN cd frontend && rm -rf .next && npm run build
 
 # Install additional tools
 RUN apk add --no-cache tzdata sqlite sqlite-dev ca-certificates bash gcc

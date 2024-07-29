@@ -18,5 +18,4 @@ fi
 
 # Start the Next.js server
 cd ../frontend
-rm -rf .next
 npm run start -- --port $PORT --hostname 0.0.0.0
