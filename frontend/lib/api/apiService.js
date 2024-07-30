@@ -4,7 +4,8 @@ const prefix = "/api";
 
 // Create an Axios instance
 const api = axios.create({
-  // baseURL: "http://localhost:3000", - UNCOMMENT THIS LINE FOR LOCAL TESTING
+  // UNCOMMENT THE LINE BELOW FOR LOCAL TESTING
+  // baseURL: "http://localhost:8418",
   headers: {
     "Content-Type": "application/json",
   },
@@ -46,6 +47,7 @@ export const loginUser = async (userData) => {
     const response = await api.post(prefix + "/login", userData);
     const { token, ...rest } = response.data;
     localStorage.setItem("token", token);
+    localStorage.setItem("email", userData.email);
     return { token, ...rest };
   } catch (error) {
     console.error("Error logging in", error);

@@ -4,14 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import {
-  AlertCircle,
-  OctagonAlert,
-  Cake,
-  Gift,
-  BookOpen,
-  Coffee,
-} from "lucide-react";
+import { AlertCircle, OctagonAlert, Cake, Gift, BookOpen } from "lucide-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import {
   Select,
@@ -50,26 +43,56 @@ export default function Dashboard() {
   const { email, token, logout, setAuthInfo } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    const storedEmail = localStorage.getItem("email");
-    const storedToken = localStorage.getItem("token");
-
-    if (!email && storedEmail && storedToken) {
-      setAuthInfo(storedEmail, storedToken);
-      localStorage.setItem("email", storedEmail);
-    } else if (!email || !token) {
-      router.push("/");
-    }
-  }, [email, token, router, setAuthInfo]);
-
   const [userData, setUserData] = useState({
-    email: email || "",
+    email: "",
     reminderTime: "",
     timeZone: "",
     telegramApiKey: "",
     telegramUser: "",
     newPassword: "",
   });
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    const storedToken = localStorage.getItem("token");
+
+    if (!email && storedEmail && storedToken) {
+      setAuthInfo(storedEmail, storedToken);
+    } else if (!email || !token) {
+      router.push("/");
+    }
+  }, [email, token, router, setAuthInfo]);
+
+  useEffect(() => {
+    setUserData((prevData) => ({
+      ...prevData,
+      email: email || "",
+    }));
+  }, [email]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getUserData(token);
+        setUserData((prevData) => ({
+          ...prevData,
+          reminderTime: response.reminder_time,
+          timeZone: response.timezone,
+          telegramApiKey: response.telegram_bot_api_key,
+          telegramUser: response.telegram_user_id,
+        }));
+        setTimeZone(response.timezone);
+        if (response.birthdays) {
+          setBirthdays(response.birthdays);
+        }
+      } catch (error) {
+        console.error("Error fetching user data", error);
+      }
+    };
+    if (token) {
+      fetchUserData();
+    }
+  }, [token]);
 
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
@@ -89,6 +112,7 @@ export default function Dashboard() {
   const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
   const [isReminderTimeDisabled, setIsReminderTimeDisabled] = useState(true);
   const [timeZone, setTimeZone] = useState(userData.timeZone);
+  const [searchTerm, setSearchTerm] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [confirmDeleteUser, setConfirmDeleteUser] = useState<boolean>(false);
@@ -280,8 +304,9 @@ export default function Dashboard() {
     setDate(e.target.value);
   };
 
-  const timeZones = Intl.supportedValuesOf("timeZone");
-
+  const filteredTimeZones = Intl.supportedValuesOf("timeZone").filter((zone) =>
+    zone.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const handleTimezoneCheckboxChange = () => {
     setIsTimezoneDisabled(!isTimezoneDisabled);
   };
@@ -382,15 +407,25 @@ export default function Dashboard() {
                 <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Time Zone:</strong>
                   <Select
-                    value={timeZone}
                     onValueChange={setTimeZone}
                     disabled={isTimezoneDisabled}
                   >
                     <SelectTrigger className="bg-primary-foreground dark:bg-background">
-                      <SelectValue placeholder={timeZone} />
+                      <SelectValue
+                        placeholder={timeZone || "Select a time zone"}
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {timeZones.map((zone) => (
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          placeholder="Search time zones"
+                          className="w-full p-2 border rounded"
+                        />
+                      </div>
+                      {filteredTimeZones.map((zone) => (
                         <SelectItem key={zone} value={zone}>
                           {zone}
                         </SelectItem>
