@@ -6,7 +6,7 @@ import (
 	"hbd/structs"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var jwtKey = []byte(env.MK)
@@ -15,8 +15,8 @@ func GenerateJWT(email string) (string, error) {
 	expirationTime := time.Now().Add(720 * time.Hour)
 	claims := &structs.Claims{
 		Email: email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

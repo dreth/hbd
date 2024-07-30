@@ -1,11 +1,11 @@
 package structs
 
-import "github.com/golang-jwt/jwt"
+import "github.com/golang-jwt/jwt/v5"
 
 // REQUESTS
 type Claims struct {
 	Email string `json:"email"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 type RegisterRequest struct {
