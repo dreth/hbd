@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, OctagonAlert, Cake, Gift, BookOpen } from "lucide-react";
@@ -115,6 +115,8 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [sortCriteria, setSortCriteria] = useState("addedorder");
+  const [originalBirthdays, setOriginalBirthdays] = useState([]);
   const [confirmDeleteUser, setConfirmDeleteUser] = useState<boolean>(false);
 
   const [nameError, setNameError] = useState<string | null>(null);
@@ -300,6 +302,51 @@ export default function Dashboard() {
     }
   };
 
+  const sortBirthdays = (criteria: string) => {
+    let sortedBirthdays;
+
+    if (criteria === "oldest") {
+      sortedBirthdays = [...birthdays].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+    } else if (criteria === "youngest") {
+      sortedBirthdays = [...birthdays].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    } else if (criteria === "alphabetical") {
+      sortedBirthdays = [...birthdays].sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+    } else if (criteria === "addedorder") {
+      sortedBirthdays = [...originalBirthdays];
+    } else {
+      sortedBirthdays = [...originalBirthdays];
+    }
+
+    setBirthdays(sortedBirthdays);
+  };
+
+  useEffect(() => {
+    sortBirthdays(sortCriteria);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortCriteria]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getUserData(token);
+        const birthdays = response.birthdays;
+        setOriginalBirthdays(birthdays);
+        setBirthdays(birthdays);
+      } catch (error) {
+        console.error("Error fetching user data", error);
+      }
+    };
+    if (token) {
+      fetchUserData();
+    }
+  }, [token]);
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value);
   };
@@ -319,6 +366,15 @@ export default function Dashboard() {
     setName(name);
   };
 
+  const handleToggleAll = () => {
+    handleEmailCheckboxChange();
+    handlePasswordCheckboxChange();
+    handleReminderTimeCheckboxChange();
+    handleTimezoneCheckboxChange();
+    handleTelegramApiKeyCheckboxChange();
+    handleTelegramUserCheckboxChange();
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center p-8">
       <h1 className="text-4xl font-bold text-center my-8">Dashboard</h1>
@@ -334,6 +390,7 @@ export default function Dashboard() {
             </AccordionTrigger>
             <AccordionContent>
               <div className="w-full bg-secondary lg:p-8 rounded-lg space-y-6">
+                {/* Email */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong>Email:</strong>
                   <Input
@@ -352,11 +409,13 @@ export default function Dashboard() {
                       pressed={!isEmailDisabled}
                       onPressedChange={handleEmailCheckboxChange}
                       aria-label="Toggle Edit"
+                      className="hidden lg:block"
                     >
                       Edit
                     </Toggle>
                   </div>
                 </div>
+                {/* Password */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="whitespace-nowrap">Password:</strong>
                   <Input
@@ -374,11 +433,13 @@ export default function Dashboard() {
                       pressed={!isPasswordDisabled}
                       onPressedChange={handlePasswordCheckboxChange}
                       aria-label="Toggle Edit"
+                      className="hidden lg:block"
                     >
                       Edit
                     </Toggle>
                   </div>
                 </div>
+                {/* Reminder Time */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">
                     Reminder Time:
@@ -399,11 +460,13 @@ export default function Dashboard() {
                       pressed={!isReminderTimeDisabled}
                       onPressedChange={handleReminderTimeCheckboxChange}
                       aria-label="Toggle Edit"
+                      className="hidden lg:block"
                     >
                       Edit
                     </Toggle>
                   </div>
                 </div>
+                {/* Time Zone */}
                 <div className="flex flex-col lg:flex-row justify_between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">Time Zone:</strong>
                   <Select
@@ -438,11 +501,13 @@ export default function Dashboard() {
                       pressed={!isTimezoneDisabled}
                       onPressedChange={handleTimezoneCheckboxChange}
                       aria-label="Toggle Edit"
+                      className="hidden lg:block"
                     >
                       Edit
                     </Toggle>
                   </div>
                 </div>
+                {/* Telegram Bot API Key */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">
                     Telegram Bot API Key:
@@ -478,11 +543,13 @@ export default function Dashboard() {
                       pressed={!isTelegramApiKeyDisabled}
                       onPressedChange={handleTelegramApiKeyCheckboxChange}
                       aria-label="Toggle Edit"
+                      className="hidden lg:block"
                     >
                       Edit
                     </Toggle>
                   </div>
                 </div>
+                {/* Telegram User */}
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-3">
                   <strong className="lg:whitespace-nowrap">
                     Telegram User ID:
@@ -503,12 +570,32 @@ export default function Dashboard() {
                       pressed={!isTelegramUserDisabled}
                       onPressedChange={handleTelegramUserCheckboxChange}
                       aria-label="Toggle Edit"
+                      className="hidden lg:block"
                     >
                       Edit
                     </Toggle>
                   </div>
                 </div>
-                <div className="flex justify-center gap-2">
+                <div className="flex flex-col lg:flex-row justify-center gap-2">
+                  <Toggle
+                    id="toggleAllInputs"
+                    pressed={
+                      !(
+                        isEmailDisabled ||
+                        isPasswordDisabled ||
+                        isReminderTimeDisabled ||
+                        isTimezoneDisabled ||
+                        isTelegramApiKeyDisabled ||
+                        isTelegramUserDisabled
+                      )
+                    }
+                    onPressedChange={handleToggleAll}
+                    aria-label="Toggle Edit All"
+                    className="lg:hidden w-full px-6 py-2 bg-amber-600 text-white font-semibold rounded-md shadow-md hover:bg-amber-700 transition duration-300"
+                  >
+                    Edit User Data
+                  </Toggle>
+
                   <button
                     onClick={handleUpdateUser}
                     className="w-full max-h-9 px-6 py-2 bg-primary text-white font-semibold rounded-md shadow-md hover:bg-sky-700 transition duration-300"
@@ -518,7 +605,7 @@ export default function Dashboard() {
                   {!confirmDeleteUser ? (
                     <button
                       onClick={() => setConfirmDeleteUser(true)}
-                      className="w-full max-w-40 px-6 py-2 mx-auto bg-destructive text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
+                      className="w-full lg:max-w-40 px-6 py-2 mx-auto bg-destructive text-white font-semibold rounded-md shadow-md hover:bg-red-700 transition duration-300"
                     >
                       Delete User
                     </button>
@@ -622,75 +709,101 @@ export default function Dashboard() {
               {editIndex !== null ? "Update Birthday" : "Add Birthday"}
             </button>
           </form>
-          <h2 className="text-2xl font-semibold mt-6">Birthdays</h2>
-          <ul className="gap-4 grid grid-cols-2">
-            {birthdays.map((birthday, index) => (
-              <div key={index} className="col-span-2 md:col-span-1">
-                <li
-                  className={`${
-                    editIndex === index ? ringClass : ""
-                  } flex flex-col lg:flex-row justify-between bg-background p-4 rounded-md shadow-md`}
-                >
-                  <div className="flex flex-col lg:flex-row justify-between  items-center w-full mr-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger
-                          asChild
-                          className="truncate font-medium w-40"
-                        >
-                          <p>{birthday.name}</p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{birthday.name}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    {getIcon(index)}
-                    <span>{birthday.date.split("-").reverse().join("/")}</span>
-                  </div>
-                  <div className="flex space-x-2 justify-center">
-                    <button
-                      onClick={() => handleEditBirthday(index)}
-                      className="px-2 py-1 bg-amber-600 text-white font-semibold rounded-md hover:bg-amber-800 transition duration-300"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteIndex(index)}
-                      className="px-2 py-1 bg-rose-500 text-white font-semibold rounded-md hover:bg-rose-600 transition duration-300"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
-                {deleteIndex === index && (
-                  <Alert variant="destructive" className="mt-2 bg-background">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>
-                      Are you sure you want to delete this birthday?
-                    </AlertTitle>
-                    <AlertDescription>
-                      There is no way back from this action.
-                      <div className="mt-4 flex justify-end space-x-2">
-                        <button
-                          onClick={() => setDeleteIndex(null)}
-                          className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-md hover:bg-gray-600 transition duration-300"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleDeleteBirthday}
-                          className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition duration-300"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            ))}
-          </ul>
+          <div>
+            <h2 className="text-2xl font-semibold mt-6 mb-2">Birthdays</h2>
+            <div className="flex flex-col md:flex-row justify-end items-center mb-4">
+              <label
+                htmlFor="sort"
+                className="block text-sm font-medium text-primary mr-3"
+              >
+                Sort by:
+              </label>
+              <Select
+                onValueChange={setSortCriteria}
+                defaultValue={sortCriteria}
+              >
+                <SelectTrigger className="max-w-80 bg-primary-foreground dark:bg-background">
+                  <SelectValue placeholder={sortCriteria || "Sort by"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="addedorder">Added Order</SelectItem>
+                  <SelectItem value="alphabetical">Alphabetical</SelectItem>
+                  <SelectItem value="oldest">Oldest</SelectItem>
+                  <SelectItem value="youngest">Youngest</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <ul className="gap-4 grid grid-cols-2">
+              {birthdays.map((birthday, index) => (
+                <div key={index} className="col-span-2 md:col-span-1">
+                  <li
+                    className={`${
+                      editIndex === index ? "ring-2 ring-blue-500" : ""
+                    } flex flex-col xl:flex-row justify-between bg-background p-4 rounded-md shadow-md`}
+                  >
+                    <div className="flex flex-col xl:flex-row justify-between items-center w-full gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger
+                            asChild
+                            className="truncate font-medium w-40 text-center xl:text-start"
+                          >
+                            <p>{birthday.name}</p>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{birthday.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <span className="text-gray-500">{getIcon(index)}</span>
+                      <span className="p-1">
+                        {birthday.date.split("-").reverse().join("/")}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 px-2 justify-center">
+                      <button
+                        onClick={() => handleEditBirthday(index)}
+                        className="px-2 py-1 bg-amber-600 text-white font-semibold rounded-md hover:bg-amber-800 transition duration-300"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteIndex(index)}
+                        className="px-2 py-1 bg-rose-500 text-white font-semibold rounded-md hover:bg-rose-600 transition duration-300"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                  {deleteIndex === index && (
+                    <Alert variant="destructive" className="mt-2 bg-background">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>
+                        Are you sure you want to delete this birthday?
+                      </AlertTitle>
+                      <AlertDescription>
+                        There is no way back from this action.
+                        <div className="mt-4 flex justify-end space-x-2">
+                          <button
+                            onClick={() => setDeleteIndex(null)}
+                            className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-md hover:bg-gray-600 transition duration-300"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleDeleteBirthday}
+                            className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition duration-300"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <hr className="w-full border-primary" />

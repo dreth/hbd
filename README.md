@@ -120,12 +120,6 @@ Or:
 pnpm install
 ```
 
-We use tailwindcss for styling. To run the watcher:
-  
-```bash
-npm run watch
-```
-
 ### Database
 
 The application uses sqlite, but we intend to also support postgres. We use the `migrate` tool to manage the database migrations.
