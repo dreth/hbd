@@ -1,6 +1,6 @@
 package structs
 
-import "github.com/dgrijalva/jwt-go"
+import "github.com/golang-jwt/jwt"
 
 // REQUESTS
 type Claims struct {
