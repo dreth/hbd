@@ -1,9 +1,12 @@
 ---
 services:
   hbd:
-    build:
-      context: .
-      dockerfile: prod.Dockerfile
+    # Optional build context
+    # build:
+    #   context: .
+    #   dockerfile: prod.Dockerfile
+    # Image from Docker Hub, ECR, etc
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/hbd:latest
     container_name: hbd
     volumes:
       - ./data:/app/data

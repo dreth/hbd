@@ -28,19 +28,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Build Docker image
+        run: |
+          docker build -f docker-compose-prod.yml -t hbd .
+          docker tag hbd:latest hbd:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          docker tag hbd:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
+
+
       - name: Deploy to EC2 via SSM
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
             --parameters '{
-              "commands": [
+              "commands":[
                 "cd /home/ubuntu/hbd",
                 "sudo git pull",
-                "sudo docker compose -f docker-compose-prod.yml build",
-                "sudo docker stop hbd || true",
-                "sudo docker rm hbd || true",
-                "sudo docker compose -f docker-compose-prod.yml up -d hbd"
+                "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
+                "sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
+                "sudo AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
               ]
             }' \
             --comment "Deploying new version of hbd"
