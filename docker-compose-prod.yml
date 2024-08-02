@@ -1,4 +1,3 @@
----
 services:
   hbd:
     # Optional build context
