@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t hbd prod.Dockerfile
+          docker build -t hbd -f prod.Dockerfile .
           docker tag hbd:latest hbd:latest
 
       - name: Push Docker image to ECR
