@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -f docker-compose-prod.yml -t hbd .
+          docker build -t hbd .
           docker tag hbd:latest hbd:latest
 
       - name: Push Docker image to ECR
