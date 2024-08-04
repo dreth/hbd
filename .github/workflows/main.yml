@@ -39,6 +39,18 @@ jobs:
           docker tag hbd:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
 
+      - name: Delete untagged Docker images from ECR
+        run: |
+          REPOSITORY_NAME="hbd"
+          AWS_REGION=${{ secrets.AWS_REGION }}
+
+          # Get all untagged image IDs
+          UNTAGGED_IMAGE_IDS=$(aws ecr list-images --repository-name $REPOSITORY_NAME --region $AWS_REGION --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json)
+
+          # Delete untagged images
+          if [ "$UNTAGGED_IMAGE_IDS" != "[]" ]; then
+            aws ecr batch-delete-image --repository-name $REPOSITORY_NAME --region $AWS_REGION --image-ids "$UNTAGGED_IMAGE_IDS"
+          fi
 
       - name: Deploy to EC2 via SSM
         run: |
