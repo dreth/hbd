@@ -699,6 +699,7 @@ export default function Dashboard() {
                   onChange={handleDateChange}
                   className="mt-1 block w-full bg-primary-foreground dark:bg-background"
                 />
+                
                 {dateError && (
                   <p className="text-red-600 text-sm mt-1">{dateError}</p>
                 )}
@@ -759,7 +760,7 @@ export default function Dashboard() {
                       </TooltipProvider>
                       <span className="text-gray-500">{getIcon(index)}</span>
                       <span className="p-1">
-                        {birthday.date.split("-").reverse().join("/")}
+                        {birthday.date}
                       </span>
                     </div>
                     <div className="flex gap-2 px-2 justify-center">
