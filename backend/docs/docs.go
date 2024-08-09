@@ -17,7 +17,12 @@ const docTemplate = `{
     "paths": {
         "/add-birthday": {
             "post": {
-                "description": "This endpoint adds a new birthday for the authenticated user.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint adds a new birthday for the authenticated user. The request must include a valid JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,7 +69,12 @@ const docTemplate = `{
         },
         "/check-birthdays": {
             "post": {
-                "description": "This endpoint checks for user reminders through a POST request.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint checks for user reminders through a POST request. The request must include a valid JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -111,7 +121,12 @@ const docTemplate = `{
         },
         "/delete-birthday": {
             "delete": {
-                "description": "This endpoint deletes a birthday for the authenticated user.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint deletes a birthday for the authenticated user. The request must include a valid JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -158,7 +173,12 @@ const docTemplate = `{
         },
         "/delete-user": {
             "delete": {
-                "description": "This endpoint deletes a user based on their email obtained from the JWT token.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint deletes a user based on their email obtained from the JWT token. The request must include a valid JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -189,7 +209,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "failed to delete user",
+                        "description": "Failed to delete user",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -216,7 +236,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "failed to generate password",
+                        "description": "Failed to generate password",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -227,7 +247,7 @@ const docTemplate = `{
         },
         "/login": {
             "post": {
-                "description": "This endpoint logs in a user by validating their email and password. Upon successful authentication,",
+                "description": "This endpoint logs in a user by validating their email and password. Upon successful authentication, it generates a JWT token and returns the user's details along with the filtered list of birthdays.",
                 "consumes": [
                     "application/json"
                 ],
@@ -263,7 +283,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "invalid email or password",
+                        "description": "Invalid email or password",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -280,7 +300,12 @@ const docTemplate = `{
         },
         "/me": {
             "get": {
-                "description": "This endpoint returns the authenticated user's data including Telegram bot API key, user ID, reminder time, and birthdays.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint returns the authenticated user's data including Telegram bot API key, user ID, reminder time, and birthdays. The request must include a valid JWT token.",
                 "produces": [
                     "application/json"
                 ],
@@ -306,7 +331,12 @@ const docTemplate = `{
         },
         "/modify-birthday": {
             "put": {
-                "description": "This endpoint modifies a birthday for the authenticated user.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint modifies a birthday for the authenticated user. The request must include a valid JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -342,7 +372,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to commit transaction",
+                        "description": "Failed to update birthday",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -353,7 +383,12 @@ const docTemplate = `{
         },
         "/modify-user": {
             "put": {
-                "description": "This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more.",
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more. The request must include a valid JWT token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -395,7 +430,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "failed to update user",
+                        "description": "Failed to update user",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
@@ -432,7 +467,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/structs.Success"
+                            "$ref": "#/definitions/structs.LoginSuccess"
                         }
                     },
                     "400": {
@@ -448,7 +483,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "failed to create user",
+                        "description": "Failed to create user",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }

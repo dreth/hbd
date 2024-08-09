@@ -15,13 +15,14 @@ import (
 )
 
 // @Summary Check user reminders
-// @Description This endpoint checks for user reminders through a POST request.
+// @Description This endpoint checks for user reminders through a POST request. The request must include a valid JWT token.
 // @Accept  json
 // @Produce  json
 // @Param   user  body     structs.LoginRequest  true  "Check reminders"
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 500 {object} structs.Error "Error querying users"
+// @Security Bearer
 // @Router /check-birthdays [post]
 // @Tags reminders
 // @x-order 6
@@ -40,13 +41,14 @@ func CallReminderChecker(c *gin.Context) {
 }
 
 // @Summary Add a new birthday
-// @Description This endpoint adds a new birthday for the authenticated user.
+// @Description This endpoint adds a new birthday for the authenticated user. The request must include a valid JWT token.
 // @Accept  json
 // @Produce  json
 // @Param   birthday  body     structs.BirthdayNameDateAdd  true  "Add birthday"
 // @Success 200 {object} structs.BirthdayFull
 // @Failure 400 {object} structs.Error "Invalid request or date format"
 // @Failure 500 {object} structs.Error "Failed to insert birthday"
+// @Security Bearer
 // @Router /add-birthday [post]
 // @Tags birthdays
 // @x-order 7
@@ -93,13 +95,14 @@ func AddBirthday(c *gin.Context) {
 }
 
 // @Summary Delete a birthday
-// @Description This endpoint deletes a birthday for the authenticated user.
+// @Description This endpoint deletes a birthday for the authenticated user. The request must include a valid JWT token.
 // @Accept  json
 // @Produce  json
 // @Param   birthday  body     structs.BirthdayNameDateModify  true  "Delete birthday"
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request or date format"
 // @Failure 500 {object} structs.Error "Failed to delete birthday"
+// @Security Bearer
 // @Router /delete-birthday [delete]
 // @Tags birthdays
 // @x-order 8
@@ -131,16 +134,15 @@ func DeleteBirthday(c *gin.Context) {
 }
 
 // @Summary Modify a birthday
-// @Description This endpoint modifies a birthday for the authenticated user.
+// @Description This endpoint modifies a birthday for the authenticated user. The request must include a valid JWT token.
 // @Accept  json
 // @Produce  json
 // @Param   birthday  body     structs.BirthdayNameDateModify  true  "Modify birthday"
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request or date format"
 // @Failure 500 {object} structs.Error "Birthday doesn't exist"
-// @Failure 500 {object} structs.Error "Failed to begin transaction"
 // @Failure 500 {object} structs.Error "Failed to update birthday"
-// @Failure 500 {object} structs.Error "Failed to commit transaction"
+// @Security Bearer
 // @Router /modify-birthday [put]
 // @Tags birthdays
 // @x-order 9

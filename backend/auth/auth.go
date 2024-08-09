@@ -23,7 +23,7 @@ import (
 // @Description This endpoint generates a new password for the user.
 // @Produce  json
 // @Success 200 {object} structs.Password
-// @Failure 500 {object} structs.Error "failed to generate password"
+// @Failure 500 {object} structs.Error "Failed to generate password"
 // @Router /generate-password [get]
 // @Tags auth
 // @x-order 1
@@ -46,10 +46,10 @@ func GetPassword(c *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param   user  body     structs.RegisterRequest  true  "Register user"
-// @Success 200 {object} structs.Success
+// @Success 200 {object} structs.LoginSuccess
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 409 {object} structs.Error "Email or Telegram bot API key already registered"
-// @Failure 500 {object} structs.Error "failed to create user"
+// @Failure 500 {object} structs.Error "Failed to create user"
 // @Router /register [post]
 // @Tags auth
 // @x-order 2
@@ -161,8 +161,7 @@ func Register(c *gin.Context) {
 }
 
 // @Summary Login a user
-// @Description This endpoint logs in a user by validating their email and password. Upon successful authentication,
-// it generates a JWT token and returns the user's details along with the filtered list of birthdays.
+// @Description This endpoint logs in a user by validating their email and password. Upon successful authentication, it generates a JWT token and returns the user's details along with the filtered list of birthdays.
 //
 // The login process includes the following steps:
 // 1. Parses the login request payload to extract email and password.
@@ -181,7 +180,7 @@ func Register(c *gin.Context) {
 // @Param   user  body     structs.LoginRequest  true  "Login user"
 // @Success 200 {object} structs.LoginSuccess
 // @Failure 400 {object} structs.Error "Invalid request"
-// @Failure 401 {object} structs.Error "invalid email or password"
+// @Failure 401 {object} structs.Error "Invalid email or password"
 // @Failure 500 {object} structs.Error "Internal server error"
 // @Router /login [post]
 // @Tags auth
@@ -247,21 +246,12 @@ func Login(c *gin.Context) {
 	})
 }
 
-// Me returns the authenticated user's data including decrypted Telegram bot API key and user ID,
-// reminder time converted to the user's timezone, and a list of birthdays associated with the user.
-//
-// The function performs the following steps:
-// 1. Calls GetUserData to fetch and return the user's data.
-// 2. Returns the user's data as a JSON response.
-//
-// Errors:
-// - Returns 500 if there is an internal server error while fetching user data.
-//
 // @Summary Get user data
-// @Description This endpoint returns the authenticated user's data including Telegram bot API key, user ID, reminder time, and birthdays.
+// @Description This endpoint returns the authenticated user's data including Telegram bot API key, user ID, reminder time, and birthdays. The request must include a valid JWT token.
 // @Produce  json
 // @Success 200 {object} structs.UserData
 // @Failure 500 {object} structs.Error "Internal server error"
+// @Security Bearer
 // @Router /me [get]
 // @Tags user
 func Me(c *gin.Context) {
@@ -274,14 +264,15 @@ func Me(c *gin.Context) {
 }
 
 // @Summary Modify a user's details
-// @Description This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more.
+// @Description This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more. The request must include a valid JWT token.
 // @Accept  json
 // @Produce  json
 // @Param   user  body     structs.ModifyUserRequest  true  "Modify user"
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 401 {object} structs.Error "Unauthorized"
-// @Failure 500 {object} structs.Error "failed to update user"
+// @Failure 500 {object} structs.Error "Failed to update user"
+// @Security Bearer
 // @Router /modify-user [put]
 // @Tags auth
 // @x-order 4
@@ -414,13 +405,14 @@ func ModifyUser(c *gin.Context) {
 }
 
 // @Summary Delete a user
-// @Description This endpoint deletes a user based on their email obtained from the JWT token.
+// @Description This endpoint deletes a user based on their email obtained from the JWT token. The request must include a valid JWT token.
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} structs.Success
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 401 {object} structs.Error "Unauthorized"
-// @Failure 500 {object} structs.Error "failed to delete user"
+// @Failure 500 {object} structs.Error "Failed to delete user"
+// @Security Bearer
 // @Router /delete-user [delete]
 // @Tags auth
 // @x-order 5

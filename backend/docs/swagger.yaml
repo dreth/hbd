@@ -171,7 +171,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: This endpoint adds a new birthday for the authenticated user.
+      description: This endpoint adds a new birthday for the authenticated user. The
+        request must include a valid JWT token.
       parameters:
       - description: Add birthday
         in: body
@@ -194,6 +195,8 @@ paths:
           description: Failed to insert birthday
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Add a new birthday
       tags:
       - birthdays
@@ -203,6 +206,7 @@ paths:
       consumes:
       - application/json
       description: This endpoint checks for user reminders through a POST request.
+        The request must include a valid JWT token.
       parameters:
       - description: Check reminders
         in: body
@@ -225,6 +229,8 @@ paths:
           description: Error querying users
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Check user reminders
       tags:
       - reminders
@@ -233,7 +239,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: This endpoint deletes a birthday for the authenticated user.
+      description: This endpoint deletes a birthday for the authenticated user. The
+        request must include a valid JWT token.
       parameters:
       - description: Delete birthday
         in: body
@@ -256,6 +263,8 @@ paths:
           description: Failed to delete birthday
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Delete a birthday
       tags:
       - birthdays
@@ -265,7 +274,7 @@ paths:
       consumes:
       - application/json
       description: This endpoint deletes a user based on their email obtained from
-        the JWT token.
+        the JWT token. The request must include a valid JWT token.
       produces:
       - application/json
       responses:
@@ -282,9 +291,11 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: failed to delete user
+          description: Failed to delete user
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Delete a user
       tags:
       - auth
@@ -300,7 +311,7 @@ paths:
           schema:
             $ref: '#/definitions/structs.Password'
         "500":
-          description: failed to generate password
+          description: Failed to generate password
           schema:
             $ref: '#/definitions/structs.Error'
       summary: Generate a new password
@@ -312,7 +323,8 @@ paths:
       consumes:
       - application/json
       description: This endpoint logs in a user by validating their email and password.
-        Upon successful authentication,
+        Upon successful authentication, it generates a JWT token and returns the user's
+        details along with the filtered list of birthdays.
       parameters:
       - description: Login user
         in: body
@@ -332,7 +344,7 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "401":
-          description: invalid email or password
+          description: Invalid email or password
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
@@ -346,7 +358,8 @@ paths:
   /me:
     get:
       description: This endpoint returns the authenticated user's data including Telegram
-        bot API key, user ID, reminder time, and birthdays.
+        bot API key, user ID, reminder time, and birthdays. The request must include
+        a valid JWT token.
       produces:
       - application/json
       responses:
@@ -358,6 +371,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Get user data
       tags:
       - user
@@ -365,7 +380,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: This endpoint modifies a birthday for the authenticated user.
+      description: This endpoint modifies a birthday for the authenticated user. The
+        request must include a valid JWT token.
       parameters:
       - description: Modify birthday
         in: body
@@ -385,9 +401,11 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: Failed to commit transaction
+          description: Failed to update birthday
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Modify a birthday
       tags:
       - birthdays
@@ -397,7 +415,7 @@ paths:
       consumes:
       - application/json
       description: This endpoint modifies a user's details such as Telegram bot API
-        key, reminder time, and more.
+        key, reminder time, and more. The request must include a valid JWT token.
       parameters:
       - description: Modify user
         in: body
@@ -421,9 +439,11 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: failed to update user
+          description: Failed to update user
           schema:
             $ref: '#/definitions/structs.Error'
+      security:
+      - Bearer: []
       summary: Modify a user's details
       tags:
       - auth
@@ -447,7 +467,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/structs.Success'
+            $ref: '#/definitions/structs.LoginSuccess'
         "400":
           description: Invalid request
           schema:
@@ -457,7 +477,7 @@ paths:
           schema:
             $ref: '#/definitions/structs.Error'
         "500":
-          description: failed to create user
+          description: Failed to create user
           schema:
             $ref: '#/definitions/structs.Error'
       summary: Register a new user
