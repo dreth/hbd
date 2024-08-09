@@ -336,8 +336,10 @@ export default function Dashboard() {
       try {
         const response = await getUserData(token);
         const birthdays = response.birthdays;
-        setOriginalBirthdays(birthdays);
-        setBirthdays(birthdays);
+        if (birthdays) {
+          setOriginalBirthdays(birthdays);
+          setBirthdays(birthdays);
+        }
       } catch (error) {
         console.error("Error fetching user data", error);
       }
