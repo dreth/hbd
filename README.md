@@ -45,6 +45,12 @@ services:
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=debug
+      # Optionally for backups of the birthday database to S3 or S3-compatible services
+      - HBD_ENABLE_BACKUP=true
+      - HBD_USER_ACCESS_KEY_ID=${HBD_USER_ACCESS_KEY_ID}
+      - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
+      - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
+      - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
 ```
 
 2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
@@ -53,9 +59,12 @@ services:
 ---
 services:
   hbd:
-    build:
-      context: .
-      dockerfile: prod.Dockerfile
+    # Optional build context
+    # build:
+    #   context: .
+    #   dockerfile: prod.Dockerfile
+    # Image from Docker Hub, ECR, etc
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/hbd:latest
     container_name: hbd
     volumes:
       - ./data:/app/data
@@ -68,6 +77,12 @@ services:
       - ENVIRONMENT=production
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=release
+      # Optionally for backups of the birthday database to S3 or S3-compatible services
+      - HBD_ENABLE_BACKUP=true
+      - HBD_USER_ACCESS_KEY_ID=${HBD_USER_ACCESS_KEY_ID}
+      - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
+      - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
+      - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
     labels:
       # Frontend
       - "traefik.enable=true"
@@ -91,6 +106,16 @@ networks:
     name: proxy
     external: true
 ```
+
+## Backups
+
+You can enable backups of the birthday database to S3 or S3-compatible services. You need to provide the following environment variables:
+
+- `HBD_ENABLE_BACKUP` - Set to `true` to enable backups
+- `HBD_USER_ACCESS_KEY_ID` - The access key ID
+- `HBD_USER_SECRET_ACCESS_KEY` - The secret access key
+- `HBD_BUCKET_REGION` - The region of the bucket
+- `HBD_BUCKET_NAME` - The name of the bucket
 
 ## Contributing
 
