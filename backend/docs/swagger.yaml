@@ -109,6 +109,11 @@ definitions:
         example: 9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1
         type: string
     type: object
+  structs.Ready:
+    properties:
+      status:
+        type: string
+    type: object
   structs.RegisterRequest:
     properties:
       email:
@@ -318,6 +323,20 @@ paths:
       tags:
       - auth
       x-order: 1
+  /health:
+    get:
+      description: This endpoint checks the readiness of the service and returns a
+        status.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/structs.Ready'
+      summary: Check service readiness
+      tags:
+      - health
   /login:
     post:
       consumes:
@@ -375,7 +394,7 @@ paths:
       - Bearer: []
       summary: Get user data
       tags:
-      - user
+      - auth
   /modify-birthday:
     put:
       consumes:

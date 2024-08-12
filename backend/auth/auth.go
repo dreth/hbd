@@ -253,7 +253,7 @@ func Login(c *gin.Context) {
 // @Failure 500 {object} structs.Error "Internal server error"
 // @Security Bearer
 // @Router /me [get]
-// @Tags user
+// @Tags auth
 func Me(c *gin.Context) {
 	userData, err := GetUserData(c)
 	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {

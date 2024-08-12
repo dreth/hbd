@@ -26,7 +26,10 @@ require (
 	modernc.org/sqlite v1.30.2
 )
 
-require github.com/golang-jwt/jwt/v5 v5.2.1
+require (
+	github.com/aws/aws-sdk-go v1.49.6
+	github.com/golang-jwt/jwt/v5 v5.2.1
+)
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -55,6 +58,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect

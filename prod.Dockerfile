@@ -44,15 +44,30 @@ RUN apk add --no-cache tzdata sqlite sqlite-dev ca-certificates bash gcc
 # Copy the Go API binary
 COPY --from=go-builder /build/main ./backend/main
 
-# start.sh runs both the API server and the Next.js server
-# Using a bash script to start both services
-COPY prod.start.sh prod.start.sh
-RUN chmod +x prod.start.sh
+# Install s6 overlay
+ENV S6_OVERLAY_VERSION=3.2.0.0
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
 
+# Download the correct s6 overlay based on the architecture
+RUN ARCH=$(uname -m) && \
+    wget -O /tmp/s6-overlay-${ARCH}.tar.xz https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-${ARCH}.tar.xz
 # Expose the necessary ports
 EXPOSE 8418 8417
 
 # Create the /app/data directory
 RUN mkdir /app/data
 
-ENTRYPOINT ["/app/prod.start.sh"]
+# Create service directories
+RUN mkdir -p /etc/services.d/backend /etc/services.d/frontend
+
+# Copy service scripts
+COPY services/backend/run /etc/services.d/backend/run
+COPY services/frontend/run /etc/services.d/frontend/run
+
+# Make the scripts executable
+RUN chmod +x /etc/services.d/backend/run /etc/services.d/frontend/run
+
+# Set s6 as the entrypoint
+ENTRYPOINT ["/init"]

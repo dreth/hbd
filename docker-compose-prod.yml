@@ -18,6 +18,12 @@ services:
       - ENVIRONMENT=production
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=release
+      # Optionally for backups of the birthday database to S3 or S3-compatible services
+      - HBD_ENABLE_BACKUP=true
+      - HBD_USER_ACCESS_KEY_ID=${HBD_USER_ACCESS_KEY_ID}
+      - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
+      - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
+      - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
     labels:
       # Frontend
       - "traefik.enable=true"
@@ -40,4 +46,3 @@ networks:
   proxy:
     name: proxy
     external: true
-

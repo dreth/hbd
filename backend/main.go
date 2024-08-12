@@ -10,9 +10,11 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"hbd/auth"
+	"hbd/backups"
 	"hbd/birthdays"
 	"hbd/db"
 	"hbd/env"
+	"hbd/helper"
 	"hbd/middlewares"
 
 	docs "hbd/docs"
@@ -25,6 +27,7 @@ func main() {
 	// Set up the cron job to check for birthday reminder checks every minute
 	c := cron.New()
 	c.AddFunc("* * * * *", birthdays.CheckReminders)
+	c.AddFunc("0 0 * * *", backups.BackupDBToS3)
 	c.Start()
 
 	// Initialize the database connection and run migrations
@@ -52,13 +55,16 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/api"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "HBD API"
-	docs.SwaggerInfo.Description = "HBD endpoints for the HBD application frontend"
+	docs.SwaggerInfo.Description = "Endpoints for the HBD application"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	// Auth routes
 	// Create API route group
 	api := router.Group("/api")
 	{
+		// Readiness probe
+		api.GET("/health", helper.HealthCheck)
+
 		// Swagger documentation
 		api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

@@ -1,0 +1,12 @@
+#!/command/with-contenv bash
+cd /app/backend
+
+if [ ! -d /app/data ]; then
+    mkdir -p /app/data
+fi
+
+if [ ! -f /app/data/hbd.db ]; then
+    touch /app/data/hbd.db
+fi
+
+exec ./main 2>&1

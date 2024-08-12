@@ -1,0 +1,4 @@
+#!/command/with-contenv bash
+cd /app/frontend
+export PORT=${PORT:-8418}
+exec npm run start -- --port $PORT --hostname 0.0.0.0 2>&1

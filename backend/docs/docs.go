@@ -245,6 +245,26 @@ const docTemplate = `{
                 "x-order": 1
             }
         },
+        "/health": {
+            "get": {
+                "description": "This endpoint checks the readiness of the service and returns a status.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Check service readiness",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/structs.Ready"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "This endpoint logs in a user by validating their email and password. Upon successful authentication, it generates a JWT token and returns the user's details along with the filtered list of birthdays.",
@@ -310,7 +330,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "auth"
                 ],
                 "summary": "Get user data",
                 "responses": {
@@ -646,6 +666,14 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "example": "9cc76406913372c2b3a3474e8ebb8dc917bdb9c4a7c5e98c639ed20f5bcf4da1"
+                }
+            }
+        },
+        "structs.Ready": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
                 }
             }
         },

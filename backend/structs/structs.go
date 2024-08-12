@@ -90,3 +90,8 @@ type UserDataShort struct {
 	BotAPIKey      string
 	TelegramUserID string
 }
+
+// Ready checks if the service is ready and returns a status response.
+type Ready struct {
+	Status string `json:"status"`
+}
