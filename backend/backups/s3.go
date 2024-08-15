@@ -41,12 +41,12 @@ func S3EnvVarspresent() bool {
 // BackupDBToS3 uploads the SQLite database to S3.
 func BackupDBToS3() {
 	// Check if backups are enabled
-	if os.Getenv("ENABLE_BACKUP") != "true" {
+	if os.Getenv("HBD_ENABLE_BACKUP") != "true" {
 		return
 	}
 
 	if !S3EnvVarspresent() {
-		log.Println("S3 environment variables not set")
+		log.Println("Backups are enabled, but S3 environment variables not set")
 		return
 	}
 
@@ -59,6 +59,8 @@ func BackupDBToS3() {
 	if err != nil {
 		log.Printf("Failed to upload database: %v", err)
 	}
+
+	log.Println("Database backup complete")
 }
 
 // uploadDBToS3 uploads the database file to the specified S3 bucket and key.
