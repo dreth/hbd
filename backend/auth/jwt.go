@@ -49,7 +49,7 @@ func ValidateJWT(tokenStr string) (*structs.Claims, error) {
 }
 
 func GetJWTDurationFromHeader(c *gin.Context, defaultDuration int) (int, error) {
-	jwtDurationStr := c.GetHeader("x-jwt-duration-hours")
+	jwtDurationStr := c.GetHeader("X-Jwt-Token-Duration")
 	if jwtDurationStr != "" {
 		jwtDuration, err := strconv.Atoi(jwtDurationStr)
 		if err != nil {
