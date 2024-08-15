@@ -2,17 +2,28 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"hbd/env"
 	"hbd/structs"
+	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var jwtKey = []byte(env.MK)
 
-func GenerateJWT(email string) (string, error) {
-	expirationTime := time.Now().Add(720 * time.Hour)
+func GenerateJWT(email string, duration int) (string, error) {
+	// If the duration is 0, default to 720
+	if duration == 0 {
+		duration = 720
+	}
+
+	// Set the expiration time for the token
+	expirationTime := time.Now().Add(time.Duration(duration) * time.Hour)
+
+	// Create the JWT claims, which includes the email and expiry time
 	claims := &structs.Claims{
 		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -35,4 +46,16 @@ func ValidateJWT(tokenStr string) (*structs.Claims, error) {
 		return nil, errors.New("invalid token")
 	}
 	return claims, nil
+}
+
+func GetJWTDurationFromHeader(c *gin.Context, defaultDuration int) (int, error) {
+	jwtDurationStr := c.GetHeader("x-jwt-duration-hours")
+	if jwtDurationStr != "" {
+		jwtDuration, err := strconv.Atoi(jwtDurationStr)
+		if err != nil {
+			return 0, fmt.Errorf("invalid JWT duration")
+		}
+		return jwtDuration, nil
+	}
+	return defaultDuration, nil
 }

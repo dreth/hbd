@@ -145,7 +145,7 @@ func Register(c *gin.Context) {
 	telegram.SendTelegramMessage(req.TelegramBotAPIKey, req.TelegramUserID, fmt.Sprintf("🎂 Your user has been successfully registered, through this bot and user ID you'll receive your birthday reminders (if there's any) at %s (Timezone: %s).\n\nIf you encounter any issues using the app or want to give any feedback to us. Please open an issue here: https://github.com/dreth/hbd/issues, thanks and we hope you find the application useful!", req.ReminderTime, req.Timezone))
 
 	// Return the token and the user's details
-	token, err := GenerateJWT(req.Email)
+	token, err := GenerateJWT(req.Email, 720)
 	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
 	} else {
@@ -229,8 +229,15 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	// Get the JWT duration from the header or use the default
+	jwtDuration, err := GetJWTDurationFromHeader(c, 720)
+	if err != nil {
+		jwtDuration = 720
+	}
+
 	// Generate JWT token
-	token, err := GenerateJWT(req.Email)
+	println(jwtDuration)
+	token, err := GenerateJWT(req.Email, jwtDuration)
 	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
 	}
@@ -379,7 +386,7 @@ func ModifyUser(c *gin.Context) {
 	}
 
 	// After committing the transaction, emit another JWT token with the new email
-	token, err := GenerateJWT(req.NewEmail)
+	token, err := GenerateJWT(req.NewEmail, 720)
 	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
 	}
