@@ -1,4 +1,11 @@
 #!/command/with-contenv bash
+# Check if the frontend is disabled
+if [ "$DISABLE_FRONTEND" = "true" ]; then
+  echo "Frontend is disabled, service will not be restarted"
+  exit 0
+fi
+
+# Start the frontend
 cd /app/frontend
 export PORT=${PORT:-8418}
 exec npm run start -- --port $PORT --hostname 0.0.0.0 2>&1

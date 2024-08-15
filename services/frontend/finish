@@ -1,0 +1,7 @@
+#!/command/with-contenv bash
+if [ "$DISABLE_FRONTEND" = "true" ]; then
+  echo "Frontend is disabled, service will not be restarted"
+  exit 125  # Return a non-zero exit code to stop S6 from restarting
+else
+  exit 0  # Service finished successfully, allow restart if needed
+fi

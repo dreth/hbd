@@ -23,7 +23,7 @@ The application is containerized using docker, we use sqlite as the database by 
 
 The repo includes two docker-compose files. Feel free to customize them to your needs.
 
-1. `docker-compose.yml` - This file is used to run the application locally. It uses an nginx reverse proxy which forwards requests to the application. This is the docker compose file we recommend for personal use unless you want to expose the application to the internet.
+1. `docker-compose.yml` - This file is used to run the application locally. It uses an nginx reverse proxy which forwards requests to the application. This is the docker compose file we recommend for personal use unless you want to expose the application to the internet. Note that you'll need to create a `.env` file with the necessary environment variables. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data.
 
 ```yaml
 ---
@@ -40,7 +40,7 @@ services:
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db
-      - MASTER_KEY=60bcb71e67cf8e6b71b30af99828974726585c625397f69ccdc587e2f79cf8de
+      - MASTER_KEY=${HBD_MASTER_KEY}
       - PORT=8418
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
@@ -51,9 +51,12 @@ services:
       - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
       - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
       - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
+      # Optionally disable the frontend in case you want to directly interact with the API
+      - DISABLE_FRONTEND=false
+
 ```
 
-2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data. 
+2. `docker-compose.prod.yml` - This file is used to run the application in a production environment. We use traefik as a reverse proxy. We can optionally map ports to a local machine but it is not necessary, we opted not to. A `.env.template` file is included in the repo, you can copy it to `.env` and fill in the necessary values, in this case just the `HBD_MASTER_KEY`. The `HBD_MASTER_KEY` is used to encrypt the user's data.
 
 ```yaml
 ---
@@ -83,6 +86,8 @@ services:
       - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
       - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
       - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
+      # Optionally disable the frontend in case you want to directly interact with the API
+      - DISABLE_FRONTEND=false
     labels:
       # Frontend
       - "traefik.enable=true"
@@ -116,6 +121,10 @@ You can enable backups of the birthday database to S3 or S3-compatible services.
 - `HBD_USER_SECRET_ACCESS_KEY` - The secret access key
 - `HBD_BUCKET_REGION` - The region of the bucket
 - `HBD_BUCKET_NAME` - The name of the bucket
+
+## Optionally disabling the frontend to directly interact with the API
+
+You can optionally disable the frontend in case you want only to directly interact with the API. You can do this by setting the `DISABLE_FRONTEND` environment variable to `true`.
 
 ## Contributing
 

@@ -78,8 +78,11 @@ COPY services/backend/run /etc/services.d/backend/run
 COPY services/frontend/run /etc/services.d/frontend/run
 COPY services/nginx/run /etc/services.d/nginx/run
 
+# Copy frontend finish script
+COPY services/frontend/finish /etc/services.d/frontend/finish
+
 # Make the scripts executable
-RUN chmod +x /etc/services.d/backend/run /etc/services.d/frontend/run /etc/services.d/nginx/run
+RUN chmod +x /etc/services.d/backend/run /etc/services.d/frontend/run /etc/services.d/nginx/run /etc/services.d/frontend/finish
 
 # Set s6 as the entrypoint
 ENTRYPOINT ["/init"]

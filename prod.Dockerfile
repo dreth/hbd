@@ -66,8 +66,11 @@ RUN mkdir -p /etc/services.d/backend /etc/services.d/frontend
 COPY services/backend/run /etc/services.d/backend/run
 COPY services/frontend/run /etc/services.d/frontend/run
 
+# Copy frontend finish script
+COPY services/frontend/finish /etc/services.d/frontend/finish
+
 # Make the scripts executable
-RUN chmod +x /etc/services.d/backend/run /etc/services.d/frontend/run
+RUN chmod +x /etc/services.d/backend/run /etc/services.d/frontend/run /etc/services.d/frontend/finish
 
 # Set s6 as the entrypoint
 ENTRYPOINT ["/init"]

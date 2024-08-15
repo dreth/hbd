@@ -24,6 +24,8 @@ services:
       - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
       - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
       - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
+      # Optionally disable the frontend in case you want to directly interact with the API
+      - DISABLE_FRONTEND=false
     labels:
       # Frontend
       - "traefik.enable=true"

@@ -12,7 +12,7 @@ services:
     environment:
       - DB_TYPE=sqlite
       - DATABASE_URL=/app/data/hbd.db
-      - MASTER_KEY=60bcb71e67cf8e6b71b30af99828974726585c625397f69ccdc587e2f79cf8de
+      - MASTER_KEY=${HBD_MASTER_KEY}
       - PORT=8418
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
@@ -23,3 +23,5 @@ services:
       - HBD_USER_SECRET_ACCESS_KEY=${HBD_USER_SECRET_ACCESS_KEY}
       - HBD_BUCKET_REGION=${HBD_BUCKET_REGION}
       - HBD_BUCKET_NAME=${HBD_BUCKET_NAME}
+      # Optionally disable the frontend in case you want to directly interact with the API
+      - DISABLE_FRONTEND=false
