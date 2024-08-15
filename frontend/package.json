@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clear": "rm -rf .next && rm -rf node_modules && rm -rf .eslintcache && rm -rf .next && rm -rf .yarn && rm -rf yarn.lock && rm -rf package-lock.json"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
@@ -19,7 +20,7 @@
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
-    "axios": "^1.7.2",
+    "axios": "^1.7.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
