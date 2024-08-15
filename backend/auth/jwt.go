@@ -14,6 +14,7 @@ import (
 
 var jwtKey = []byte(env.MK)
 
+// GenerateJWT generates a JWT token with the given email and duration
 func GenerateJWT(email string, duration int) (string, error) {
 	// If the duration is 0, default to 720
 	if duration == 0 {
@@ -31,25 +32,36 @@ func GenerateJWT(email string, duration int) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	return token.SignedString(jwtKey)
 }
 
+// ValidateJWT validates a JWT token and returns the claims
 func ValidateJWT(tokenStr string) (*structs.Claims, error) {
+	// Parse the JWT token
 	claims := &structs.Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
+
+	// Check if the token is valid
 	if err != nil {
 		return nil, err
 	}
+
 	if !token.Valid {
 		return nil, errors.New("invalid token")
 	}
+
 	return claims, nil
 }
 
+// GetJWTDurationFromHeader gets the JWT duration from the header
 func GetJWTDurationFromHeader(c *gin.Context, defaultDuration int) (int, error) {
+	// Get the JWT duration from the header
 	jwtDurationStr := c.GetHeader("X-Jwt-Token-Duration")
+
+	// If the duration is not provided, return the default duration
 	if jwtDurationStr != "" {
 		jwtDuration, err := strconv.Atoi(jwtDurationStr)
 		if err != nil {
@@ -57,5 +69,6 @@ func GetJWTDurationFromHeader(c *gin.Context, defaultDuration int) (int, error) 
 		}
 		return jwtDuration, nil
 	}
+
 	return defaultDuration, nil
 }
