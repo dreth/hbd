@@ -68,6 +68,7 @@ func Register(c *gin.Context) {
 		[]int{150, 64, 50, 50, 60, 20},
 		[]int{5, 1, 1, 1, 1, 1},
 		[]int{0, 0, 0, 0, 0, 0},
+		[]bool{false, false, false, false, false, false},
 	)
 	// Loop over errors and concatenate the strings to return it all at once
 	// first check if all errors are nil, if so, nothing to do, otherwise, loop over the errors and concatenate them
@@ -200,6 +201,7 @@ func Login(c *gin.Context) {
 		[]int{150, 64},
 		[]int{5, 1},
 		[]int{0, 0},
+		[]bool{false, false},
 	)
 	if helper.CheckErrors(lengthErrors) != nil {
 		errorStr := helper.ConcatenateErrors(lengthErrors)
@@ -302,8 +304,9 @@ func ModifyUser(c *gin.Context) {
 		[]string{"NewEmail", "NewPassword", "NewReminderTime", "NewTimezone", "NewTelegramBotAPIKey", "NewTelegramUserID"},
 		[]string{req.NewEmail, req.NewPassword, req.NewReminderTime, req.NewTimezone, req.NewTelegramBotAPIKey, req.NewTelegramUserID},
 		[]int{150, 64, 50, 50, 60, 20},
-		[]int{5, 5, 1, 1, 1, 1},
+		[]int{0, 0, 1, 1, 1, 1},
 		[]int{0, 0, 0, 0, 0, 0},
+		[]bool{true, true, false, false, false, false},
 	)
 	if helper.CheckErrors(lengthErrors) != nil {
 		errorStr := helper.ConcatenateErrors(lengthErrors)
@@ -391,24 +394,29 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	// Update the email in the context
-	c.Set("Email", req.NewEmail)
-
-	// Get the user data post-changes
+	// Get user data post-changes
 	userData, err := GetUserData(c)
 	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {
 		return
 	}
 
-	// Return the new token with the new user data
-	c.JSON(http.StatusOK, structs.LoginSuccess{
-		Token:             token,
-		TelegramBotAPIKey: userData.TelegramBotAPIKey,
-		TelegramUserID:    userData.TelegramUserID,
-		ReminderTime:      userData.ReminderTime,
-		Timezone:          userData.Timezone,
-		Birthdays:         userData.Birthdays,
-	})
+	// Update the email in the context
+	if req.NewEmail != "" {
+		c.Set("Email", req.NewEmail)
+
+		// Return the new token with the new user data
+		c.JSON(http.StatusOK, structs.LoginSuccess{
+			Token:             token,
+			TelegramBotAPIKey: userData.TelegramBotAPIKey,
+			TelegramUserID:    userData.TelegramUserID,
+			ReminderTime:      userData.ReminderTime,
+			Timezone:          userData.Timezone,
+			Birthdays:         userData.Birthdays,
+		})
+	}
+
+	// Return the data that calling /me would return
+	c.JSON(http.StatusOK, userData)
 }
 
 // @Summary Delete a user

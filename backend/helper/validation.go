@@ -14,9 +14,11 @@ func IsValidEmail(email string) bool {
 }
 
 // Check the length of a particular string and return an error if it is too long
-func CheckStringLength(field string, str string, maxLength int, minLength int, strictLength int) error {
+func CheckStringLength(field string, str string, maxLength int, minLength int, strictLength int, allowEmpty bool) error {
 	if len(str) == 0 {
-		return StringInappropriateLengthError(field, "empty")
+		if !allowEmpty {
+			return StringInappropriateLengthError(field, "empty")
+		}
 	} else if len(str) < minLength {
 		return StringInappropriateLengthError(field, "too short")
 	} else if len(str) > maxLength {
@@ -28,7 +30,7 @@ func CheckStringLength(field string, str string, maxLength int, minLength int, s
 }
 
 // Check the length of a particular array of string and return an error if it is too long
-func CheckArrayStringLength(field []string, str []string, maxLength []int, minLength []int, strictLength []int) []error {
+func CheckArrayStringLength(field []string, str []string, maxLength []int, minLength []int, strictLength []int, allowEmpty []bool) []error {
 	errorsList := []error{}
 
 	// Boundary check for array lengths
@@ -37,15 +39,8 @@ func CheckArrayStringLength(field []string, str []string, maxLength []int, minLe
 	}
 
 	for i := 0; i < len(str); i++ {
-		if len(str[i]) == 0 {
-			errorsList = append(errorsList, StringInappropriateLengthError(field[i], "empty"))
-		} else if len(str[i]) < minLength[i] {
-			errorsList = append(errorsList, StringInappropriateLengthError(field[i], "too short"))
-		} else if len(str[i]) > maxLength[i] {
-			errorsList = append(errorsList, StringInappropriateLengthError(field[i], "too long"))
-		} else if (strictLength[i] != 0) && (len(str[i]) != strictLength[i]) {
-			errorsList = append(errorsList, StringInappropriateLengthError(field[i], "incorrect length, should be "+strconv.Itoa(strictLength[i])))
-		}
+		err := CheckStringLength(field[i], str[i], maxLength[i], minLength[i], strictLength[i], allowEmpty[i])
+		errorsList = append(errorsList, err)
 	}
 	return errorsList
 }
