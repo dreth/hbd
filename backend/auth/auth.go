@@ -286,14 +286,15 @@ func Me(c *gin.Context) {
 }
 
 // @Summary Modify a user's details
-// @Description This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more. The request must include a valid JWT token.
+// @Description This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more. The request must include a valid JWT token. When modifying the email or password, a new JWT token is generated and returned. Otherwise, the user's data is returned without a new token.
 // @Accept  json
 // @Produce  json
 // @Param   user  body     structs.ModifyUserRequest  true  "Modify user"
-// @Success 200 {object} structs.Success
+// @Success 200 {object} structs.LoginSuccess "User data and new token if email or password changed"
+// @Success 200 {object} structs.UserData "User data without a new token if no email or password changes"
 // @Failure 400 {object} structs.Error "Invalid request"
 // @Failure 401 {object} structs.Error "Unauthorized"
-// @Failure 500 {object} structs.Error "Failed to update user"
+// @Failure 500 {object} structs.Error "Failed to update user or process request"
 // @Security Bearer
 // @Router /modify-user [put]
 // @Tags auth

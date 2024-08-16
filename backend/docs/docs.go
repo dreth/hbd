@@ -408,7 +408,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more. The request must include a valid JWT token.",
+                "description": "This endpoint modifies a user's details such as Telegram bot API key, reminder time, and more. The request must include a valid JWT token. When modifying the email or password, a new JWT token is generated and returned. Otherwise, the user's data is returned without a new token.",
                 "consumes": [
                     "application/json"
                 ],
@@ -432,9 +432,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User data without a new token if no email or password changes",
                         "schema": {
-                            "$ref": "#/definitions/structs.Success"
+                            "$ref": "#/definitions/structs.UserData"
                         }
                     },
                     "400": {
@@ -450,7 +450,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Failed to update user",
+                        "description": "Failed to update user or process request",
                         "schema": {
                             "$ref": "#/definitions/structs.Error"
                         }
