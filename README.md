@@ -13,6 +13,16 @@ The application usage is very straightforward:
 2. Add birthdays
 3. Receive reminders
 
+## hbd-cli
+
+Hbd has a frontend which you can use to interact with the API, but you can also use the [hbd-cli](https://github.com/dreth/hbd-cli), which is a companion command-line tool that interacts directly with the hbd API. It allows you to interact with any hbd instance, not just the one you have running.
+
+You can download the latest release from the [releases page](https://github.com/dreth/hbd-cli/releases/latest)
+
+### Optionally disabling the frontend to directly interact with the API
+
+You can optionally disable the frontend in case you want only to directly interact with the API. You can do this by setting the `DISABLE_FRONTEND` environment variable to `true`.
+
 ## Self-hosting
 
 ### Docker
@@ -121,10 +131,6 @@ You can enable backups of the birthday database to S3 or S3-compatible services.
 - `HBD_USER_SECRET_ACCESS_KEY` - The secret access key
 - `HBD_BUCKET_REGION` - The region of the bucket
 - `HBD_BUCKET_NAME` - The name of the bucket
-
-## Optionally disabling the frontend to directly interact with the API
-
-You can optionally disable the frontend in case you want only to directly interact with the API. You can do this by setting the `DISABLE_FRONTEND` environment variable to `true`.
 
 ## Contributing
 
