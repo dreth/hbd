@@ -28,7 +28,7 @@ import (
 // 2. Hashes the email using SHA-256.
 // 3. Queries the database for a user with the given email hash.
 // 4. Returns the user object or an error if the user is not found or an error occurs.
-func GetUserByEmail(c *gin.Context) (*models.User, error) {
+func GetUserByEmail(c *gin.Context) (*models.User, string, error) {
 	// Get the email from the context
 	email := c.GetString("Email")
 
@@ -40,10 +40,10 @@ func GetUserByEmail(c *gin.Context) (*models.User, error) {
 		qm.Where("email_hash = ?", emailHash),
 	).One(c.Request.Context(), boil.GetContextDB())
 	if err != nil {
-		return nil, errors.New("invalid email")
+		return nil, email, errors.New("invalid email")
 	}
 
-	return user, nil
+	return user, email, nil
 }
 
 // GetUserData fetches and returns user data including decrypted Telegram bot API key and user ID,
@@ -69,7 +69,7 @@ func GetUserByEmail(c *gin.Context) (*models.User, error) {
 // - (*structs.UserData, error): A pointer to the UserData struct containing user details and birthdays, or an error.
 func GetUserData(c *gin.Context) (*structs.UserData, error) {
 	// Get the user by its email
-	user, err := GetUserByEmail(c)
+	user, _, err := GetUserByEmail(c)
 	if err != nil {
 		return nil, errors.New("invalid email")
 	}

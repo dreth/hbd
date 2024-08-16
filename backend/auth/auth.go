@@ -2,6 +2,7 @@ package auth
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"hbd/encryption"
@@ -145,8 +146,14 @@ func Register(c *gin.Context) {
 	// As the user was successfully created, send a telegram message through the bot and ID to confirm the registration
 	telegram.SendTelegramMessage(req.TelegramBotAPIKey, req.TelegramUserID, fmt.Sprintf("🎂 Your user has been successfully registered, through this bot and user ID you'll receive your birthday reminders (if there's any) at %s (Timezone: %s).\n\nIf you encounter any issues using the app or want to give any feedback to us. Please open an issue here: https://github.com/dreth/hbd/issues, thanks and we hope you find the application useful!", req.ReminderTime, req.Timezone))
 
-	// Return the token and the user's details
-	token, err := GenerateJWT(req.Email, 720)
+	// Get the JWT duration from the header or use the default
+	jwtDuration, err := GetJWTDurationFromHeader(c, 720)
+	if err != nil {
+		jwtDuration = 720
+	}
+
+	// Generate JWT token
+	token, err := GenerateJWT(req.Email, jwtDuration)
 	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
 	} else {
@@ -213,13 +220,20 @@ func Login(c *gin.Context) {
 	emailHash := encryption.HashStringWithSHA256(req.Email)
 	passwordHash := encryption.HashStringWithSHA256(req.Password)
 
-	// Fetch the user with the given email hash and password hash from the database
 	_, err := models.Users(
 		qm.Where("email_hash = ?", emailHash),
 		qm.Where("password_hash = ?", passwordHash),
 	).One(c.Request.Context(), boil.GetContextDB())
-	if err != nil {
+
+	// If no user is found, return a 401 Unauthorized
+	if err == sql.ErrNoRows {
 		c.JSON(http.StatusUnauthorized, structs.Error{Error: "invalid email or password"})
+		return
+	}
+
+	// Handle other errors separately
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, structs.Error{Error: "an unexpected error occurred"})
 		return
 	}
 
@@ -238,7 +252,6 @@ func Login(c *gin.Context) {
 	}
 
 	// Generate JWT token
-	println(jwtDuration)
 	token, err := GenerateJWT(req.Email, jwtDuration)
 	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
 		return
@@ -287,7 +300,7 @@ func Me(c *gin.Context) {
 // @x-order 4
 func ModifyUser(c *gin.Context) {
 	// Retrieve the user from the database
-	user, err := GetUserByEmail(c)
+	user, originalEmail, err := GetUserByEmail(c)
 	if helper.HE(c, err, http.StatusUnauthorized, "invalid email", false) {
 		return
 	}
@@ -388,12 +401,6 @@ func ModifyUser(c *gin.Context) {
 		return
 	}
 
-	// After committing the transaction, emit another JWT token with the new email
-	token, err := GenerateJWT(req.NewEmail, 720)
-	if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
-		return
-	}
-
 	// Get user data post-changes
 	userData, err := GetUserData(c)
 	if helper.HE(c, err, http.StatusInternalServerError, "invalid email or password", true) {
@@ -401,8 +408,32 @@ func ModifyUser(c *gin.Context) {
 	}
 
 	// Update the email in the context
-	if req.NewEmail != "" {
-		c.Set("Email", req.NewEmail)
+	if (req.NewEmail != "") || (req.NewPassword != "" && req.NewEmail == "") {
+		// Possible scenarios
+		// 1. New email is empty, but password is not
+		// 2. New email is not empty (regardless of password)
+		// Case 1: New email is empty, but password is not
+		if req.NewPassword != "" && req.NewEmail == "" {
+			req.NewEmail = originalEmail
+		}
+
+		// Case 2: New email is not empty (regardless of password)
+		if req.NewEmail != "" {
+			c.Set("Email", req.NewEmail)
+		}
+
+		// After committing the transaction, emit another JWT token with the new email
+		// Get the JWT duration from the header or use the default
+		jwtDuration, err := GetJWTDurationFromHeader(c, 720)
+		if err != nil {
+			jwtDuration = 720
+		}
+
+		// Generate JWT token
+		token, err := GenerateJWT(req.NewEmail, jwtDuration)
+		if helper.HE(c, err, http.StatusInternalServerError, "failed to generate token", false) {
+			return
+		}
 
 		// Return the new token with the new user data
 		c.JSON(http.StatusOK, structs.LoginSuccess{
@@ -433,7 +464,7 @@ func ModifyUser(c *gin.Context) {
 // @x-order 5
 func DeleteUser(c *gin.Context) {
 	// Retrieve the user from the database
-	user, err := GetUserByEmail(c)
+	user, _, err := GetUserByEmail(c)
 	if helper.HE(c, err, http.StatusUnauthorized, "invalid email", false) {
 		return
 	}
