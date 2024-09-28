@@ -32,7 +32,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import TelegramApiKeyInput from "@/components/ui/telegram-api-key-input";
 
 export default function Home() {
   const [email, setEmail] = useState("");
@@ -374,7 +373,55 @@ export default function Home() {
                     </Select>
                   </div>
                 </div>{" "}
-                <TelegramApiKeyInput></TelegramApiKeyInput>
+                <div>
+                  <label
+                    htmlFor="telegram-api-key"
+                    className="text-sm font-medium text-primary flex items-center"
+                  >
+                    Telegram Bot API Key
+                    <Popover>
+                      <PopoverTrigger>
+                        <CircleHelp className="ml-2 text-secondary-foreground w-4 h-4" />
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <p className="text-primary text-lg">
+                          Need help finding your API key?
+                        </p>
+                        <p>Follow these steps to get your Telegram API key:</p>
+                        <ol className="list-decimal ml-4">
+                          <li>Open Telegram.</li>
+                          <li>
+                            Search for <b>BotFather</b>.
+                          </li>
+                          <li>
+                            Start a chat with <b>BotFather</b>.
+                          </li>
+                          <li>
+                            Use the{" "}
+                            <code className="bg-blue-100 dark:bg-primary p-0.5 rounded-md">
+                              /newbot
+                            </code>{" "}
+                            command to create a new bot.
+                          </li>
+                          <li>Follow the instructions to create a new bot.</li>
+                          <li>Copy the API key.</li>
+                        </ol>
+                        <p>
+                          This API key allows the application to send messages
+                          to you through the bot.
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  </label>
+                  <Input
+                    id="telegram-api-key"
+                    type="text"
+                    placeholder="Telegram Bot API Key"
+                    value={telegramApiKey}
+                    onChange={(e) => setTelegramApiKey(e.target.value)}
+                    className="mt-1 block w-full bg-primary-foreground dark:bg-background"
+                  />
+                </div>
                 <div>
                   <label
                     htmlFor="telegram-user"
@@ -406,8 +453,6 @@ export default function Home() {
                           numeric ID in several places of the JSON response.
                           That&apos;s your ID!
                         </p>
-                        <br />
-                        <p>If you use the default bot, message the @RawDataBot on Telegram and it will return you a JSON response with your chat ID under &quot;id&quot; in several document fields, it should be a string of numbers like 637278744</p>
                       </PopoverContent>
                     </Popover>
                   </label>
