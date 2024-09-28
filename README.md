@@ -13,8 +13,6 @@ The application usage is very straightforward:
 2. Add birthdays
 3. Receive reminders
 
-If a default bot is set in the env. variable HBD_DEFAULT_BOT_API_KEY, the user will receive reminders through that bot. Otherwise, the user will receive reminders through the bot they set up.
-
 ## hbd-cli
 
 Hbd has a frontend which you can use to interact with the API, but you can also use the [hbd-cli](https://github.com/dreth/hbd-cli), which is a companion command-line tool that interacts directly with the hbd API. It allows you to interact with any hbd instance, not just the one you have running.
@@ -57,7 +55,6 @@ services:
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=debug
-      - HBD_DEFAULT_BOT_API_KEY=${HBD_DEFAULT_BOT_API_KEY}
       # Optionally for backups of the birthday database to S3 or S3-compatible services
       - HBD_ENABLE_BACKUP=true
       - HBD_USER_ACCESS_KEY_ID=${HBD_USER_ACCESS_KEY_ID}
@@ -93,7 +90,6 @@ services:
       - ENVIRONMENT=production
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=release
-      - HBD_DEFAULT_BOT_API_KEY=${HBD_DEFAULT_BOT_API_KEY}
       # Optionally for backups of the birthday database to S3 or S3-compatible services
       - HBD_ENABLE_BACKUP=true
       - HBD_USER_ACCESS_KEY_ID=${HBD_USER_ACCESS_KEY_ID}

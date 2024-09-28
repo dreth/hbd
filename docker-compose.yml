@@ -17,7 +17,6 @@ services:
       - ENVIRONMENT=development
       - CUSTOM_DOMAIN=https://hbd.lotiguere.com
       - GIN_MODE=debug
-      - HBD_DEFAULT_BOT_API_KEY=${HBD_DEFAULT_BOT_API_KEY}
       # Optionally for backups of the birthday database to S3 or S3-compatible services
       - HBD_ENABLE_BACKUP=true
       - HBD_USER_ACCESS_KEY_ID=${HBD_USER_ACCESS_KEY_ID}
