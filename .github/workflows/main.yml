@@ -60,10 +60,10 @@ jobs:
             --parameters '{
               "commands":[
                 "cd /home/ubuntu/hbd",
-                "sudo git pull",
+                "git pull",
                 "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
-                "sudo docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
-                "sudo AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
+                "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
+                "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
               ]
             }' \
             --comment "Deploying new version of hbd"
