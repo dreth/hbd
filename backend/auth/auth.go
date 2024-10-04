@@ -94,11 +94,7 @@ func Register(c *gin.Context) {
 
 	// Hash the password to check for uniqueness
 	PasswordHash := encryption.HashStringWithSHA256(req.Password)
-	if exists, err = models.Users(models.UserWhere.PasswordHash.EQ(PasswordHash)).Exists(c, env.DB); helper.HE(c, err, http.StatusInternalServerError, "failed to check existing user", false) {
-		return
-	}
-	if exists {
-		c.JSON(http.StatusConflict, gin.H{"error": "password already registered"})
+	if _, err = models.Users(models.UserWhere.PasswordHash.EQ(PasswordHash)).Exists(c, env.DB); helper.HE(c, err, http.StatusInternalServerError, "failed to check existing user", false) {
 		return
 	}
 
