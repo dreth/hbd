@@ -60,7 +60,7 @@ jobs:
             --parameters '{
               "commands":[
                 "cd /home/ubuntu/hbd",
-                "git pull",
+                "sudo git pull",
                 "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
                 "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
                 "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
