@@ -1,5 +1,5 @@
 # Stage 1: Build the Go API server
-FROM --platform=linux/amd64 golang:1.22.4-alpine AS go-builder
+FROM --platform=linux/arm64 golang:1.22.4-alpine AS go-builder
 
 # add gcc
 RUN apk add --no-cache gcc libc-dev sqlite-dev musl-dev
@@ -15,7 +15,7 @@ RUN go mod download
 COPY backend/ ./
 
 # Set necessary environment variables needed for our image and build the API server.
-ENV CGO_ENABLED=1 GOOS=linux GOARCH=amd64
+ENV CGO_ENABLED=1 GOOS=linux GOARCH=arm64
 RUN go build -tags musl --ldflags "-extldflags -static -s -w" -o main .
 
 # Stage 2: Build the Next.js app

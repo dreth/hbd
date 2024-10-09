@@ -27,7 +27,9 @@ You can optionally disable the frontend in case you want only to directly intera
 
 ### Docker
 
-The application is containerized using docker, we use sqlite as the database by default, but intend to support postgres in the future.
+The application is containerized using docker, we use sqlite as the database by default.
+
+**Note the architecture you're building for in the dockerfiles.**
 
 #### Docker compose
 
