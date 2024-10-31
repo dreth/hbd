@@ -58,11 +58,20 @@ jobs:
             aws ecr batch-delete-image --repository-name $REPOSITORY_NAME --region $AWS_REGION --image-ids "$UNTAGGED_IMAGE_IDS"
           fi
 
+      - name: Get Instance ID by Name
+        id: get_instance_id
+        run: |
+          instance_id=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=minibox" "Name=instance-state-name,Values=running" \
+            --query "Reservations[].Instances[].InstanceId" \
+            --output text)
+          echo "INSTANCE_ID=$instance_id" >> $GITHUB_ENV
+            
       - name: Deploy to EC2 via SSM
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceids,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+            --targets "Key=instanceids,Values=${{ env.INSTANCE_ID }}" \
             --parameters '{
               "commands":[
                 "cd /home/ubuntu/hbd",
