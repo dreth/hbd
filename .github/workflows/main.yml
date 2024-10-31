@@ -65,6 +65,7 @@ jobs:
             --filters "Name=tag:Name,Values=minibox" "Name=instance-state-name,Values=running" \
             --query "Reservations[].Instances[].InstanceId" \
             --output text)
+          echo "::add-mask::$instance_id"
           echo "INSTANCE_ID=$instance_id" >> $GITHUB_ENV
             
       - name: Deploy to EC2 via SSM
