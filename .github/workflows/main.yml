@@ -75,7 +75,7 @@ jobs:
             --targets "Key=instanceids,Values=${{ env.INSTANCE_ID }}" \
             --parameters '{
               "commands":[
-                "cd /home/ubuntu/hbd",
+                "cd /home/ubuntu/docker/hbd",
                 "sudo git pull",
                 "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
                 "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
