@@ -5,7 +5,7 @@ const prefix = "/api";
 // Create an Axios instance
 const api = axios.create({
   // UNCOMMENT THE LINE BELOW FOR LOCAL TESTING
-  // baseURL: "http://localhost:8417",
+  baseURL: "http://hbd-api.lotiguere.com",
   headers: {
     "Content-Type": "application/json",
   },
