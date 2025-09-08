@@ -1,7 +1,9 @@
 name: CI/CD for website
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   deploy-site:
@@ -22,7 +24,7 @@ jobs:
         with:
           version: 2
           verbose: true
-          arch: arm64
+          arch: amd64
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -35,48 +37,59 @@ jobs:
         run: |
           docker buildx build --platform linux/arm64 -t hbd:latest -f prod.Dockerfile --load .
           docker tag hbd:latest hbd:latest
+      
+  deploy-server:
+    runs-on: self-hosted
+    needs: deploy-site
 
-      - name: Push Docker image to ECR
+    steps:
+      - name: Deploy app to server
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          docker tag hbd:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
+          cd ${{ secrets.SERVER_DIR }}
+          git pull
+          docker compose up -d --build
 
-      - name: Delete untagged Docker images from ECR
-        run: |
-          REPOSITORY_NAME="hbd"
-          AWS_REGION=${{ secrets.AWS_REGION }}
+      # - name: Push Docker image to ECR
+      #   run: |
+      #     aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+      #     docker tag hbd:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
+      #     docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
 
-          # Get all untagged image IDs
-          UNTAGGED_IMAGE_IDS=$(aws ecr list-images --repository-name $REPOSITORY_NAME --region $AWS_REGION --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json)
+      # - name: Delete untagged Docker images from ECR
+      #   run: |
+      #     REPOSITORY_NAME="hbd"
+      #     AWS_REGION=${{ secrets.AWS_REGION }}
 
-          # Delete untagged images
-          if [ "$UNTAGGED_IMAGE_IDS" != "[]" ]; then
-            aws ecr batch-delete-image --repository-name $REPOSITORY_NAME --region $AWS_REGION --image-ids "$UNTAGGED_IMAGE_IDS"
-          fi
+      #     # Get all untagged image IDs
+      #     UNTAGGED_IMAGE_IDS=$(aws ecr list-images --repository-name $REPOSITORY_NAME --region $AWS_REGION --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json)
 
-      - name: Get Instance ID by Name
-        id: get_instance_id
-        run: |
-          instance_id=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=minibox" "Name=instance-state-name,Values=running" \
-            --query "Reservations[].Instances[].InstanceId" \
-            --output text)
-          echo "::add-mask::$instance_id"
-          echo "INSTANCE_ID=$instance_id" >> $GITHUB_ENV
+      #     # Delete untagged images
+      #     if [ "$UNTAGGED_IMAGE_IDS" != "[]" ]; then
+      #       aws ecr batch-delete-image --repository-name $REPOSITORY_NAME --region $AWS_REGION --image-ids "$UNTAGGED_IMAGE_IDS"
+      #     fi
+
+      # - name: Get Instance ID by Name
+      #   id: get_instance_id
+      #   run: |
+      #     instance_id=$(aws ec2 describe-instances \
+      #       --filters "Name=tag:Name,Values=minibox" "Name=instance-state-name,Values=running" \
+      #       --query "Reservations[].Instances[].InstanceId" \
+      #       --output text)
+      #     echo "::add-mask::$instance_id"
+      #     echo "INSTANCE_ID=$instance_id" >> $GITHUB_ENV
             
-      - name: Deploy to EC2 via SSM
-        run: |
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceids,Values=${{ env.INSTANCE_ID }}" \
-            --parameters '{
-              "commands":[
-                "cd /home/ubuntu/docker/hbd",
-                "sudo git pull",
-                "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
-                "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
-                "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
-              ]
-            }' \
-            --comment "Deploying new version of hbd"
+      # - name: Deploy to EC2 via SSM
+      #   run: |
+      #     aws ssm send-command \
+      #       --document-name "AWS-RunShellScript" \
+      #       --targets "Key=instanceids,Values=${{ env.INSTANCE_ID }}" \
+      #       --parameters '{
+      #         "commands":[
+      #           "cd /home/ubuntu/docker/hbd",
+      #           "sudo git pull",
+      #           "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
+      #           "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
+      #           "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
+      #         ]
+      #       }' \
+      #       --comment "Deploying new version of hbd"
