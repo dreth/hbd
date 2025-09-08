@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker buildx build --platform linux/arm64 -t hbd:latest -f prod.Dockerfile --load .
+          docker buildx build --platform linux/amd64 -t hbd:latest -f prod.Dockerfile --load .
           docker tag hbd:latest hbd:latest
       
   deploy-server:
