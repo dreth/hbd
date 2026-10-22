@@ -4,6 +4,7 @@ import * as React from "react"
 import { Moon, Sun, Cake, LogOut } from "lucide-react"
 import { useTheme } from "next-themes"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { useAuth } from "@/src/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -44,9 +45,9 @@ const Nav: React.FC = () => {
   return (
     <nav className="flex justify-between items-center p-4">
       <div className="flex items-center">
-        <a href="/" className="text-xl font-bold">
+        <Link href="/" aria-label="Home" className="text-xl font-bold">
           <Cake />
-        </a>
+        </Link>
       </div>
       <div className="flex items-center space-x-4">
         {isDashboard && (

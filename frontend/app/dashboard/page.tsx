@@ -52,6 +52,15 @@ export default function Dashboard() {
     newPassword: "",
   });
 
+  const [birthdays, setBirthdays] = useState<
+    {
+      id: any;
+      name: string;
+      date: string;
+    }[]
+  >([]);
+  const [timeZone, setTimeZone] = useState(userData.timeZone);
+
   useEffect(() => {
     const storedEmail = localStorage.getItem("email");
     const storedToken = localStorage.getItem("token");
@@ -64,18 +73,12 @@ export default function Dashboard() {
   }, [email, token, router, setAuthInfo]);
 
   useEffect(() => {
-    setUserData((prevData) => ({
-      ...prevData,
-      email: email || "",
-    }));
-  }, [email]);
-
-  useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await getUserData(token);
         setUserData((prevData) => ({
           ...prevData,
+          email: email || "",
           reminderTime: response.reminder_time,
           timeZone: response.timezone,
           telegramApiKey: response.telegram_bot_api_key,
@@ -92,17 +95,10 @@ export default function Dashboard() {
     if (token) {
       fetchUserData();
     }
-  }, [token]);
+  }, [token, email]);
 
   const [name, setName] = useState("");
   const [date, setDate] = useState("");
-  const [birthdays, setBirthdays] = useState<
-    {
-      id: any;
-      name: string;
-      date: string;
-    }[]
-  >([]);
   const [isTelegramApiKeyVisible, setIsTelegramApiKeyVisible] = useState(false);
   const [isEmailDisabled, setIsEmailDisabled] = useState(true);
   const [isPasswordDisabled, setIsPasswordDisabled] = useState(true);
@@ -111,7 +107,6 @@ export default function Dashboard() {
   const [isTelegramUserDisabled, setIsTelegramUserDisabled] = useState(true);
   const [isTimezoneDisabled, setIsTimezoneDisabled] = useState(true);
   const [isReminderTimeDisabled, setIsReminderTimeDisabled] = useState(true);
-  const [timeZone, setTimeZone] = useState(userData.timeZone);
   const [searchTerm, setSearchTerm] = useState("");
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
@@ -138,6 +133,7 @@ export default function Dashboard() {
         const response = await getUserData(token);
         setUserData((prevData) => ({
           ...prevData,
+          email: email || "",
           reminderTime: response.reminder_time,
           timeZone: response.timezone,
           telegramApiKey: response.telegram_bot_api_key,
@@ -154,7 +150,7 @@ export default function Dashboard() {
     if (token) {
       fetchUserData();
     }
-  }, [token]);
+  }, [token, email]);
 
   const handleEmailCheckboxChange = () => {
     setIsEmailDisabled(!isEmailDisabled);
@@ -326,10 +322,6 @@ export default function Dashboard() {
     setBirthdays(sortedBirthdays);
   };
 
-  useEffect(() => {
-    sortBirthdays(sortCriteria);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortCriteria]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -722,7 +714,7 @@ export default function Dashboard() {
                 Sort by:
               </label>
               <Select
-                onValueChange={setSortCriteria}
+                onValueChange={(value) => { setSortCriteria(value); sortBirthdays(value); }}
                 defaultValue={sortCriteria}
               >
                 <SelectTrigger className="max-w-80 bg-primary-foreground dark:bg-background">

@@ -3,3 +3,17 @@ frontend/.next
 frontend/next-env.d.ts
 backend/.env
 backend/tmp
+
+.git
+**/.git
+.env
+**/.env
+data
+**/data
+
+.git
+**/.git
+.env
+**/.env
+data
+**/data
