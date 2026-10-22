@@ -1,95 +1,38 @@
-name: CI/CD for website
-
+name: Build and deploy HBD
 on:
   push:
-    branches:
-      - main
-
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
 jobs:
-  deploy-site:
+  verify:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU for multi-platform builds
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1
-        with:
-          version: 2
-          verbose: true
-          arch: amd64
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Build Docker image
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Verify local and production images
+        env:
+          DOCKER_BUILDKIT: "1"
         run: |
-          docker buildx build --platform linux/amd64 -t hbd:latest -f prod.Dockerfile --load .
-          docker tag hbd:latest hbd:latest
-      
+          set -eu
+          docker build -f local.Dockerfile -t hbd-verify:local .
+          docker build -f prod.Dockerfile -t hbd-verify:production .
   deploy-server:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
     runs-on: self-hosted
-    needs: deploy-site
-
+    concurrency:
+      group: hbd-production
+      cancel-in-progress: false
     steps:
-      - name: Deploy app to server
+      - name: Deploy the verified main commit
+        env:
+          HBD_DEPLOY_DIRECTORY: ${{ secrets.SERVER_DIR }}
+          HBD_EXPECTED_COMMIT: ${{ github.sha }}
         run: |
-          cd ${{ secrets.SERVER_DIR }}
-          git pull
-          docker compose up -d --build
-
-      # - name: Push Docker image to ECR
-      #   run: |
-      #     aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-      #     docker tag hbd:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
-      #     docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest
-
-      # - name: Delete untagged Docker images from ECR
-      #   run: |
-      #     REPOSITORY_NAME="hbd"
-      #     AWS_REGION=${{ secrets.AWS_REGION }}
-
-      #     # Get all untagged image IDs
-      #     UNTAGGED_IMAGE_IDS=$(aws ecr list-images --repository-name $REPOSITORY_NAME --region $AWS_REGION --filter "tagStatus=UNTAGGED" --query 'imageIds[*]' --output json)
-
-      #     # Delete untagged images
-      #     if [ "$UNTAGGED_IMAGE_IDS" != "[]" ]; then
-      #       aws ecr batch-delete-image --repository-name $REPOSITORY_NAME --region $AWS_REGION --image-ids "$UNTAGGED_IMAGE_IDS"
-      #     fi
-
-      # - name: Get Instance ID by Name
-      #   id: get_instance_id
-      #   run: |
-      #     instance_id=$(aws ec2 describe-instances \
-      #       --filters "Name=tag:Name,Values=minibox" "Name=instance-state-name,Values=running" \
-      #       --query "Reservations[].Instances[].InstanceId" \
-      #       --output text)
-      #     echo "::add-mask::$instance_id"
-      #     echo "INSTANCE_ID=$instance_id" >> $GITHUB_ENV
-            
-      # - name: Deploy to EC2 via SSM
-      #   run: |
-      #     aws ssm send-command \
-      #       --document-name "AWS-RunShellScript" \
-      #       --targets "Key=instanceids,Values=${{ env.INSTANCE_ID }}" \
-      #       --parameters '{
-      #         "commands":[
-      #           "cd /home/ubuntu/docker/hbd",
-      #           "sudo git pull",
-      #           "aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com",
-      #           "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hbd:latest",
-      #           "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }} AWS_REGION=${{ secrets.AWS_REGION }} docker compose -f docker-compose-prod.yml up -d hbd"
-      #         ]
-      #       }' \
-      #       --comment "Deploying new version of hbd"
+          set -eu
+          cd "$HBD_DEPLOY_DIRECTORY"
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$HBD_EXPECTED_COMMIT"
+          git merge --ff-only "$HBD_EXPECTED_COMMIT"
+          docker compose up -d --no-deps --build hbd

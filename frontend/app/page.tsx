@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
@@ -33,6 +33,10 @@ import {
 } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+const subscribeToTimezone = () => () => {};
+const detectedTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+const serverTimezone = () => "";
+
 export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,7 +45,9 @@ export default function Home() {
   const [loginError, setLoginError] = useState("");
   const [loginSuccess, setLoginSuccess] = useState<boolean | null>(null);
   const [reminderTime, setReminderTime] = useState("");
-  const [timeZone, setTimeZone] = useState("");
+  const detected = useSyncExternalStore(subscribeToTimezone, detectedTimezone, serverTimezone);
+  const [timeZoneOverride, setTimeZone] = useState<string | null>(null);
+  const timeZone = timeZoneOverride ?? detected;
   const [searchTerm, setSearchTerm] = useState("");
   const [telegramApiKey, setTelegramApiKey] = useState("");
   const [telegramUser, setTelegramUser] = useState("");
@@ -51,11 +57,6 @@ export default function Home() {
 
   const router = useRouter();
   const { setAuthInfo } = useAuth();
-
-  useEffect(() => {
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setTimeZone(userTimeZone);
-  }, []);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
