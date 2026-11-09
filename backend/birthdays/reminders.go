@@ -8,6 +8,7 @@ import (
 	"hbd/encryption"
 	"hbd/env"
 	"hbd/helper"
+	"hbd/observability"
 	"hbd/telegram"
 )
 
@@ -33,6 +34,7 @@ func CheckReminders() {
 	rows, err := env.DB.Query(query, now)
 	if err != nil {
 		log.Println("Error querying users:", err)
+		observability.CaptureJobError("check-reminders", err)
 		return
 	}
 	defer rows.Close()
@@ -83,6 +85,7 @@ func sendBirthdayReminder(userId int, botAPIKey, telegramUserID string) {
 	rows, err := env.DB.Query(query, userId, now.Month(), now.Day())
 	if err != nil {
 		log.Println("Error querying birthdays:", err)
+		observability.CaptureJobError("check-reminders", err)
 		return
 	}
 	defer rows.Close() // Ensure the rows are closed after processing

@@ -2,6 +2,7 @@ package helper
 
 import (
 	"errors"
+	"hbd/observability"
 	"hbd/structs"
 	"log"
 	"strings"
@@ -19,6 +20,7 @@ func HE(c *gin.Context, err error, statusCode int, message string, useDefaultErr
 			errorMessage = err.Error()
 		}
 		log.Println("Error:", err)
+		observability.CaptureRequestError(c, statusCode, err)
 		c.JSON(statusCode, structs.Error{Error: errorMessage})
 		return true
 	}

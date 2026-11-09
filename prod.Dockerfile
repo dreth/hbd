@@ -25,6 +25,11 @@ COPY frontend/package.json frontend/package-lock.json ./
 COPY frontend/security ./security
 RUN npm ci && npm run security:audit
 COPY frontend/ ./
+# Optional GlitchTip settings baked into the frontend bundle at build time (blank DSN = off).
+ARG NEXT_PUBLIC_SENTRY_DSN=""
+ARG SENTRY_ENVIRONMENT=""
+ARG SENTRY_RELEASE=""
+ARG SENTRY_TRACES_SAMPLE_RATE=""
 RUN npm run lint && npm run build
 
 FROM node-base AS runtime
