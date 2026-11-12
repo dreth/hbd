@@ -12,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"hbd/observability"
 )
 
 func S3EnvVarspresent() bool {
@@ -36,6 +38,7 @@ func BackupDBToS3() {
 	objectKey := databaseURL[strings.LastIndex(databaseURL, "/")+1:]
 	if err := uploadDBToS3(databaseURL, os.Getenv("HBD_BUCKET_NAME"), objectKey); err != nil {
 		log.Printf("Failed to upload database: %v", err)
+		observability.CaptureJobError("backup-db", err)
 		return
 	}
 	log.Println("Database backup complete")

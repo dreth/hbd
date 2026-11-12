@@ -16,6 +16,7 @@ import (
 	"hbd/env"
 	"hbd/helper"
 	"hbd/middlewares"
+	"hbd/observability"
 
 	docs "hbd/docs"
 
@@ -24,10 +25,13 @@ import (
 )
 
 func main() {
+	// GlitchTip error, trace and log reporting (no-op without SENTRY_DSN)
+	sentryEnabled := observability.Init()
+
 	// Set up the cron job to check for birthday reminder checks every minute
 	c := cron.New()
-	c.AddFunc("* * * * *", birthdays.CheckReminders)
-	c.AddFunc("0 0 * * *", backups.BackupDBToS3)
+	c.AddFunc("* * * * *", observability.Job("check-reminders", birthdays.CheckReminders))
+	c.AddFunc("0 0 * * *", observability.Job("backup-db", backups.BackupDBToS3))
 	c.Start()
 
 	// Initialize the database connection and run migrations
@@ -36,6 +40,9 @@ func main() {
 
 	// Initialize the Gin router
 	router := gin.Default()
+	if sentryEnabled {
+		router.Use(observability.Gin())
+	}
 
 	// Configure CORS
 	router.Use(cors.New(cors.Config{

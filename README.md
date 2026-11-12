@@ -134,6 +134,46 @@ You can enable backups of the birthday database to S3 or S3-compatible services.
 - `HBD_BUCKET_REGION` - The region of the bucket
 - `HBD_BUCKET_NAME` - The name of the bucket
 
+## Error monitoring
+
+HBD can report errors, performance traces and logs to [GlitchTip](https://glitchtip.com) or Sentry using the official SDKs (`sentry-go` with the Gin integration for the API, `@sentry/nextjs` for the frontend). Reporting is off while the DSNs are blank.
+
+| Variable | Read by | When |
+| --- | --- | --- |
+| `SENTRY_DSN` | Go API | container runtime |
+| `NEXT_PUBLIC_SENTRY_DSN` | browser and Next.js server | image build arg |
+| `SENTRY_ENVIRONMENT` | both (defaults to `ENVIRONMENT`/`NODE_ENV`) | runtime and build arg |
+| `SENTRY_RELEASE` | both (CI sets it to the deployed commit) | runtime and build arg |
+| `SENTRY_TRACES_SAMPLE_RATE` | both, `0` to `1`, default `0.2` | runtime and build arg |
+
+The two DSNs can point at one project or at separate frontend and API projects. With Compose, pass the build args and runtime variables like this:
+
+```yaml
+    build:
+      context: .
+      dockerfile: local.Dockerfile
+      args:
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+        SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+        SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+        SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.2}
+    environment:
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-production}
+      - SENTRY_RELEASE=${SENTRY_RELEASE:-}
+      - SENTRY_TRACES_SAMPLE_RATE=${SENTRY_TRACES_SAMPLE_RATE:-0.2}
+```
+
+What is sent:
+- **Issues:** API panics, handled API errors answered with a 5xx, failed reminder queries and backups, and frontend server and browser errors.
+- **Transactions:** API requests (the `/api/health` check is not traced), pages, and browser navigation.
+- **Logs:** the API's standard log output, and browser `console.warn`/`console.error`.
+
+Privacy:
+- Disabled: user/IP data, cookies, request bodies and query strings.
+- Request headers: all but a small allowlist are dropped.
+- API messages: Telegram bot tokens and URL credentials or queries are stripped.
+
 ## Contributing
 
 We accept PRs and issues. Feel free to contribute.

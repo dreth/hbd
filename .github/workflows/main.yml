@@ -29,6 +29,8 @@ jobs:
         env:
           HBD_DEPLOY_DIRECTORY: ${{ secrets.SERVER_DIR }}
           HBD_EXPECTED_COMMIT: ${{ github.sha }}
+          # Read by the server's Compose file (if wired) to tag GlitchTip events with the deployed commit.
+          SENTRY_RELEASE: ${{ github.sha }}
         run: |
           set -eu
           cd "$HBD_DEPLOY_DIRECTORY"
